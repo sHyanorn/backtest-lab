@@ -1,17 +1,17 @@
-# 技术决策记录
+# Technical Decisions
 
-## D001 Python 做引擎，React 做看板
-- 日期：2026-11-04
-- 理由：Python 有成熟的数据和统计生态；看板复用前端技能
+## D001 Python for the engine, React for the dashboard
+- Date: 2026-11-04
+- Rationale: Python has a mature data and statistics ecosystem; the dashboard reuses front-end skills
 
-## D002 公开演示用预计算结果
-- 日期：2026-11-04
-- 理由：GitHub Pages 免费且稳定，访问者打开即看；避免公开服务器被滥用
+## D002 Precomputed results for the public demo
+- Date: 2026-11-04
+- Rationale: GitHub Pages is free and stable, and visitors see results as soon as they open the page; avoids exposing a public server to abuse
 
-## D003 原始数据不入库
-- 日期：2026-11-04
-- 理由：数据源条款通常不允许再分发；仓库保持轻量
+## D003 Raw data is not committed
+- Date: 2026-11-04
+- Rationale: Data source terms usually prohibit redistribution; keeps the repository lightweight
 
-## D004 先做向量化引擎
-- 日期：2026-11-04
-- 理由：参数搜索需要大量回测，向量化快得多；事件驱动版本作为选做对照
+## D004 Vectorized engine first
+- Date: 2026-11-04
+- Rationale: Parameter search needs a large number of backtests, and vectorization is much faster; an event-driven version is an optional point of comparison

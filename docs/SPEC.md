@@ -1,109 +1,109 @@
-# backtest-lab 项目规格
+# backtest-lab Specification
 
-## 1. 一句话介绍
+## 1. One-line summary
 
-一个会告诉你"这个策略大概率是过拟合"的回测平台：除了常规回测，还用滚动前推检验、清洗交叉验证、过拟合概率和修正夏普比率来评估策略是否可信。
+A backtesting platform that tells you "this strategy is probably overfit": beyond standard backtests, it uses walk-forward analysis, purged cross-validation, the probability of backtest overfitting and the deflated Sharpe ratio to assess whether a strategy can be trusted.
 
-## 2. 要证明的能力
+## 2. Capabilities demonstrated
 
-| 能力 | 体现在哪里 |
+| Capability | Where it shows |
 |---|---|
-| 算法开发 | 回测引擎、组合清洗交叉验证、参数搜索 |
-| 金融与统计 | 多重检验问题、修正夏普比率、过拟合概率 |
-| 数据工程 | 定时抓取、清洗、Parquet 和 DuckDB 存储、数据质量检查 |
-| 后端与前端 | FastAPI 接口、React 看板 |
+| Algorithm development | Backtest engine, combinatorial purged cross-validation, parameter search |
+| Finance and statistics | Multiple testing problem, deflated Sharpe ratio, probability of backtest overfitting |
+| Data engineering | Scheduled fetching, cleaning, Parquet and DuckDB storage, data quality checks |
+| Backend and frontend | FastAPI endpoints, React dashboard |
 
-## 3. 核心故事（演示时这样讲）
+## 3. Core story (how to tell it in a demo)
 
-1. 对一个均线策略做参数网格搜索，找到样本内夏普比率很高的组合
-2. 平台用多种方法检验后给出结论：过拟合概率很高，修正后的夏普比率不显著
-3. 对比一个参数稳健的策略，结论通过
-4. 结论：多试几百次参数，总能"找到"好策略，这个平台能识别出来
+1. Run a parameter grid search on a moving-average strategy and find a combination with a very high in-sample Sharpe ratio
+2. The platform tests it with several methods and concludes: the probability of overfitting is high and the deflated Sharpe ratio is not significant
+3. Compare with a strategy whose parameters are robust: it passes
+4. Takeaway: try a few hundred parameter sets and you can always "find" a good strategy; this platform can detect that
 
-## 4. 功能范围
+## 4. Scope
 
-### 必做
+### Required
 
-- 数据层
-  - 日频行情：美股指数 ETF 和若干大盘股，来源用 yfinance 或 Stooq
-  - 宏观数据：FRED 接口（利率、通胀、失业率），需要免费 API Key
-  - 存为 Parquet，用 DuckDB 查询
-  - 数据质量检查：缺失值、异常跳变、复权一致性
-  - GitHub Actions 每周自动更新并重新生成演示结果
-- 回测引擎
-  - 日频、多资产、多空
-  - 交易成本（按成交额比例）和滑点
-  - 输出：净值曲线、回撤、换手率、年化收益、波动、夏普、索提诺、最大回撤、卡玛
-- 示例策略：均线交叉、时间序列动量、均值回归、利率条件下的资产轮动（使用宏观数据）
-- 参数搜索：网格搜索，记录所有试验结果（这是计算多重检验修正的前提）
-- 防过拟合检验（见第 5 节）
-- 一页式"可信度报告"：每项检验的结果、红黄绿结论、通俗解释
-- React 看板：选择策略和参数范围、查看净值和回撤、参数敏感性热力图、可信度报告
+- Data layer
+  - Daily prices: US equity index ETFs and several large-cap stocks, sourced from yfinance or Stooq
+  - Macro data: FRED API (interest rates, inflation, unemployment), requires a free API key
+  - Stored as Parquet, queried with DuckDB
+  - Data quality checks: missing values, abnormal jumps, price adjustment consistency
+  - GitHub Actions updates the data weekly and regenerates the demo results
+- Backtest engine
+  - Daily frequency, multi-asset, long and short
+  - Transaction costs (proportional to traded value) and slippage
+  - Outputs: equity curve, drawdown, turnover, annualized return, volatility, Sharpe, Sortino, maximum drawdown, Calmar
+- Example strategies: moving-average crossover, time-series momentum, mean reversion, interest-rate-conditioned asset rotation (using macro data)
+- Parameter search: grid search, recording every trial result (a prerequisite for multiple testing corrections)
+- Anti-overfitting tests (see Section 5)
+- One-page "credibility report": the result of each test, a red/yellow/green verdict, and a plain-language explanation
+- React dashboard: choose a strategy and parameter ranges, view the equity curve and drawdown, parameter sensitivity heatmap, credibility report
 
-### 选做
+### Optional
 
-- 事件驱动引擎（与向量化引擎结果对比）
-- 自定义策略上传（沙箱执行）
-- 蒙特卡洛重采样收益序列
+- Event-driven engine (results compared against the vectorized engine)
+- Custom strategy upload (sandboxed execution)
+- Monte Carlo resampling of the return series
 
-### 不做
+### Out of scope
 
-- 实盘交易
-- 分钟级数据
+- Live trading
+- Minute-level data
 
-## 5. 防过拟合方法（项目重点）
+## 5. Anti-overfitting methods (project focus)
 
-| 方法 | 回答的问题 | 参考 |
+| Method | Question it answers | Reference |
 |---|---|---|
-| 样本内外切分 | 样本外表现是否明显变差 | 基础方法 |
-| 滚动前推检验 | 定期重新优化参数后，滚动样本外表现如何 | Pardo (2008) |
-| 清洗加禁区 K 折交叉验证 | 去除训练集和测试集之间的信息泄露 | López de Prado (2018) |
-| 组合清洗交叉验证与过拟合概率 PBO | 样本内最优的参数，在样本外排名落到后半段的概率 | Bailey, Borwein, López de Prado, Zhu (2017) |
-| 修正夏普比率 DSR | 考虑试验次数、偏度和峰度后，夏普比率是否仍然显著 | Bailey & López de Prado (2014) |
-| 参数敏感性 | 最优参数周围是一片高原还是一个孤峰 | 热力图 |
-| 最低回测长度 | 要多长的数据才足以支持这个夏普比率 | Bailey & López de Prado (2012) |
+| In-sample/out-of-sample split | Does out-of-sample performance get markedly worse? | Basic method |
+| Walk-forward analysis | With parameters re-optimized periodically, how does rolling out-of-sample performance look? | Pardo (2008) |
+| Purged and embargoed K-fold cross-validation | Removes information leakage between the training and test sets | López de Prado (2018) |
+| Combinatorial purged cross-validation and probability of backtest overfitting (PBO) | Probability that the in-sample optimal parameters rank in the bottom half out of sample | Bailey, Borwein, López de Prado, Zhu (2017) |
+| Deflated Sharpe ratio (DSR) | After accounting for the number of trials, skewness and kurtosis, is the Sharpe ratio still significant? | Bailey & López de Prado (2014) |
+| Parameter sensitivity | Do the optimal parameters sit on a plateau or an isolated peak? | Heatmap |
+| Minimum backtest length | How much data is needed to support this Sharpe ratio? | Bailey & López de Prado (2012) |
 
-所有公式写在 `docs/METHODS.md`，实现前先写好。
+All formulas go in `docs/METHODS.md`, written before implementation.
 
-## 6. 架构
+## 6. Architecture
 
 ```
-GitHub Actions (每周)
+GitHub Actions (weekly)
    │
    ▼
-data/update ──▶ Parquet + DuckDB ──▶ engine ──▶ validation ──▶ 预计算结果 JSON
+data/update ──▶ Parquet + DuckDB ──▶ engine ──▶ validation ──▶ precomputed results JSON
                                         ▲                          │
                                         │                          ▼
-                               FastAPI (按需计算)  ◀──────  React 看板
+                               FastAPI (on-demand)  ◀──────  React dashboard
 ```
 
-部署方式：
+Deployment:
 
-- 公开演示：看板读取预计算 JSON，部署到 GitHub Pages，零服务器成本
-- 本地完整版：FastAPI 支持自定义参数实时计算
+- Public demo: the dashboard reads precomputed JSON and is deployed to GitHub Pages, with zero server cost
+- Full local version: FastAPI computes results in real time for custom parameters
 
-## 7. 接口（FastAPI）
+## 7. API (FastAPI)
 
-| 方法 | 路径 | 说明 |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/strategies` | 策略列表和参数定义 |
-| POST | `/api/backtests` | 单次回测 |
-| POST | `/api/sweeps` | 参数搜索，返回任务 id |
-| GET | `/api/sweeps/{id}` | 进度和结果 |
-| GET | `/api/sweeps/{id}/report` | 可信度报告 |
+| GET | `/api/strategies` | Strategy list and parameter definitions |
+| POST | `/api/backtests` | Single backtest |
+| POST | `/api/sweeps` | Parameter search; returns a job id |
+| GET | `/api/sweeps/{id}` | Progress and results |
+| GET | `/api/sweeps/{id}/report` | Credibility report |
 
-参数搜索用多进程并行，任务状态存在内存或 SQLite。
+Parameter searches run in parallel across multiple processes; job state is kept in memory or SQLite.
 
-## 8. 测试策略
+## 8. Testing strategy
 
-- 引擎：手算的小例子；未来函数检测测试（把未来数据打乱，结果不应改变）
-- 指标：与 empyrical 或 quantstats 等库对比
-- 检验方法：用论文中的数值例子；纯随机信号策略的 PBO 应接近 0.5 以上，DSR 不显著
-- 数据：模拟缺失和跳变，检查质量检查能报出来
+- Engine: small hand-calculated examples; a look-ahead bias test (shuffle future data; results must not change)
+- Metrics: compare against libraries such as empyrical or quantstats
+- Validation methods: use numerical examples from the papers; for a purely random-signal strategy, PBO should be close to or above 0.5 and DSR should not be significant
+- Data: simulate missing values and jumps, and check that the quality checks flag them
 
-## 9. 交付物
+## 9. Deliverables
 
-- GitHub Pages 公开看板
-- 演示笔记本：讲完第 3 节的故事
-- `docs/METHODS.md` 方法说明
-- 英文 README：一句话介绍、看板截图、核心故事、方法表
+- Public dashboard on GitHub Pages
+- Demo notebook: tells the story from Section 3
+- `docs/METHODS.md` methods documentation
+- English README: one-line summary, dashboard screenshot, core story, methods table
