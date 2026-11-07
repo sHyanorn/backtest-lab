@@ -66,6 +66,23 @@ def test_missing_trading_day_is_a_gap() -> None:
     assert [(i.symbol, i.date) for i in gaps] == [("GLD", dropped)]
 
 
+def test_dividend_after_a_missing_bar_is_only_a_warning() -> None:
+    frames = {t: price_frame(seed=i) for i, t in enumerate(["SPY", "TLT", "GLD"])}
+    gld = frames["GLD"]
+    div_day = int(np.flatnonzero(gld["dividends"].to_numpy())[0])
+    frames["GLD"] = gld.drop(gld.index[div_day - 1])
+    adjustment = [i for i in check_prices(frames) if i.check == "adjustment"]
+    assert [(i.symbol, i.severity) for i in adjustment] == [("GLD", Severity.WARNING)]
+
+
+def test_ticker_that_stops_updating_is_an_error() -> None:
+    frames = {"SPY": price_frame(n=60), "TLT": price_frame(n=20, seed=1)}
+    stale = [i for i in check_prices(frames) if i.check == "stale"]
+    assert [(i.symbol, i.severity, i.date) for i in stale] == [
+        ("TLT", Severity.ERROR, _day(frames["TLT"], 19))
+    ]
+
+
 def test_dates_outside_a_tickers_history_are_not_gaps() -> None:
     frames = {"SPY": price_frame(n=60), "NEW": price_frame(n=30, start="2024-02-01")}
     assert [i for i in check_prices(frames) if i.check == "gap"] == []
@@ -80,8 +97,14 @@ def test_macro_checks() -> None:
         }
     )
     dup = pd.concat([good, good.iloc[[0]]])
-    issues = check_macro({"OK": good, "DUP": dup, "EMPTY": good.iloc[:0]})
-    assert {(i.check, i.symbol) for i in issues} == {("duplicate_dates", "DUP"), ("empty", "EMPTY")}
+    freqs = {"OK": "monthly", "DUP": "monthly", "EMPTY": "monthly", "OLD": "daily"}
+    frames = {"OK": good, "DUP": dup, "EMPTY": good.iloc[:0], "OLD": good}
+    issues = check_macro(frames, freqs, pd.Timestamp("2024-03-15"))
+    assert {(i.check, i.symbol, i.severity) for i in issues} == {
+        ("duplicate_dates", "DUP", Severity.ERROR),
+        ("empty", "EMPTY", Severity.ERROR),
+        ("stale", "OLD", Severity.WARNING),
+    }
 
 
 @pytest.mark.parametrize(("failures", "ok"), [({}, True), ({"SPY": "FetchError: 429"}, False)])

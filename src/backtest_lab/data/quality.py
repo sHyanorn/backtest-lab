@@ -13,6 +13,8 @@ ADJ_TOL = 1e-5  # relative error allowed in the adjustment factor
 OHLC_TOL = 1e-6  # relative slack for rounding in high/low bounds
 JUMP_Z = 10.0  # robust z-score of a daily log return that is flagged for review
 GAP_SHARE = 0.5  # a date is a trading day if at least this share of live tickers has a bar
+# Macro series older than this (days before the latest price date) are flagged.
+MACRO_MAX_AGE = {"daily": 7, "monthly": 75}
 
 
 class Severity(StrEnum):
@@ -44,7 +46,7 @@ def _issues(
     ]
 
 
-def _check_ticker(ticker: str, df: pd.DataFrame) -> list[Issue]:
+def _check_ticker(ticker: str, df: pd.DataFrame, trading: pd.DatetimeIndex) -> list[Issue]:
     issues: list[Issue] = []
     err = Severity.ERROR
     if df.index.has_duplicates:
@@ -59,17 +61,17 @@ def _check_ticker(ticker: str, df: pd.DataFrame) -> list[Issue]:
     issues += _issues("ohlc", err, ticker, bad_ohlc, "open/close outside low-high")
 
     # Adj Close / Close may only change on ex-dividend dates, by 1 - D / C[t-1].
+    # After a missing bar C[t-1] is unknown, so a dividend step there is only a warning.
     factor = df["adj_close"] / df["close"]
     step = factor.shift(1) / factor
     expected = 1 - df["dividends"] / df["close"].shift(1)
     deviation = (step - expected).abs()
-    issues += _issues(
-        "adjustment",
-        err,
-        ticker,
-        deviation > ADJ_TOL,
-        deviation.map(lambda x: f"factor step off by {x:.2e}"),
-    )
+    pos = pd.Series(trading.get_indexer(df.index), index=df.index)
+    after_gap = (pos.diff() != 1) & (df["dividends"] > 0)
+    detail = deviation.map(lambda x: f"factor step off by {x:.2e}")
+    bad = deviation > ADJ_TOL
+    issues += _issues("adjustment", err, ticker, bad & ~after_gap, detail)
+    issues += _issues("adjustment", Severity.WARNING, ticker, bad & after_gap, detail)
 
     log_ret = pd.Series(np.log(df["adj_close"]), index=df.index).diff()
     centered = log_ret - log_ret.median()
@@ -86,15 +88,14 @@ def _check_ticker(ticker: str, df: pd.DataFrame) -> list[Issue]:
     return issues
 
 
-def _check_gaps(frames: Mapping[str, pd.DataFrame]) -> list[Issue]:
+def _trading_days(frames: Mapping[str, pd.DataFrame]) -> pd.DatetimeIndex:
+    """Dates on which at least GAP_SHARE of the tickers trading at the time have a bar."""
     present = (
-        pd.DataFrame({t: pd.Series(True, index=df.index) for t, df in frames.items() if len(df)})
+        pd.DataFrame({t: pd.Series(True, index=df.index.unique()) for t, df in frames.items()})
         .astype("boolean")
         .fillna(False)
         .astype(bool)
     )
-    if present.empty:
-        return []
     live = pd.DataFrame(
         {
             t: (present.index >= frames[t].index.min()) & (present.index <= frames[t].index.max())
@@ -103,36 +104,68 @@ def _check_gaps(frames: Mapping[str, pd.DataFrame]) -> list[Issue]:
         index=present.index,
     )
     share = present.sum(axis=1) / live.sum(axis=1)
-    trading = share >= GAP_SHARE
-    issues: list[Issue] = []
-    for t in present.columns:
-        missing = trading & live[t] & ~present[t]
-        issues += _issues("gap", Severity.WARNING, t, missing, "no bar on a trading day")
-    return issues
+    return pd.DatetimeIndex(present.index[share >= GAP_SHARE])
 
 
 def check_prices(frames: Mapping[str, pd.DataFrame]) -> list[Issue]:
     """Check normalized price frames keyed by ticker."""
-    issues: list[Issue] = []
+    issues = [
+        Issue("empty", Severity.ERROR, t, None, "no rows") for t, df in frames.items() if df.empty
+    ]
+    frames = {t: df for t, df in frames.items() if not df.empty}
+    if not frames:
+        return issues
+    trading = _trading_days(frames)
+    latest = max(df.index.max() for df in frames.values())
     for ticker, df in frames.items():
-        if df.empty:
-            issues.append(Issue("empty", Severity.ERROR, ticker, None, "no rows"))
+        issues += _check_ticker(ticker, df, trading)
+        if df.index.has_duplicates:
             continue
-        issues += _check_ticker(ticker, df)
-    return issues + _check_gaps(frames)
+        window = trading[(trading >= df.index.min()) & (trading <= df.index.max())]
+        missing = window.difference(df.index)
+        issues += [
+            Issue("gap", Severity.WARNING, ticker, d, "no bar on a trading day")
+            for d in _dates(missing)
+        ]
+        last = pd.Timestamp(df.index.max())
+        if last < latest:
+            issues.append(
+                Issue(
+                    "stale",
+                    Severity.ERROR,
+                    ticker,
+                    _dates(pd.Index([last]))[0],
+                    f"last bar before the latest date {latest:%Y-%m-%d}",
+                )
+            )
+    return issues
 
 
-def check_macro(frames: Mapping[str, pd.DataFrame]) -> list[Issue]:
+def check_macro(
+    frames: Mapping[str, pd.DataFrame], frequencies: Mapping[str, str], as_of: pd.Timestamp
+) -> list[Issue]:
     """Check macro frames (columns date, value, available_date) keyed by series id."""
     issues: list[Issue] = []
     err = Severity.ERROR
     for series_id, df in frames.items():
         if df.empty:
             issues.append(Issue("empty", err, series_id, None, "no rows"))
-        elif df["date"].duplicated().any():
+            continue
+        if df["date"].duplicated().any():
             issues.append(Issue("duplicate_dates", err, series_id, None, "dates repeat"))
-        elif df["value"].isna().any():
+        if df["value"].isna().any():
             issues.append(Issue("missing_value", err, series_id, None, "NaN value"))
+        last = pd.Timestamp(df["date"].max())
+        if (as_of - last).days > MACRO_MAX_AGE[frequencies[series_id]]:
+            issues.append(
+                Issue(
+                    "stale",
+                    Severity.WARNING,
+                    series_id,
+                    f"{last:%Y-%m-%d}",
+                    f"older than {MACRO_MAX_AGE[frequencies[series_id]]} days at {as_of:%Y-%m-%d}",
+                )
+            )
     return issues
 
 
