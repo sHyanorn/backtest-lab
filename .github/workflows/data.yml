@@ -1,0 +1,39 @@
+name: data
+on:
+  schedule:
+    - cron: "17 6 * * 6" # Saturdays, after the Friday close
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.7"
+          enable-cache: true
+      - run: uv sync --locked
+      # GitHub evicts caches unused for 7 days, so a weekly run can miss and
+      # refetch everything; that is small enough to be safe (D012).
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: data/raw
+          key: data-raw-${{ github.run_id }}
+          restore-keys: data-raw-
+      - run: uv run python -m backtest_lab.data.update
+      # Only a fully successful run refreshes the cache.
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: data/raw
+          key: data-raw-${{ github.run_id }}
+      # Raw data is not uploaded: Yahoo terms restrict redistribution (D003).
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: quality-report
+          path: data/reports/quality.json

@@ -31,3 +31,25 @@
 ## D008 empyrical-reloaded for metric cross-checks
 - Date: 2026-11-07
 - Rationale: Maintained, small dependency footprint, works with pandas 3 on Python 3.14. quantstats gives the same values but pulls in plotting libraries. Used as a dev dependency only
+
+## D009 Instrument universe
+- Date: 2026-11-07
+- ETFs: SPY, QQQ, IWM, EFA, EEM, TLT, IEF, SHY, GLD. Stocks: AAPL, MSFT, AMZN, JPM, XOM, JNJ. Macro: DGS10, DGS3MO, DFF, CPIAUCSL, UNRATE
+- Rationale: Liquid instruments with long histories across equities, bonds and gold; the stocks span several sectors
+- Limitation: the stocks were picked because they exist today and have long histories, which is survivorship bias. Results on them overstate what a strategy would have earned. The demo story uses the ETFs
+
+## D010 Macro publication lag and revisions
+- Date: 2026-11-07
+- FRED dates are observation periods, so each value gets an `available_date`: daily rates (DGS10, DGS3MO, DFF) the next business day, after the H.15 release; a monthly value (CPIAUCSL, UNRATE) for month M at the end of M+1. CPI is released mid-month and the jobs report on the first Friday, so this lag is conservative. Strategies may only read values whose `available_date` has passed
+- Limitation: fredgraph serves the latest revised values, so even with the lag a backtest sees revised numbers. Measured against ALFRED vintages at 84 quarter-ends from 2005 to 2025, the first-release value differed from today's by a mean of 0.048 pp (max 0.20 pp) for UNRATE and 0.030 pp (max 0.13 pp) for CPI year-over-year inflation. Treasury and fed funds rates are not revised. The rotation strategy conditions on rates only, so this does not affect it; using CPI or UNRATE as signals would need ALFRED vintages
+
+## D011 Data quality thresholds
+- Date: 2026-11-07
+- Errors (the update fails): missing or non-positive prices; open or close outside low-high by more than 1e-6 relative; adjustment factor `Adj Close / Close` changing by more than 1e-5 on a day without a dividend, or its step on an ex-dividend day differing from `1 - D / Close[t-1]` by more than 1e-5. On the full histories of SPY, AAPL, TLT, GLD and NVDA the largest factor deviation is 2.3e-6, so the tolerance leaves a 4x margin
+- Warnings (logged for review): a daily log return whose robust z-score (median and 1.4826 x MAD) exceeds 10; a missing bar on a date when at least half of the tickers trading at the time have one. Over the full universe a z-score of 10 flags 105 days in total, all real market events (1987, 2008, March 2020); a lower threshold would bury them in noise
+- Basis: measured on Yahoo data on 2026-11-07
+
+## D012 Weekly data update
+- Date: 2026-11-07
+- The `data` workflow runs on Saturdays and on demand. It fetches into an Actions cache, runs the quality checks and uploads the report. It fails if any fetch fails or any check errors, and only a successful run saves the cache. Nothing is committed and raw data is not uploaded (D003)
+- GitHub evicts caches unused for 7 days, so a weekly run may refetch everything. A full fetch is one history request per ticker for 15 tickers, 1 s apart, plus 5 FRED downloads; it takes about 25 s. Each request retries 4 times with 2 to 16 s backoff before the run fails

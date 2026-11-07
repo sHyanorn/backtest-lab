@@ -101,7 +101,12 @@ Parameter searches run in parallel across multiple processes; job state is kept 
 - Validation methods: use numerical examples from the papers; for a purely random-signal strategy, PBO should be close to or above 0.5 and DSR should not be significant
 - Data: simulate missing values and jumps, and check that the quality checks flag them
 
-## 9. Deliverables
+## 9. Known limitations
+
+- Survivorship bias: the individual stocks are ones that exist today with long histories (D009). The demo uses ETFs
+- Macro data is the latest revised vintage; publication lags are applied but revisions are not (D010)
+
+## 10. Deliverables
 
 - Public dashboard on GitHub Pages
 - Demo notebook: tells the story from Section 3

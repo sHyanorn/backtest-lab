@@ -6,11 +6,11 @@
 - [x] CI: lint, type checking, tests
 
 ## M1 Data layer
-- [ ] Price data fetching (yfinance) with retries and caching
-- [ ] FRED macro data fetching
-- [ ] Parquet storage and DuckDB query wrapper
-- [ ] Data quality checks with a report
-- [ ] Weekly update via GitHub Actions
+- [x] Price data fetching (yfinance) with retries and caching
+- [x] FRED macro data fetching
+- [x] Parquet storage and DuckDB query wrapper
+- [x] Data quality checks with a report
+- [x] Weekly update via GitHub Actions
 
 ## M2 Backtest engine
 - [ ] Vectorized engine: signals fill with a one-day delay
