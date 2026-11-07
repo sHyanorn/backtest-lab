@@ -18,12 +18,14 @@ def connect(root: Path) -> duckdb.DuckDBPyConnection:
     """
     con = duckdb.connect()
     for table, date_cols in DATE_COLUMNS.items():
-        if not any((root / table).glob("*.parquet")):
+        files = sorted((root / table).glob("*.parquet"))
+        if not files:
             continue
-        pattern = (root / table / "*.parquet").as_posix().replace("'", "''")
+        # An explicit file list, so brackets or asterisks in `root` are not read as a glob.
+        paths = ", ".join("'" + f.as_posix().replace("'", "''") + "'" for f in files)
         casts = ", ".join(f"CAST({c} AS DATE) AS {c}" for c in date_cols)
         con.execute(
-            f"CREATE VIEW {table} AS SELECT * REPLACE ({casts}) FROM read_parquet('{pattern}')"
+            f"CREATE VIEW {table} AS SELECT * REPLACE ({casts}) FROM read_parquet([{paths}])"
         )
     return con
 

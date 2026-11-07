@@ -54,3 +54,23 @@ def test_main_writes_report_and_sets_exit_code(
     assert update.main(["--data-dir", str(tmp_path)]) == code
     written = json.loads((tmp_path / "reports" / "quality.json").read_text(encoding="utf-8"))
     assert written == report
+
+
+def test_macro_failure_and_corrupt_cache_are_reported(tmp_path: Path) -> None:
+    (tmp_path / "raw" / "prices").mkdir(parents=True)
+    (tmp_path / "raw" / "prices" / "TLT.parquet").write_bytes(b"not parquet")
+
+    def broken_macro(series_id: str, raw: Path) -> None:
+        raise FetchError(series_id, "HTTPError: 503")
+
+    report = update.run(
+        tmp_path,
+        tickers=["SPY", "TLT"],
+        series=["DGS10"],
+        update_price=lambda t, r, f: _fake_price(set())(t, r, f) if t == "SPY" else "full",
+        update_macro=broken_macro,
+        sleep=lambda s: None,
+    )
+    assert report["ok"] is False
+    assert set(report["fetch_failures"]) == {"TLT", "DGS10"}
+    assert report["fetch_failures"]["DGS10"] == "HTTPError: 503"

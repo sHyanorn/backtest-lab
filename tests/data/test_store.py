@@ -11,6 +11,7 @@ from tests.factories import price_frame
 
 @pytest.fixture
 def root(tmp_path: Path) -> Path:
+    tmp_path = tmp_path / "it's [data]"  # quote and glob characters in the path
     for i, ticker in enumerate(["SPY", "TLT"]):
         df = price_frame(n=10, seed=i).reset_index()
         df.insert(0, "ticker", ticker)

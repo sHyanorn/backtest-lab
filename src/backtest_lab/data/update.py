@@ -27,6 +27,12 @@ def _update_price(ticker: str, raw: Path, full: bool) -> prices.UpdateKind:
     return prices.update_ticker(ticker, raw, full=full)
 
 
+def _reason(exc: Exception) -> str:
+    # Any error, including a corrupt cache file or a failed write, is recorded so the
+    # remaining sources still update and the report is still written.
+    return exc.reason if isinstance(exc, FetchError) else f"{type(exc).__name__}: {exc}"
+
+
 def run(
     data_dir: Path,
     *,
@@ -45,28 +51,37 @@ def run(
         try:
             kind = update_price(ticker, raw, full)
             print(f"{ticker}: {kind}")
-        except FetchError as exc:
-            failures[ticker] = exc.reason
-            print(f"{ticker}: FAILED {exc.reason}")
+        except Exception as exc:
+            failures[ticker] = _reason(exc)
+            print(f"{ticker}: FAILED {failures[ticker]}")
     for series_id in series:
         try:
             update_macro(series_id, raw)
             print(f"{series_id}: full")
-        except FetchError as exc:
-            failures[series_id] = exc.reason
-            print(f"{series_id}: FAILED {exc.reason}")
+        except Exception as exc:
+            failures[series_id] = _reason(exc)
+            print(f"{series_id}: FAILED {failures[series_id]}")
 
-    price_frames = {
-        t: df
-        for t in tickers
-        if (df := prices.read_cached(raw / "prices" / f"{t}.parquet")) is not None
-    }
-    macro_frames = {
-        s: pd.read_parquet(path)
-        for s in series
-        if (path := raw / "macro" / f"{s}.parquet").exists()
-    }
-    issues = check_prices(price_frames) + check_macro(macro_frames)
+    price_frames: dict[str, pd.DataFrame] = {}
+    for ticker in tickers:
+        try:
+            if (df := prices.read_cached(raw / "prices" / f"{ticker}.parquet")) is not None:
+                price_frames[ticker] = df
+        except Exception as exc:
+            failures.setdefault(ticker, _reason(exc))
+    macro_frames: dict[str, pd.DataFrame] = {}
+    for series_id in series:
+        path = raw / "macro" / f"{series_id}.parquet"
+        try:
+            if path.exists():
+                macro_frames[series_id] = pd.read_parquet(path)
+        except Exception as exc:
+            failures.setdefault(series_id, _reason(exc))
+    as_of = max(
+        (df.index.max() for df in price_frames.values()),
+        default=pd.Timestamp(prices.exchange_today()),
+    )
+    issues = check_prices(price_frames) + check_macro(macro_frames, macro.SERIES, as_of)
     return build_report(issues, failures)
 
 

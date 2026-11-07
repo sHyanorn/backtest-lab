@@ -87,6 +87,14 @@ def test_rewritten_history_triggers_full_refetch(tmp_path: Path) -> None:
     pd.testing.assert_frame_equal(cached, yahoo.history, check_freq=False)
 
 
+def test_missing_overlap_rows_trigger_full_refetch(tmp_path: Path) -> None:
+    history = price_frame(n=80)
+    yahoo = FakeYahoo(history)
+    update_ticker("SPY", tmp_path, fetch=yahoo, end=history.index[60].date())
+    yahoo.history = history.drop(history.index[55])
+    assert update_ticker("SPY", tmp_path, fetch=yahoo, end=date(2030, 1, 1)) is UpdateKind.FULL
+
+
 def test_bars_on_or_after_end_are_excluded(tmp_path: Path) -> None:
     history = price_frame(n=20)
     end = history.index[15].date()
