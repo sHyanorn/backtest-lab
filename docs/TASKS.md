@@ -1,13 +1,12 @@
 # Tasks
 
 ## M0 Setup
-- [ ] Initialize a Python 3.12 project with uv; configure ruff, mypy strict mode and pytest
-- [ ] Package structure `src/backtest_lab/{data,engine,strategies,validation,api}`
-- [ ] CI: lint, type checking, tests
-- [ ] `.env.example` (FRED_API_KEY)
+- [x] Initialize a Python 3.14 project with uv; configure ruff, mypy strict mode and pytest
+- [x] Package structure `src/backtest_lab/{data,engine,strategies,validation,api}`
+- [x] CI: lint, type checking, tests
 
 ## M1 Data layer
-- [ ] Price data fetching (yfinance or Stooq) with retries and caching
+- [ ] Price data fetching (yfinance) with retries and caching
 - [ ] FRED macro data fetching
 - [ ] Parquet storage and DuckDB query wrapper
 - [ ] Data quality checks with a report

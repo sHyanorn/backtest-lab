@@ -25,8 +25,8 @@ A backtesting platform that tells you "this strategy is probably overfit": beyon
 ### Required
 
 - Data layer
-  - Daily prices: US equity index ETFs and several large-cap stocks, sourced from yfinance or Stooq
-  - Macro data: FRED API (interest rates, inflation, unemployment), requires a free API key
+  - Daily prices: US equity index ETFs and several large-cap stocks, sourced from yfinance
+  - Macro data: FRED (interest rates, inflation, unemployment) via the keyless fredgraph CSV download
   - Stored as Parquet, queried with DuckDB
   - Data quality checks: missing values, abnormal jumps, price adjustment consistency
   - GitHub Actions updates the data weekly and regenerates the demo results
@@ -97,7 +97,7 @@ Parameter searches run in parallel across multiple processes; job state is kept 
 ## 8. Testing strategy
 
 - Engine: small hand-calculated examples; a look-ahead bias test (shuffle future data; results must not change)
-- Metrics: compare against libraries such as empyrical or quantstats
+- Metrics: compare against empyrical-reloaded
 - Validation methods: use numerical examples from the papers; for a purely random-signal strategy, PBO should be close to or above 0.5 and DSR should not be significant
 - Data: simulate missing values and jumps, and check that the quality checks flag them
 
