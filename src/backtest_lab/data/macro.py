@@ -5,7 +5,9 @@ import urllib.request
 from enum import StrEnum
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+from pandas.tseries.holiday import USFederalHolidayCalendar
 
 from backtest_lab.data.fetch import with_retries
 from backtest_lab.data.storage import write_parquet_atomic
@@ -27,15 +29,31 @@ SERIES = {
     "UNRATE": Frequency.MONTHLY,  # unemployment rate
 }
 
+# Monthly releases published after the end of the following month, from ALFRED
+# vintages 1998-2026 (D010). October 2025 was never published and is absent.
+LATE_RELEASES = {("UNRATE", "2025-09-01"): "2025-11-20"}
+
 
 def available_dates(dates: pd.DatetimeIndex, freq: Frequency) -> pd.DatetimeIndex:
     """First date a value can be used without look-ahead.
 
-    Daily rates are published the next business day; a monthly value for
-    month M is used from the last day of M+1, after its release.
+    Daily rates are published the next Federal Reserve business day; a monthly
+    value for month M is used from the last day of M+1, after its release,
+    except for releases that came later (see D010).
     """
     if freq is Frequency.DAILY:
-        return dates + pd.offsets.BDay(1)
+        if dates.empty:
+            return dates
+        holidays = USFederalHolidayCalendar().holidays(
+            dates.min(), dates.max() + pd.Timedelta(days=14)
+        )
+        days = np.busday_offset(
+            dates.to_numpy().astype("datetime64[D]"),
+            1,
+            roll="forward",
+            holidays=holidays.to_numpy().astype("datetime64[D]"),
+        )
+        return pd.DatetimeIndex(days).as_unit("us")
     return dates + pd.offsets.MonthEnd(2)
 
 
@@ -46,7 +64,7 @@ def parse(text: str, series_id: str, freq: Frequency) -> pd.DataFrame:
         raise ValueError(f"unexpected columns: {list(raw.columns)}")
     raw = raw.dropna()
     dates = pd.DatetimeIndex(pd.to_datetime(raw["observation_date"])).as_unit("us")
-    return pd.DataFrame(
+    df = pd.DataFrame(
         {
             "series": series_id,
             "date": dates,
@@ -54,6 +72,10 @@ def parse(text: str, series_id: str, freq: Frequency) -> pd.DataFrame:
             "available_date": available_dates(dates, freq),
         }
     )
+    for (sid, obs), released in LATE_RELEASES.items():
+        if sid == series_id:
+            df.loc[df["date"] == pd.Timestamp(obs), "available_date"] = pd.Timestamp(released)
+    return df
 
 
 def download(series_id: str) -> pd.DataFrame:
