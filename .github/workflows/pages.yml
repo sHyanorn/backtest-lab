@@ -1,6 +1,6 @@
 name: pages
-# Deploys only what passed CI: the tests, the browser checks and the check that the
-# registered results are unchanged (D032).
+# A push deploys only after CI passes: the tests, the browser checks and the check that
+# the registered results are unchanged (D032). A manual run deploys without waiting.
 on:
   workflow_run:
     workflows: [ci]
