@@ -36,7 +36,7 @@ def annual_volatility(returns: Returns) -> float:
     if len(r) < 2:
         return float("nan")
     s = float(np.std(r, ddof=1))
-    return 0.0 if s < ZERO_TOL else s * np.sqrt(ANNUALIZATION)
+    return 0.0 if s < ZERO_TOL else float(s * np.sqrt(ANNUALIZATION))
 
 
 def sharpe(returns: Returns, risk_free: float = 0.0) -> float:
