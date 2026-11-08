@@ -9,6 +9,18 @@ LEVERAGE_TOL = 1e-9
 
 
 @dataclass(frozen=True)
+class Costs:
+    """Costs per unit of traded notional, in basis points (see D014)."""
+
+    fee_bps: float = 1.0
+    slippage_bps: float = 5.0
+
+    @property
+    def rate(self) -> float:
+        return (self.fee_bps + self.slippage_bps) / 1e4
+
+
+@dataclass(frozen=True)
 class Prices:
     """Total-return adjusted open and close panels: dates x tickers."""
 
@@ -34,6 +46,8 @@ class Prices:
 class Result:
     returns: pd.Series  # net daily returns
     gross_returns: pd.Series
+    turnover: pd.Series  # sum of |weight change| traded at each open
+    costs: pd.Series  # fraction of the open's value paid in fees and slippage
     weights: pd.DataFrame  # positions held from each day's open
     start: pd.Timestamp | None  # first date whose return follows a valid signal
 
@@ -57,13 +71,20 @@ def _targets(weights: pd.DataFrame, prices: Prices) -> pd.DataFrame:
     return weights.reindex(index=prices.close.index, columns=prices.close.columns)
 
 
-def run(weights: pd.DataFrame, prices: Prices, *, max_leverage: float = 1.0) -> Result:
+def run(
+    weights: pd.DataFrame,
+    prices: Prices,
+    costs: Costs = Costs(),  # noqa: B008 (immutable)
+    *,
+    max_leverage: float = 1.0,
+) -> Result:
     """Backtest target weights decided at each close and filled at the next open.
 
     The return of day t is (1 + overnight)(1 + intraday) - 1: the positions held
     from the previous open earn the gap from the previous close to today's open,
     then the portfolio is rebalanced to the previous close's target and earns
-    the move to today's close. Uninvested capital earns zero. Rows that are all
+    the move to today's close. Costs are paid on the traded notional at the
+    open, between the two legs. Uninvested capital earns zero. Rows that are all
     NaN (warm-up) and missing tickers count as zero weight.
     """
     targets = _targets(weights, prices)
@@ -95,16 +116,22 @@ def run(weights: pd.DataFrame, prices: Prices, *, max_leverage: float = 1.0) -> 
     with np.errstate(invalid="ignore", divide="ignore"):
         drifted[1:] = prev[1:] * (1 + r_id[:-1]) / (1 + g_id[:-1, None])
     g_on = (drifted * r_on).sum(axis=1)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        at_open = drifted * (1 + r_on) / (1 + g_on[:, None])
+    turnover = np.abs(held - np.nan_to_num(at_open)).sum(axis=1)
+    cost = costs.rate * turnover
 
-    gross = (1 + g_on) * (1 + g_id) - 1
-    gross = _stop_at_ruin(gross)
+    gross = _stop_at_ruin((1 + g_on) * (1 + g_id) - 1)
+    net = _stop_at_ruin((1 + g_on) * (1 - cost) * (1 + g_id) - 1)
 
     index = prices.close.index
     valid_from = np.flatnonzero(valid[:-1])
     start = pd.Timestamp(index[valid_from[0] + 1]) if len(valid_from) else None
     return Result(
-        returns=pd.Series(gross[1:], index=index[1:], name="returns"),
+        returns=pd.Series(net[1:], index=index[1:], name="returns"),
         gross_returns=pd.Series(gross[1:], index=index[1:], name="gross_returns"),
+        turnover=pd.Series(turnover[1:], index=index[1:], name="turnover"),
+        costs=pd.Series(cost[1:], index=index[1:], name="costs"),
         weights=pd.DataFrame(held[1:], index=index[1:], columns=prices.close.columns),
         start=start,
     )

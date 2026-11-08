@@ -74,3 +74,9 @@
 - Uninvested capital and short proceeds earn zero, consistent with `r_f = 0` in METHODS.md. Shorts pay no borrow fee. Gross exposure is capped at 1 by default
 - A day that loses 100% or more ends the backtest: its return is -1 and later returns are 0
 - Limitation: ignoring interest on cash understates the returns of strategies that are often flat when rates are high
+
+## D014 Transaction costs
+- Date: 2026-11-08
+- Costs are proportional to traded notional, `rate = (fee_bps + slippage_bps) / 1e4`, with defaults of 1 bp fees and 5 bps slippage per side. They are on by default; a zero-cost run is only a reference
+- Turnover at an open is the sum of `|target - drifted weight|`, so building a position from cash costs `rate x gross exposure` and daily rebalancing of a multi-asset portfolio pays for its drift (D013)
+- Rationale: commissions on liquid US ETFs and large caps are near zero; 5 bps covers the half-spread and impact at the open with room to spare

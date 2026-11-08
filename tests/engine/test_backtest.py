@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from backtest_lab.engine.backtest import Prices, run
+from backtest_lab.engine.backtest import Costs, Prices, run
 
+ZERO = Costs(fee_bps=0.0, slippage_bps=0.0)
 DATES = pd.bdate_range("2024-01-02", periods=4).as_unit("us")
 
 
@@ -46,7 +47,7 @@ def simulate(weights: pd.DataFrame, prices: Prices, cost_rate: float = 0.0) -> n
 
 
 def test_hand_example_compounds_overnight_and_intraday() -> None:
-    result = run(WEIGHTS, PRICES)
+    result = run(WEIGHTS, PRICES, ZERO)
     day1 = 0.5 * (104 / 102) + 0.5 * (51 / 49) - 1
     # Day 2: shares bought at day 1's open are valued at day 2's open, then rebalanced 50/50.
     v1 = 0.5 / 102 * 104 + 0.5 / 49 * 51
@@ -65,7 +66,7 @@ def test_hand_example_compounds_overnight_and_intraday() -> None:
 def test_signal_fills_at_next_open_not_same_close() -> None:
     weights = pd.DataFrame(0.0, index=DATES, columns=["A", "B"])
     weights.loc[DATES[1], "A"] = 1.0
-    result = run(weights, PRICES)
+    result = run(weights, PRICES, ZERO)
     assert result.returns.loc[DATES[1]] == 0.0
     assert result.returns.loc[DATES[2]] == pytest.approx(101 / 103 - 1)
     assert result.returns.loc[DATES[3]] == pytest.approx(0.0)
@@ -73,9 +74,9 @@ def test_signal_fills_at_next_open_not_same_close() -> None:
 
 def test_cash_earns_zero() -> None:
     flat = pd.DataFrame(0.0, index=DATES, columns=["A", "B"])
-    assert (run(flat, PRICES).returns == 0.0).all()
+    assert (run(flat, PRICES, ZERO).returns == 0.0).all()
     half = flat.assign(A=0.5)
-    assert run(half, PRICES).returns.loc[DATES[1]] == pytest.approx(0.5 * (104 / 102 - 1))
+    assert run(half, PRICES, ZERO).returns.loc[DATES[1]] == pytest.approx(0.5 * (104 / 102 - 1))
 
 
 def test_matches_share_simulation_with_shorts_and_listing() -> None:
@@ -91,30 +92,33 @@ def test_matches_share_simulation_with_shorts_and_listing() -> None:
     raw[:50, 3] = 0.0
     weights = pd.DataFrame(raw / np.abs(raw).sum(axis=1, keepdims=True), index=dates)
     prices = Prices(open=open_, close=close)
-    result = run(weights, prices)
+    result = run(weights, prices, ZERO)
     assert result.returns.to_numpy() == pytest.approx(
         simulate(weights, prices), rel=1e-9, abs=1e-12
+    )
+    assert run(weights, prices).returns.to_numpy() == pytest.approx(
+        simulate(weights, prices, Costs().rate), rel=1e-9, abs=1e-12
     )
 
 
 def test_warmup_rows_are_flat_and_start_is_reported() -> None:
     weights = WEIGHTS.copy()
     weights.iloc[:2] = np.nan
-    result = run(weights, PRICES)
+    result = run(weights, PRICES, ZERO)
     assert result.start == DATES[3]
     assert (result.returns.loc[: DATES[2]] == 0.0).all()
 
 
 def test_rejects_invalid_inputs() -> None:
     with pytest.raises(ValueError, match="gross exposure"):
-        run(WEIGHTS * 2, PRICES)
+        run(WEIGHTS * 2, PRICES, ZERO)
     with pytest.raises(ValueError, match="no prices"):
-        run(WEIGHTS.rename(columns={"B": "C"}), PRICES)
+        run(WEIGHTS.rename(columns={"B": "C"}), PRICES, ZERO)
     open_ = PRICES.open.copy()
     open_.loc[DATES[2], "A"] = np.nan
     gap = Prices(open=open_, close=PRICES.close)
     with pytest.raises(ValueError, match="without overnight prices"):
-        run(WEIGHTS, gap)
+        run(WEIGHTS, gap, ZERO)
 
 
 def test_ruin_stops_the_backtest() -> None:
@@ -123,5 +127,30 @@ def test_ruin_stops_the_backtest() -> None:
         close=[[100, 50], [100, 50], [250, 50], [300, 50]],
     )
     short = pd.DataFrame([[-1.0, 0.0]] * 4, index=DATES, columns=["A", "B"])
-    returns = run(short, prices).returns.to_numpy()
+    returns = run(short, prices, ZERO).returns.to_numpy()
     assert list(returns) == [0.0, -1.0, 0.0]
+
+
+def test_costs_match_share_simulation() -> None:
+    costs = Costs(fee_bps=1.0, slippage_bps=5.0)
+    result = run(WEIGHTS, PRICES, costs)
+    assert result.returns.to_numpy() == pytest.approx(
+        simulate(WEIGHTS, PRICES, costs.rate), rel=1e-12
+    )
+    # Day 1 builds the position from cash: turnover is the gross exposure.
+    assert result.turnover.iloc[0] == pytest.approx(1.0)
+    assert result.costs.iloc[0] == pytest.approx(6e-4)
+    assert (1 + result.returns.iloc[0]) == pytest.approx(
+        (1 - 6e-4) * (1 + result.gross_returns.iloc[0])
+    )
+
+
+def test_single_asset_has_no_drift_trading() -> None:
+    weights = pd.DataFrame({"A": [1.0, 1.0, 1.0, 1.0], "B": 0.0}, index=DATES)
+    result = run(weights, PRICES)
+    assert list(result.turnover) == pytest.approx([1.0, 0.0, 0.0])
+
+
+def test_default_costs_are_on() -> None:
+    assert Costs().rate > 0
+    assert (run(WEIGHTS, PRICES).returns < run(WEIGHTS, PRICES, ZERO).returns).all()
