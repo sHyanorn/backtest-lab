@@ -56,6 +56,7 @@
 - GitHub evicts caches unused for 7 days, so a weekly run may refetch everything. A full fetch is one history request per ticker for 15 tickers, 1 s apart, plus 5 FRED downloads; it takes about 25 s. Each request retries 4 times with 2 to 16 s backoff before the run fails
 - The incremental update refetches a ticker in full only when the last 10 cached rows change; a correction to an older dividend is picked up by the next full fetch (a cache miss, or `--full`)
 - GitHub disables scheduled workflows after 60 days without repository activity; it has to be re-enabled from the Actions tab
+- See also D032: the workflow never regenerates the registered demo results
 
 ## D013 Fills at the next open
 - Date: 2026-11-08
@@ -170,6 +171,7 @@
 - Equity and drawdown are weekly: equity at each week's last date and the deepest daily drawdown within the week, so the maximum drawdown survives downsampling. Values are rounded to 6 decimals
 - Sensitivity needs an ordered axis with more than one value. A grid without one has no neighbourhood; its sensitivity check is yellow ("cannot be assessed"), the one case D022 does not cover. All pre-registered grids have such an axis (D021)
 - Rationale: one source of truth for the format across the Python code, the API and the dashboard
+- See also D033: the dashboard's types are generated from this schema
 
 ## D029 Demo conclusions follow the pre-registered results
 - Date: 2026-11-08
@@ -177,33 +179,33 @@
 - Analyses designed after seeing those results (the long-only half of each grid, the CSCV winners, the comparison with buy and hold in its deepest drawdowns) live in `backtest_lab.validation.posthoc` and `results/posthoc/`, and every place that shows them labels them post hoc (docs/DEMO.md)
 - Rationale: choosing which subset or statistic to show after seeing the results is itself a selection, the effect this project measures. Labelling keeps confirmatory and exploratory evidence apart
 
-## D040 Dashboard charts drawn as SVG with d3-scale and d3-shape
+## D030 Dashboard charts drawn as SVG with d3-scale and d3-shape
 - Date: 2026-11-08
 - The dashboard draws four chart forms: equity on a log scale with drawdown below it, columns (sensitivity over one axis, walk-forward windows, purged CV folds, the PBO logit histogram), a heat grid over two axes, and range bars. Each is a small React component on d3-scale and d3-shape; colours are CSS variables, so both themes come from one stylesheet
 - Measured as the gzipped size of a minimal line chart bundled with esbuild: ECharts 6 with tree-shaken imports 176 kB, Recharts 3 71 kB, visx xychart 45 kB, uPlot 23 kB (canvas, no heat map), d3-scale with d3-shape 16 kB
 - Every chart is keyboard focusable with a spoken readout and has a data table next to it. Verdicts pair a status colour with an icon and a word; the heat grid uses one blue ramp, or blue and red around zero when Sharpe ratios change sign
 
-## D041 Static and local modes of the dashboard
+## D031 Static and local modes of the dashboard
 - Date: 2026-11-08
 - The production build, deployed to GitHub Pages, reads only the committed reports: Vite emits `results/demo/*.json` and `results/posthoc/long_only.json` as hashed assets and the page fetches them, so nothing is copied or regenerated
 - The dev server (`npm run dev`) proxies `/api` to the local FastAPI service on 127.0.0.1:8000 (D016). When it answers, a Custom sweep view submits a sweep, polls its progress and renders the report with the same components. The view is loaded only when `import.meta.env.DEV` is true, so the static build contains no API code
 - Costs default to D014 in the form. A report with both costs at zero is labelled a zero-cost reference in its header and verdict panel
 - Rationale: the public demo stays free and needs no server (D002); custom searches remain possible for anyone who runs the project locally
 
-## D042 The demo results stay frozen; the weekly workflow only updates data
+## D032 The demo results stay frozen; the weekly workflow only updates data
 - Date: 2026-11-08
 - `results/demo` holds the reports produced once with the configuration of D021. They are not regenerated, by the weekly workflow or by hand; CI checks them against `results/demo/SHA256SUMS`. The weekly `data` workflow (D012) fetches and checks data only
 - Rationale: rerunning on newer data changes the sample, and so the numbers, after the conclusions were drawn from them. A pre-registered result has to stay the one that was registered; an analysis of newer data would be a new, separately labelled result
 - Not done: a weekly rerun over the registered dates to detect revisions in Yahoo's history. It would need the raw data that is not committed (D003), and a difference would only say that the data changed, which the quality checks already watch
 
-## D043 Dashboard types generated from the report schema
+## D033 Dashboard types generated from the report schema
 - Date: 2026-11-08
 - `web/src/report.gen.ts` is generated from `docs/report.schema.json` with json-schema-to-typescript (`npm run gen:types`), and CI fails if the committed file differs. The loader accepts only `schema_version` 1.0 and checks the top-level sections before rendering
 - Post hoc results have no schema (D029), so their type is written by hand and the loader requires `post_hoc: true`
 - Rationale: one source of truth for the report format across the Python models, the API and the dashboard (D028)
 
-## D044 Dashboard deployed to GitHub Pages by Actions
+## D034 Dashboard deployed to GitHub Pages by Actions
 - Date: 2026-11-08
-- The `pages` workflow builds `web/` with the base path `/<repository>/` and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages` after the `ci` workflow succeeds on a push to `main`, and on demand. A commit that fails the tests, the browser checks or the frozen-results check (D042) is not deployed. The repository's Pages source must be set to GitHub Actions
+- The `pages` workflow builds `web/` with the base path `/<repository>/` and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages` after the `ci` workflow succeeds on a push to `main`, and on demand. A commit that fails the tests, the browser checks or the frozen-results check (D032) is not deployed. The repository's Pages source must be set to GitHub Actions
 - Views are addressed by the URL hash (`#/momentum`), so a static host needs no rewrite rules for links into the dashboard
 - Rationale: GitHub Pages is free and serves the static build directly (D002); deploying from Actions keeps build output out of the repository

@@ -50,7 +50,7 @@ cd web && npm ci && npm run dev                      # http://localhost:5173
 
 With the API running, the dashboard adds a Custom sweep view that runs a parameter search and renders its report. The API has no authentication, so keep it on 127.0.0.1 ([D016](docs/DECISIONS.md#d016-api-scope-and-data)). Without it, the dashboard shows the committed results, as the public site does.
 
-The registered results in `results/demo/` are not regenerated ([D042](docs/DECISIONS.md#d042-the-demo-results-stay-frozen-the-weekly-workflow-only-updates-data)). To rerun the searches into another directory:
+The registered results in `results/demo/` are not regenerated ([D032](docs/DECISIONS.md#d032-the-demo-results-stay-frozen-the-weekly-workflow-only-updates-data)). To rerun the searches into another directory:
 
 ```bash
 uv run python -m backtest_lab.validation.demo --out /tmp/rerun

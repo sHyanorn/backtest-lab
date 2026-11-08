@@ -32,7 +32,7 @@ Three searches on SPY from 1993 to 2026, fixed in advance (D021): a moving-avera
   - Macro data: FRED (interest rates, inflation, unemployment) via the keyless fredgraph CSV download
   - Stored as Parquet, queried with DuckDB
   - Data quality checks: missing values, abnormal jumps, price adjustment consistency
-  - GitHub Actions updates the data weekly and runs the quality checks; the pre-registered demo results are not regenerated (D042)
+  - GitHub Actions updates the data weekly and runs the quality checks; the pre-registered demo results are not regenerated (D032)
 - Backtest engine
   - Daily frequency, multi-asset, long and short
   - Transaction costs (proportional to traded value) and slippage

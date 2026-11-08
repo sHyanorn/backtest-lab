@@ -1,6 +1,6 @@
 name: pages
 # Deploys only what passed CI: the tests, the browser checks and the check that the
-# registered results are unchanged (D042).
+# registered results are unchanged (D032).
 on:
   workflow_run:
     workflows: [ci]
@@ -37,7 +37,7 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
-      # The static build reads only the committed results (D002, D041).
+      # The static build reads only the committed results (D002, D031).
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
