@@ -16,6 +16,9 @@ jobs:
       # The pre-registered demo results are frozen (D032).
       - run: sha256sum --check --strict SHA256SUMS
         working-directory: results/demo
+      # The post hoc results the docs quote are fixed as well.
+      - run: sha256sum --check --strict SHA256SUMS
+        working-directory: results/posthoc
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "0.13.7"

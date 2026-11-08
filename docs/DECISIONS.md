@@ -194,7 +194,7 @@
 
 ## D032 The demo results stay frozen; the weekly workflow only updates data
 - Date: 2026-11-08
-- `results/demo` holds the reports produced once with the configuration of D021. They are not regenerated, by the weekly workflow or by hand; CI checks them against `results/demo/SHA256SUMS`. The weekly `data` workflow (D012) fetches and checks data only
+- `results/demo` holds the reports produced once with the configuration of D021. They are not regenerated, by the weekly workflow or by hand; CI checks them against `results/demo/SHA256SUMS`, and the post hoc file the documents quote against `results/posthoc/SHA256SUMS`. The weekly `data` workflow (D012) fetches and checks data only
 - Rationale: rerunning on newer data changes the sample, and so the numbers, after the conclusions were drawn from them. A pre-registered result has to stay the one that was registered; an analysis of newer data would be a new, separately labelled result
 - Not done: a weekly rerun over the registered dates to detect revisions in Yahoo's history. It would need the raw data that is not committed (D003), and a difference would only say that the data changed
 
