@@ -1,6 +1,8 @@
 import itertools
+from dataclasses import replace
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import pytest
 
@@ -8,6 +10,7 @@ from backtest_lab.engine.backtest import Prices
 from backtest_lab.engine.metrics import ANNUALIZATION
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation.search import Grid, run_grid
+from backtest_lab.validation.selection import best_trial
 from backtest_lab.validation.walk_forward import holdout, walk_forward, window_bounds
 from tests.factories import synthetic_market
 
@@ -15,6 +18,17 @@ from tests.factories import synthetic_market
 def _matrix(t: int, n: int, seed: int) -> pd.DataFrame:
     x = 0.01 * np.random.default_rng(seed).standard_normal((t, n))
     return pd.DataFrame(x, index=pd.bdate_range("2000-01-03", periods=t))
+
+
+def _tied_except(row: int, trial: int, t: int, n: int) -> npt.NDArray[np.float64]:
+    """Identical columns, so selection ties go to trial 0, except a small gain for `trial`
+    on `row`. The row's common return is 0, below the positive mean, so the gain raises
+    that trial's Sharpe on any rows that include `row`."""
+    base = 0.0005 + 0.01 * np.random.default_rng(0).standard_normal(t)
+    base[row] = 0.0
+    x = np.tile(base[:, None], (1, n))
+    x[row, trial] = 0.001
+    return x
 
 
 # Holdout (Section 2.1)
@@ -25,11 +39,10 @@ def test_holdout_boundaries() -> None:
     assert holdout(x).split == x.index[7]
 
 
-def test_holdout_ignores_oos_rows() -> None:
-    x = _matrix(500, 20, seed=1)
-    changed = x.copy()
-    changed.iloc[350:] = _matrix(150, 20, seed=2).to_numpy()
-    assert holdout(changed).trial == holdout(x).trial
+def test_holdout_selection_ignores_even_the_first_oos_row() -> None:
+    x = pd.DataFrame(_tied_except(row=350, trial=3, t=500, n=5))
+    assert holdout(x).trial == 0  # IS rows [0, 350) tie
+    assert best_trial(x.iloc[:351]) == 3  # one OOS row would change the choice
 
 
 def test_holdout_finds_a_planted_edge() -> None:
@@ -106,6 +119,19 @@ def test_walk_forward_has_no_look_ahead() -> None:
     assert [w.trial for w in changed.windows[: k + 1]] == [w.trial for w in base.windows[: k + 1]]
     pd.testing.assert_series_equal(changed.returns.loc[:last], base.returns.loc[:last])
     assert not changed.returns.loc[last:].iloc[1:].equals(base.returns.loc[last:].iloc[1:])
+
+
+def test_walk_forward_selection_ignores_its_own_oos_rows() -> None:
+    data = synthetic_market(n=900, tickers=("A", "B"), seed=6)
+    grid = Grid.of({"ticker": ["A", "B"], "fast": [5, 10], "slow": [20, 40]})
+    trials = run_grid("ma_crossover", grid, data, processes=1)
+    k = 2
+    first_oos = window_bounds(len(trials.returns), 200, 100, anchored=False)[k][1]
+    x = _tied_except(row=first_oos, trial=5, t=len(trials.returns), n=len(grid))
+    rigged = replace(trials, returns=pd.DataFrame(x, index=trials.returns.index))
+    picks = [w.trial for w in walk_forward(rigged, data, 200, 100).windows]
+    assert picks[: k + 1] == [0] * (k + 1)
+    assert picks[k + 1] == 5  # the next IS window contains the row
 
 
 def test_walk_forward_finds_a_planted_edge() -> None:
