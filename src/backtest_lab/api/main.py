@@ -32,6 +32,7 @@ from backtest_lab.api.schemas import (
     SweepStatus,
 )
 from backtest_lab.engine.backtest import Costs, run
+from backtest_lab.engine.metrics import ANNUALIZATION
 from backtest_lab.strategies import STRATEGIES
 from backtest_lab.validation import report_schema as rs
 from backtest_lab.validation.report import Settings, metrics_model, weekly_curve
@@ -192,9 +193,8 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
         if result.start is None:
             raise HTTPException(422, "the strategy has no valid signal in this date range")
         returns = result.returns.loc[result.start :]
-        weeks, curve = weekly_curve(
-            pd.DatetimeIndex(returns.index), returns.to_numpy(dtype=np.float64)
-        )
+        values = returns.to_numpy(dtype=np.float64)
+        weeks, curve = weekly_curve(pd.DatetimeIndex(returns.index), values)
         return BacktestResponse(
             strategy=body.strategy,
             params=params,
@@ -202,8 +202,8 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
             start=result.start.date(),
             end=returns.index[-1].date(),
             n_days=len(returns),
-            metrics=metrics_model(returns.to_numpy(dtype=np.float64)),
-            annual_turnover=float(result.turnover.loc[result.start :].mean() * 252),
+            metrics=metrics_model(values),
+            annual_turnover=float(result.turnover.loc[result.start :].mean() * ANNUALIZATION),
             series=Curve(
                 dates=[date.fromisoformat(d) for d in weeks],
                 equity=curve.equity,

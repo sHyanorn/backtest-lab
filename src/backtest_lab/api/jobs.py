@@ -10,7 +10,7 @@ import threading
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 from backtest_lab.engine.backtest import Costs
 from backtest_lab.strategies import MarketData
@@ -19,7 +19,6 @@ from backtest_lab.validation.search import Grid, GridCancelled, run_grid
 
 log = logging.getLogger(__name__)
 
-type Status = Literal["queued", "running", "done", "failed"]
 REPORT_FILE = "report.json"
 TRIALS_DIR = "trials"
 STOPPED = "the server stopped before this sweep finished"
