@@ -48,6 +48,13 @@ def test_reversed_extreme() -> None:
     assert result.prob_oos_loss == 0.0
 
 
+def test_a_winner_at_the_oos_median_counts_as_overfit() -> None:
+    # Odd N: each IS winner ranks 2 of 3 OOS, so lambda = 0, which counts (METHODS Section 4)
+    result = cscv(_two_blocks((0.01, 0.02, 0.03), (0.01, 0.03, 0.02)), blocks=2)
+    assert result.logits.tolist() == [0.0, 0.0]
+    assert result.pbo == 1.0
+
+
 def test_union_sharpe_matches_direct_computation() -> None:
     x = np.random.default_rng(0).normal(0.0005, 0.01, (103, 5))  # 103 = 6 x 17 + 1
     result = cscv(x, blocks=6)
