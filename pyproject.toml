@@ -8,15 +8,18 @@ license-files = ["LICENSE"]
 requires-python = ">=3.14"
 dependencies = [
     "duckdb==2.0.0",
+    "fastapi==0.162.2",
     "pandas==3.1.1",
     "pyarrow==26.0.1",
     "pydantic==2.14.3",
+    "uvicorn==0.54.0",
     "yfinance==1.8.0",
 ]
 
 [dependency-groups]
 dev = [
     "empyrical-reloaded==0.7.2",
+    "httpx2==2.16.0",
     "mypy==2.4.1",
     "pandas-stubs==3.1.0.261029",
     "pytest==9.2.0",

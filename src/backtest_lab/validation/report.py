@@ -116,7 +116,7 @@ def _num(x: float | None) -> float | None:
     return float(x) if x is not None and math.isfinite(x) else None
 
 
-def _metrics(returns: npt.NDArray[np.float64]) -> rs.Metrics:
+def metrics_model(returns: npt.NDArray[np.float64]) -> rs.Metrics:
     m = {k: _num(v) for k, v in summarize(returns).items()}
     return rs.Metrics(
         cagr=m["cagr"],
@@ -143,7 +143,7 @@ def buy_and_hold(ticker: str, data: MarketData, costs: Costs) -> pd.Series:
     return run(weights, data.prices, costs).returns
 
 
-def _weekly(
+def weekly_curve(
     dates: pd.DatetimeIndex, returns: npt.NDArray[np.float64]
 ) -> tuple[list[str], rs.Curve]:
     equity = np.cumprod(1 + returns)
@@ -199,10 +199,10 @@ def build_report(
         min_backtest_length=_min_backtest_check(n_eff, target, years),
         sensitivity=_sensitivity_check(trials, np.sqrt(ANNUALIZATION) * sr_all, settings),
     )
-    selected = _metrics(chosen)
-    bench_metrics = _metrics(bench)
-    week_dates, selected_curve = _weekly(dates, chosen)
-    _, bench_curve = _weekly(dates, bench)
+    selected = metrics_model(chosen)
+    bench_metrics = metrics_model(bench)
+    week_dates, selected_curve = weekly_curve(dates, chosen)
+    _, bench_curve = weekly_curve(dates, bench)
     name = f"{benchmark} buy and hold"
     return rs.Report(
         schema_version="1.0",

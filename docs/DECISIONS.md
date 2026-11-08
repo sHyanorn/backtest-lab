@@ -76,6 +76,13 @@
 - A day that loses 100% or more ends the backtest: its return is -1 and later returns are 0
 - Limitation: ignoring interest on cash understates the returns of strategies that are often flat when rates are high
 
+## D016 API scope and data
+- Date: 2026-11-08
+- The API is for local use. It has no authentication, so it is started with `--host 127.0.0.1` and must not be exposed to the internet; the public demo is the static dashboard (D002)
+- At startup it loads every ticker and macro series in the local cache (a few MB). Requests choose a date range, which slices the prices; macro series stay whole because strategies read them by publication date (D010). Without a cache, data endpoints return 503 and name the update command
+- Requests reject unknown fields. Parameters are checked against the strategy's dataclass fields before any work: a value must have the field's type (an integer is accepted for a float), the strategy's own range checks apply, and every string parameter must name a ticker or series in the cache. Failures return 422. Costs default to D014 and must be non-negative
+- Dependencies: fastapi and uvicorn at run time, httpx2 for the test client, which Starlette now requires in place of httpx
+
 ## D019 Categorical numeric grid axes
 - Date: 2026-11-08
 - A grid can list numeric axes as categorical, such as a random seed. Their values need not be ordered, and sensitivity compares a trial only with neighbours along ordered axes, so a categorical axis never supplies neighbours
