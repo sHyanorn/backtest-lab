@@ -82,7 +82,7 @@ def min_backtest_verdict(min_years: float | None, years: float) -> rs.Verdict:
 
 def sensitivity_verdict(best: float, retention: float | None, assessable: bool) -> rs.Verdict:
     if not assessable:
-        return "yellow"  # no ordered axis, so there are no neighbours to compare
+        return "yellow"  # no neighbours to compare
     if not best > 0 or retention is None or retention < SENSITIVITY_YELLOW:
         return "red"
     return "green" if retention >= SENSITIVITY_GREEN else "yellow"
@@ -445,13 +445,19 @@ def _sensitivity_check(
 ) -> rs.SensitivityCheck:
     grid = trials.grid
     result = sensitivity(annual_sharpe, grid, s.radius)
-    ordered = [name for name, o in zip(grid.names, grid.ordered, strict=True) if o]
-    axes = s.heatmap_axes if s.heatmap_axes is not None else tuple(ordered[:2])
+    # ordered axes with more than one value, the only ones along which neighbours exist
+    varied = [
+        name
+        for name, ordered, size in zip(grid.names, grid.ordered, grid.shape, strict=True)
+        if ordered and size > 1
+    ]
+    axes = s.heatmap_axes if s.heatmap_axes is not None else tuple(varied[:2])
     retention = _num(result.retention)
     assessable = bool(result.neighbours)
     if not assessable:
         summary = (
-            "The grid has no ordered parameter, so there are no neighbouring settings to compare."
+            "No ordered parameter takes more than one value, so there are no neighbouring "
+            "settings to compare."
         )
     elif result.best_sharpe <= 0:
         summary = "The best setting's Sharpe ratio is not positive."

@@ -41,7 +41,7 @@ Every check has `title`, `verdict` (`green`, `yellow` or `red`), `summary` and `
 | `deflated_sharpe` | Section 5 | Green from 0.95, yellow from 0.5, red below | none |
 | `track_record` | Section 6, PSR(0) and MinTRL at $\alpha$ = 0.05 | Green from 0.95, yellow from 0.5, red below | none |
 | `min_backtest_length` | Section 6, MinBTL with $\hat N$ | Green when the sample is at least MinBTL, else red | none |
-| `sensitivity` | Section 7, radius 1 | Retention green from 0.75, yellow from 0.5, red below or when the best Sharpe is not positive; yellow when the grid has no ordered axis | Heatmap |
+| `sensitivity` | Section 7, radius 1 | Retention green from 0.75, yellow from 0.5, red below or when the best Sharpe is not positive; yellow when no ordered axis has more than one value | Heatmap |
 
 Retention rule: green when the ratio is at least 0.5 and OOS performance is positive, yellow when the ratio is below 0.5 with positive OOS performance, red when OOS performance is not positive or the ratio is undefined.
 
@@ -49,7 +49,7 @@ Units worth noting: `deflated_sharpe.metrics.sharpe_variance` is the variance of
 
 ### Heatmap
 
-`sensitivity.details.heatmap` shows the annualized Sharpe over one or two ordered axes, by default the first two, with every other parameter fixed at its value in the selected trial. `sharpe[y][x]` and `trials[y][x]` index the values of `y` and `x`; a one-axis heatmap has `y: null` and a single row. `best` is the selected trial's cell and `neighbours` lists the cells of its neighbourhood that lie in the slice. It is `null` when the grid has no ordered axis.
+`sensitivity.details.heatmap` shows the annualized Sharpe over one or two ordered axes, by default the first two with more than one value, with every other parameter fixed at its value in the selected trial. `sharpe[y][x]` and `trials[y][x]` index the values of `y` and `x`; a one-axis heatmap has `y: null` and a single row. `best` is the selected trial's cell and `neighbours` lists the cells of its neighbourhood that lie in the slice. It is `null` when no ordered axis has more than one value.
 
 ## Series
 

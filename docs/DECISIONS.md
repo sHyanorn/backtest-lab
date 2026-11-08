@@ -139,7 +139,7 @@
 - The report is defined by pydantic 2.14.3 models, and `docs/report.schema.json` is generated from them; a test keeps the committed schema in step. The API will use the same models as response types, and the dashboard can generate its types from the schema
 - Undefined values are `null`; the models reject NaN and infinity, so a missing conversion fails loudly instead of producing invalid JSON. There is no timestamp, so the same inputs give the same bytes
 - Equity and drawdown are weekly: equity at each week's last date and the deepest daily drawdown within the week, so the maximum drawdown survives downsampling. Values are rounded to 6 decimals
-- Sensitivity needs an ordered axis. A grid whose axes are all categorical has no neighbourhood; its sensitivity check is yellow ("cannot be assessed"), the one case D022 does not cover. All pre-registered grids have ordered axes (D021)
+- Sensitivity needs an ordered axis with more than one value. A grid without one has no neighbourhood; its sensitivity check is yellow ("cannot be assessed"), the one case D022 does not cover. All pre-registered grids have such an axis (D021)
 - Rationale: one source of truth for the format across the Python code, the API and the dashboard
 
 ## D029 Demo conclusions follow the pre-registered results

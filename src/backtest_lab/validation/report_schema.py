@@ -223,7 +223,7 @@ class MinBacktestCheck(Check):
 
 class SensitivityMetrics(_Model):
     best_sharpe: float  # annualized
-    neighbour_mean: float | None  # null when the grid has no ordered axis
+    neighbour_mean: float | None  # null without neighbours
     neighbour_std: float | None
     retention: float | None
     n_neighbours: int
@@ -252,7 +252,7 @@ class Heatmap(_Model):
 
 
 class SensitivityDetails(_Model):
-    heatmap: Heatmap | None  # null when the grid has no ordered axis
+    heatmap: Heatmap | None  # null when no ordered axis has more than one value
 
 
 class SensitivityCheck(Check):

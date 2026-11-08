@@ -159,6 +159,17 @@ def test_random_signals_do_not_pass() -> None:
     assert report.overall.verdict != "green"
 
 
+def test_sensitivity_without_neighbours_cannot_be_assessed() -> None:
+    data = synthetic_market(n=1600, seed=4)
+    grid = Grid.of({"fast": [10], "slow": [40], "allow_short": [False, True]}, {"ticker": "SPY"})
+    trials = run_grid("ma_crossover", grid, data, processes=1)
+    check = build_report(trials, data, "SPY", SETTINGS).checks.sensitivity
+    assert check.verdict == "yellow"
+    assert check.metrics.n_neighbours == 0 and check.metrics.retention is None
+    assert check.details.heatmap is None
+    assert check.summary.startswith("No ordered parameter takes more than one value")
+
+
 def test_report_needs_two_trials() -> None:
     data = synthetic_market(n=300)
     trials = run_grid("ma_crossover", Grid.of({"fast": [5], "slow": [20]}), data, processes=1)
