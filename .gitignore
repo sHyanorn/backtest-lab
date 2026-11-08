@@ -18,3 +18,5 @@ data/cache/
 data/jobs/
 *.duckdb
 data/reports/
+web/test-results/
+web/playwright-report/
