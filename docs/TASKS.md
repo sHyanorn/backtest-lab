@@ -24,7 +24,7 @@
 - [x] Parameter grid search (multiprocess), recording all trials
 - [x] In-sample/out-of-sample split and walk-forward analysis
 - [x] Purged and embargoed K-fold
-- [ ] Combinatorially symmetric cross-validation (CSCV) and PBO
+- [x] Combinatorially symmetric cross-validation (CSCV) and PBO
 - [ ] Deflated Sharpe ratio, probabilistic Sharpe ratio, minimum backtest length
 - [ ] Parameter sensitivity analysis
 - [ ] Control test with a random-signal strategy

@@ -223,7 +223,7 @@ The report also includes two by-products from Section 3.2 of the paper: the OLS 
 - Constructed extremes, $N = 3$, $S = 2$, two blocks of two rows, column $n$ in a block equal to $(a_n, a_n + 0.02)$ so all columns share one standard deviation:
   - Persistent: $a = (0.01, 0.02, 0.03)$ in both blocks. Both combinations pick column 3, which ranks 3 OOS: $\lambda = \ln 3$, PBO $= 0$.
   - Reversed: $a = (0.01, 0.02, 0.03)$ in block 1 and $(0.03, 0.02, 0.01)$ in block 2. Each IS winner ranks 1 OOS: $\lambda = -\ln 3$, PBO $= 1$.
-- Random-signal control (SPEC Section 8): $X = 0.01 \cdot$ `default_rng(seed).standard_normal((1000, 100))`, $S = 16$. With $N = 100$ (even) the expected PBO is 0.5. A single seed is noisy (PBO ranged from about 0.23 to 0.87 over seeds 0–19), so the test averages seeds 0–99 and requires the mean within $[0.42, 0.58]$. Observed means: 0.47 for seeds 0–99 and 0.51 for seeds 100–199, per-seed standard deviation 0.15–0.2.
+- Random-signal control (SPEC Section 8): $X = 0.01 \cdot$ `default_rng(seed).standard_normal((1000, 100))`, $S = 16$. With $N = 100$ (even) the expected PBO is 0.5. A single seed is noisy (PBO ranged from about 0.23 to 0.87 over seeds 0–19), so the test averages seeds 0–99 and requires the mean within $[0.42, 0.58]$. Observed means: 0.47 for seeds 0–99 and 0.50 for seeds 100–199, per-seed standard deviation 0.15–0.2.
 - Planted edge: the same $X$ plus `numpy.linspace(0, 0.002, 100)` added to every row (column $n$ gets a daily drift rising linearly from 0 to 0.002). For seeds 0–9 PBO was between 0.016 and 0.070; the test requires PBO $< 0.1$ for each of these seeds.
 
 ---
