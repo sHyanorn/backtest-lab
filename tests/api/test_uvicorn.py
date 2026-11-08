@@ -11,9 +11,8 @@ from pathlib import Path
 import httpx2
 import pytest
 
-from backtest_lab.validation.search import Grid
 from tests.api.conftest import write_cache
-from tests.api.test_sweeps import SWEEP, direct_report
+from tests.api.test_sweeps import GRID, SWEEP, direct_report
 
 SCRIPTS = Path(sys.executable).parent
 UVICORN = SCRIPTS / ("uvicorn.exe" if sys.platform == "win32" else "uvicorn")
@@ -66,5 +65,4 @@ def test_sweep_under_uvicorn_with_worker_processes(tmp_path: Path, launcher: lis
     finally:
         server.terminate()
         output, _ = server.communicate(timeout=30)
-    grid = Grid.of(SWEEP["axes"], SWEEP["fixed"])  # type: ignore[arg-type]
-    assert report == direct_report(tmp_path, grid, "ma_crossover", "SPY"), output
+    assert report == direct_report(tmp_path, GRID, "ma_crossover", "SPY"), output

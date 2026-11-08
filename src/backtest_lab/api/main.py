@@ -89,20 +89,25 @@ def _prepare(body: SweepRequest, market: Market) -> SweepJob:
             name: [P.check_value(specs[name], v) for v in values]
             for name, values in body.axes.items()
         }
-        grid = Grid.of(axes, P.check_params(body.strategy, body.fixed), body.categorical)
+        # Every parameter that is not an axis is fixed, defaults included, so the stored
+        # trials and the report state the full configuration.
+        given = P.check_params(body.strategy, body.fixed)
+        fixed = {n: given.get(n, s.default) for n, s in specs.items() if n not in axes}
+        grid = Grid.of(axes, fixed, body.categorical)
         if len(grid) > MAX_TRIALS:
             raise P.ParamError(f"the grid has {len(grid)} trials; the limit is {MAX_TRIALS}")
         params = grid.params()
         warmup = max(P.build(body.strategy, p).warmup for p in params)
         _check_symbols(market, body.strategy, params)
         benchmark = _benchmark(body, market)
-        data = market.between(body.start, body.end)
+        traded = sorted(P.symbols(body.strategy, params, "ticker"))
+        data = market.between(body.start, body.end, sorted({*traded, benchmark}))
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
-    # Upper bound on the aligned days: dates where every ticker used has a price,
-    # less the first date and the longest warm-up (D017).
-    used = sorted(P.symbols(body.strategy, params, "ticker") | {benchmark})
-    estimate = int(data.prices.close[used].notna().all(axis=1).sum()) - 1 - warmup
+    # Upper bound on the aligned days: dates where every traded ticker has a price,
+    # less the first date and the longest warm-up (D017). The benchmark does not limit
+    # the sample: buy and hold is flat before it lists.
+    estimate = int(data.prices.close[traded].notna().all(axis=1).sum()) - 1 - warmup
     needed = Settings().min_days
     if estimate < needed:
         raise HTTPException(
@@ -171,10 +176,12 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
     def backtest(body: BacktestRequest, request: Request) -> BacktestResponse:
         market = _market(request)
         try:
-            params = P.check_params(body.strategy, body.params)
+            given = P.check_params(body.strategy, body.params)
+            params = {s.name: given.get(s.name, s.default) for s in P.specs(body.strategy)}
             strategy = P.build(body.strategy, params)
             _check_symbols(market, body.strategy, [params])
-            data = market.between(body.start, body.end)
+            tickers = sorted(P.symbols(body.strategy, [params], "ticker"))
+            data = market.between(body.start, body.end, tickers)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
         costs = Costs(body.costs.fee_bps, body.costs.slippage_bps)

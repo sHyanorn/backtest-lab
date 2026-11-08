@@ -23,6 +23,9 @@ SWEEP = {
     "fixed": {"ticker": "SPY"},
 }
 
+# The grid the API builds from SWEEP: every other parameter fixed at its default.
+GRID = Grid.of(SWEEP["axes"], {"ticker": "SPY", "allow_short": False})  # type: ignore[arg-type]
+
 
 def wait(client: TestClient, job_id: str, timeout: float = 120.0) -> dict[str, Any]:
     deadline = time.monotonic() + timeout
@@ -37,7 +40,7 @@ def wait(client: TestClient, job_id: str, timeout: float = 120.0) -> dict[str, A
 def direct_report(data_dir: Path, grid: Grid, strategy: str, benchmark: str) -> bytes:
     """The report computed without the API, as the demo runner does."""
     con = connect(data_dir / "raw")
-    tickers = ["IEF", "SPY"]
+    tickers = [benchmark]
     raw = {f: price_panel(con, tickers, f) for f in ("open", "close", "adj_close")}
     data = MarketData(
         prices=Prices.from_raw(raw["open"], raw["close"], raw["adj_close"]),
@@ -57,12 +60,34 @@ def test_report_is_byte_identical_to_the_direct_pipeline(data_dir: Path, process
         assert status["status"] == "done", status
         assert status["done"] == status["n_trials"] == 4
         report = client.get(f"/api/sweeps/{status['id']}/report")
-    grid = Grid.of(SWEEP["axes"], SWEEP["fixed"])  # type: ignore[arg-type]
-    assert report.content == direct_report(data_dir, grid, "ma_crossover", "SPY")
+    assert report.content == direct_report(data_dir, GRID, "ma_crossover", "SPY")
     body = report.json()
     assert status["selected_trial"] == body["selected"]["trial"]
     assert status["selected_params"] == body["selected"]["params"]
     assert status["verdict"] == body["overall"]["verdict"]
+
+
+def test_report_states_default_parameters(client: TestClient) -> None:
+    sweep = {"strategy": "rate_rotation", "axes": {"threshold": [0.0, 0.5]}}
+    status = wait(client, client.post("/api/sweeps", json=sweep).json()["id"])
+    assert status["status"] == "done", status
+    report = client.get(f"/api/sweeps/{status['id']}/report").json()
+    assert report["strategy"]["fixed"] == {
+        "risk_on": "SPY",
+        "risk_off": "IEF",
+        "long_rate": "DGS10",
+        "short_rate": "DGS3MO",
+        "smoothing": 1,
+    }
+    assert report["benchmark"]["name"] == "SPY buy and hold"
+
+
+def test_benchmark_does_not_limit_the_length_check(client: TestClient) -> None:
+    # IEF trades on the same dates here; a benchmark with a short history would be flat
+    # before it lists, not a reason to reject the sweep.
+    r = client.post("/api/sweeps", json=SWEEP | {"benchmark": "IEF"})
+    assert r.status_code == 202, r.text
+    assert wait(client, r.json()["id"])["status"] == "done"
 
 
 def test_categorical_axis_reaches_the_report(client: TestClient) -> None:

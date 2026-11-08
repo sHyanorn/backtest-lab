@@ -46,6 +46,7 @@ def test_backtest_matches_the_engine(client: TestClient, data_dir: Path) -> None
     assert body["n_days"] == len(net)
     assert body["metrics"]["sharpe"] == pytest.approx(sharpe(net), abs=1e-12)
     assert body["costs"] == {"fee_bps": 1.0, "slippage_bps": 5.0}
+    assert body["params"] == params | {"allow_short": False}  # defaults are stated
     assert len(body["series"]["dates"]) == len(body["series"]["equity"])
 
 
