@@ -36,11 +36,11 @@
 - [x] API tests
 
 ## M5 Dashboard
-- [ ] Vite + React + TypeScript setup
-- [ ] Strategy selection and parameter settings
-- [ ] Equity and drawdown charts, heatmap, credibility report cards
-- [ ] Static mode: read precomputed JSON
-- [ ] Deploy to GitHub Pages
+- [x] Vite + React + TypeScript setup
+- [x] Strategy selection and parameter settings
+- [x] Equity and drawdown charts, heatmap, credibility report cards
+- [x] Static mode: read precomputed JSON
+- [x] Deploy to GitHub Pages
 
 ## M6 Presentation
 - [ ] Demo notebook tells the core story
