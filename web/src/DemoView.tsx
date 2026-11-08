@@ -1,8 +1,15 @@
 import { EquityChart, Legend, type Line } from './charts/EquityChart.tsx'
-import { DEMOS, loadDemo, type DemoKey, type Report } from './data.ts'
+import {
+  DEMOS,
+  loadDemo,
+  loadPostHoc,
+  type DemoKey,
+  type Report,
+} from './data.ts'
 import { settingText } from './format.ts'
 import { CheckCards } from './report/CheckCards.tsx'
 import { Overview } from './report/Overview.tsx'
+import { PostHoc } from './report/PostHoc.tsx'
 import { Sensitivity } from './report/Sensitivity.tsx'
 import { useAsync } from './useAsync.ts'
 
@@ -16,14 +23,22 @@ export function DemoView({ demo }: { demo: DemoKey }) {
     )
   }
   if (!report.value) return <div className="view" aria-busy="true" />
+  // While the next search loads, the previous one stays on screen, dimmed.
+  const shown = report.value
+  const meta = DEMOS.find((d) => d.key === shown.strategy.name)
+  const ticker = String(shown.strategy.fixed.ticker ?? '')
   return (
     <div className="view" aria-busy={report.status === 'loading'}>
-      <ReportView
-        report={report.value}
-        title={`${DEMOS.find((d) => d.key === demo)?.title} on ${report.value.strategy.fixed.ticker}`}
-      />
+      <ReportView report={shown} title={`${meta?.title} on ${ticker}`} />
+      {meta && <PostHocFor demo={meta.key} benchmark={ticker} />}
     </div>
   )
+}
+
+function PostHocFor({ demo, benchmark }: { demo: DemoKey; benchmark: string }) {
+  const postHoc = useAsync('posthoc', loadPostHoc)
+  const search = postHoc.value?.searches[demo]
+  return search ? <PostHoc search={search} benchmark={benchmark} /> : null
 }
 
 export function ReportView({

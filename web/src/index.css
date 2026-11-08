@@ -519,13 +519,19 @@ th {
   font-weight: 400;
   line-height: 1.45;
   text-align: left;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-2px);
-  transition:
-    opacity 0.15s var(--ease),
-    transform 0.15s var(--ease),
-    visibility 0.15s;
+  display: none;
+}
+
+.info-tip[data-open] {
+  display: block;
+  animation: fade 0.15s var(--ease);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
 }
 
 .info.start .info-tip {
@@ -534,13 +540,6 @@ th {
 
 .info.end .info-tip {
   right: -8px;
-}
-
-.info:hover .info-tip,
-.info:focus-within .info-tip {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
 }
 
 /* Overview */
@@ -1079,4 +1078,99 @@ th {
   margin: 2px 0 0;
   font-weight: 550;
   font-variant-numeric: tabular-nums;
+}
+
+/* Post hoc */
+
+.posthoc {
+  margin-top: 24px;
+  padding: 4px 20px 20px;
+  border: 1.5px dashed var(--axis);
+  border-radius: calc(var(--radius) + 6px);
+}
+
+.posthoc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.posthoc-head .section-title {
+  margin-right: 2px;
+}
+
+.posthoc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.posthoc .panel {
+  box-shadow: none;
+}
+
+.posthoc .panel-title {
+  margin-bottom: 12px;
+}
+
+.posthoc .note {
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.range.accent {
+  fill: var(--series-1);
+}
+
+.range.ref {
+  fill: var(--series-ref);
+}
+
+.range-label {
+  fill: var(--ink);
+  font-size: 13px;
+}
+
+.range-values {
+  fill: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pair {
+  display: flex;
+  gap: 32px;
+  margin: 0;
+}
+
+.pair dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.pair dd {
+  margin: 2px 0 0;
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 960px) {
+  .posthoc-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .compare th,
+  .compare td {
+    padding: 8px 4px;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 640px) {
+  .posthoc {
+    padding: 4px 12px 12px;
+  }
 }

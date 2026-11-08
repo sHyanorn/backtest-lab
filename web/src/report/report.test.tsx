@@ -2,11 +2,12 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
-import { asReport, type Report } from '../data.ts'
+import { asPostHoc, asReport, type Report } from '../data.ts'
 import { colourScale } from '../charts/colour.ts'
 import { num, pct, signed, trialParams } from '../format.ts'
 import { CheckCards } from './CheckCards.tsx'
 import { Overview } from './Overview.tsx'
+import { PostHoc } from './PostHoc.tsx'
 
 const load = (key: string): Report =>
   asReport(
@@ -136,5 +137,30 @@ describe('grid helpers', () => {
     expect(div.diverging).toBe(true)
     expect(div.fill(0)).toBe('var(--div-4)')
     expect(div.fill(-0.6)).toBe('var(--div-0)')
+  })
+})
+
+describe('post hoc', () => {
+  it('is labelled as not pre-registered, with the reason', () => {
+    const postHoc = asPostHoc(
+      JSON.parse(
+        readFileSync(
+          resolve(process.cwd(), '../results/posthoc/long_only.json'),
+          'utf8',
+        ),
+      ),
+    )
+    render(<PostHoc search={postHoc.searches.ma_crossover!} benchmark="SPY" />)
+    const section = screen.getByRole('region', { name: 'Post hoc' })
+    expect(within(section).getByText('Not pre-registered')).toBeTruthy()
+    expect(
+      within(section).getByRole('button', {
+        name: 'Why this analysis is post hoc',
+      }),
+    ).toBeTruthy()
+    expect(within(section).getByRole('tooltip').textContent).toMatch(
+      /chosen after seeing the pre-registered results/,
+    )
+    expect(within(section).getByText('0.42')).toBeTruthy()
   })
 })
