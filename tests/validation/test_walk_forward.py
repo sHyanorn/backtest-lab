@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from backtest_lab.engine.backtest import Prices
-from backtest_lab.engine.metrics import ANNUALIZATION
+from backtest_lab.engine.metrics import ANNUALIZATION, sharpe
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation.search import Grid, run_grid
 from backtest_lab.validation.selection import best_trial
@@ -49,6 +49,14 @@ def test_holdout_selection_ignores_even_the_first_oos_row() -> None:
     x = pd.DataFrame(_tied_except(row=350, trial=3, t=500, n=5))
     assert holdout(x).trial == 0  # IS rows [0, 350) tie
     assert best_trial(x.iloc[:351]) == 3  # one OOS row would change the choice
+
+
+def test_holdout_sharpe_ratios_use_only_their_own_rows() -> None:
+    x = _matrix(100, 3, seed=1)
+    result = holdout(x)
+    assert result.split == x.index[70]
+    assert result.is_sharpe == sharpe(x.iloc[:70, result.trial])
+    assert result.oos_sharpe == sharpe(x.iloc[70:, result.trial])
 
 
 def test_holdout_finds_a_planted_edge() -> None:
@@ -138,6 +146,24 @@ def test_walk_forward_selection_ignores_its_own_oos_rows() -> None:
     picks = [w.trial for w in walk_forward(rigged, data, 200, 100).windows]
     assert picks[: k + 1] == [0] * (k + 1)
     assert picks[k + 1] == 5  # the next IS window contains the row
+
+
+def test_stitched_returns_follow_each_windows_pick() -> None:
+    # Away from the entry and from switches between picks, the stitched series holds
+    # the selected trial's positions, so each OOS day earns that trial's own return.
+    data = synthetic_market(n=900, tickers=("A", "B"), seed=6)
+    grid = Grid.of({"ticker": ["A", "B"], "fast": [5, 10], "slow": [20, 40]})
+    trials = run_grid("ma_crossover", grid, data, processes=1)
+    result = walk_forward(trials, data, is_len=200, oos_len=100)
+    picks = [w.trial for w in result.windows]
+    assert len(set(picks)) > 1
+    pairs = itertools.pairwise(result.windows)
+    entries = [result.windows[0].oos_start] + [b.oos_start for a, b in pairs if a.trial != b.trial]
+    for w in result.windows:
+        days = result.returns.loc[w.oos_start : w.oos_end].index.difference(entries)
+        np.testing.assert_allclose(
+            result.returns.loc[days], trials.returns[w.trial].loc[days], rtol=0, atol=1e-15
+        )
 
 
 def test_walk_forward_finds_a_planted_edge() -> None:
