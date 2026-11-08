@@ -201,3 +201,9 @@
 - `web/src/report.gen.ts` is generated from `docs/report.schema.json` with json-schema-to-typescript (`npm run gen:types`), and CI fails if the committed file differs. The loader accepts only `schema_version` 1.0 and checks the top-level sections before rendering
 - Post hoc results have no schema (D029), so their type is written by hand and the loader requires `post_hoc: true`
 - Rationale: one source of truth for the report format across the Python models, the API and the dashboard (D028)
+
+## D044 Dashboard deployed to GitHub Pages by Actions
+- Date: 2026-11-08
+- The `pages` workflow builds `web/` with the base path `/<repository>/` and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages` on every push to `main` that touches the dashboard, the results or the report schema, and on demand. The repository's Pages source must be set to GitHub Actions
+- Views are addressed by the URL hash (`#/momentum`), so a static host needs no rewrite rules for links into the dashboard
+- Rationale: GitHub Pages is free and serves the static build directly (D002); deploying from Actions keeps build output out of the repository
