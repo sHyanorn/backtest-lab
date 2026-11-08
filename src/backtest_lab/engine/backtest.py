@@ -6,6 +6,9 @@ import numpy as np
 import pandas as pd
 
 LEVERAGE_TOL = 1e-9
+# Trading days from the close at which a target is decided to the last close its
+# return depends on: decided at close t, filled at the open of t+1, marked to close t+1.
+INFORMATION_SPAN = 1
 
 
 @dataclass(frozen=True)

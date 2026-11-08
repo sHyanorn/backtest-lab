@@ -114,3 +114,10 @@
 - Holdout: the first 70% of the aligned rows are IS. Walk-forward: rolling windows of 1260 IS days (five years) and 252 OOS days (one year), which gives about 27 OOS windows on the demo sample
 - The selected trials' target weights are stitched by OOS day, each taken from the close before that day, and run through the engine once. The first OOS window enters from cash, so it pays the entry cost; later windows pay only for parameter switches
 - Rationale: no published default exists. Five years spans more than one market regime and yearly re-optimization is a common schedule; both were fixed before any real-data run (D021)
+
+## D025 Purged K-fold settings
+- Date: 2026-11-08
+- K = 10 contiguous folds and embargo h = ceil(0.01 T), computed in integer arithmetic so that floating-point error cannot add a day
+- Each row of the trial matrix is one daily return with information interval [t - 1, t]: the target is decided at close t - 1 and the return is marked to close t (D013). The span is a constant of the engine, `INFORMATION_SPAN`, which purged K-fold reads. With closed intervals each test fold loses one training row before it, and training resumes h + 1 rows after it
+- In each fold the best trial is selected by Sharpe on the training rows taken together, which are not contiguous when the test fold is inside the sample. The CV score is the mean annualized test-fold Sharpe; a fold where the selected trial is flat counts as 0
+- Rationale: ten folds of the demo sample are over three years each, long enough for a test-fold Sharpe ratio to mean something
