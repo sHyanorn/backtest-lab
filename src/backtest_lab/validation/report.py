@@ -88,6 +88,20 @@ def sensitivity_verdict(best: float, retention: float | None, assessable: bool) 
     return "green" if retention >= SENSITIVITY_GREEN else "yellow"
 
 
+def logit_histogram(
+    logits: npt.NDArray[np.float64], n_trials: int, bins: int = _LOGIT_BINS
+) -> tuple[npt.NDArray[np.intp], npt.NDArray[np.float64]]:
+    """Counts and edges of equal bins on [-ln N, ln N], the range of the logits.
+
+    The extreme logits are +-ln N in exact arithmetic but can round one ulp outside
+    it, where np.histogram would drop them, so they are clipped first.
+    """
+    limit = math.log(n_trials)
+    edges = np.linspace(-limit, limit, bins + 1)
+    counts, _ = np.histogram(np.clip(logits, -limit, limit), edges)
+    return counts, edges
+
+
 def worst(verdicts: list[rs.Verdict]) -> rs.Verdict:
     return max(verdicts, key=_SEVERITY.__getitem__)
 
@@ -319,8 +333,7 @@ def _purged_cv_check(trials: Trials, s: Settings) -> rs.PurgedCVCheck:
 
 def _pbo_check(x: npt.NDArray[np.float64], s: Settings) -> rs.PBOCheck:
     result = cscv(x, s.blocks)
-    limit = math.log(result.n_trials)
-    counts, edges = np.histogram(result.logits, np.linspace(-limit, limit, _LOGIT_BINS + 1))
+    counts, edges = logit_histogram(result.logits, result.n_trials)
     combos = n_combinations(s.blocks)
     summary = (
         f"In {result.pbo:.0%} of {combos:,} ways to split the history into two halves, the "

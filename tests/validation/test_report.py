@@ -1,4 +1,5 @@
 import json
+import math
 from functools import cache
 from pathlib import Path
 
@@ -8,10 +9,12 @@ import pytest
 
 from backtest_lab.engine.metrics import max_drawdown, summarize
 from backtest_lab.strategies import MarketData
+from backtest_lab.validation.pbo import cscv
 from backtest_lab.validation.report import (
     Settings,
     build_report,
     buy_and_hold,
+    logit_histogram,
     min_backtest_verdict,
     pbo_verdict,
     probability_verdict,
@@ -75,6 +78,16 @@ def test_sensitivity_verdict() -> None:
     assert sensitivity_verdict(1.0, None, False) == "yellow"
 
 
+@pytest.mark.parametrize("n", [5, 18, 34, 100, 128])
+def test_logit_histogram_counts_every_combination(n: int) -> None:
+    # The winner ranks first or last OOS in many splits; those logits are +-ln N.
+    x = 0.01 * np.random.default_rng(0).standard_normal((1000, n)) + np.linspace(0, 0.002, n)
+    result = cscv(x)
+    counts, edges = logit_histogram(result.logits, n)
+    assert counts.sum() == len(result.logits) == 12_870
+    assert edges[0] == -edges[-1] == pytest.approx(-math.log(n))
+
+
 def test_worst() -> None:
     assert worst(["green", "yellow", "green"]) == "yellow"
     assert worst(["green", "red", "yellow"]) == "red"
@@ -115,6 +128,8 @@ def test_report_contents() -> None:
     checks = report.checks.model_dump()
     assert report.overall.verdict == worst([c["verdict"] for c in checks.values()])
     assert all(c["summary"].endswith(".") for c in checks.values())
+
+    assert sum(report.checks.pbo.details.logits.counts) == report.checks.pbo.metrics.n_combinations
 
     heat = report.checks.sensitivity.details.heatmap
     assert heat is not None and (heat.x.name, heat.y and heat.y.name) == ("fast", "slow")
