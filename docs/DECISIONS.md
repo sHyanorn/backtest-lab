@@ -141,3 +141,9 @@
 - Equity and drawdown are weekly: equity at each week's last date and the deepest daily drawdown within the week, so the maximum drawdown survives downsampling. Values are rounded to 6 decimals
 - Sensitivity needs an ordered axis. A grid whose axes are all categorical has no neighbourhood; its sensitivity check is yellow ("cannot be assessed"), the one case D022 does not cover. All pre-registered grids have ordered axes (D021)
 - Rationale: one source of truth for the format across the Python code, the API and the dashboard
+
+## D029 Demo conclusions follow the pre-registered results
+- Date: 2026-11-08
+- The demo story (SPEC.md Section 3) is told from the pre-registered results in `results/demo/`, produced with the configuration and thresholds of D021 and D022, which stay unchanged
+- Analyses designed after seeing those results (the long-only half of each grid, the CSCV winners, the comparison with buy and hold in its deepest drawdowns) live in `backtest_lab.validation.posthoc` and `results/posthoc/`, and every place that shows them labels them post hoc (docs/DEMO.md)
+- Rationale: choosing which subset or statistic to show after seeing the results is itself a selection, the effect this project measures. Labelling keeps confirmatory and exploratory evidence apart

@@ -15,10 +15,13 @@ A backtesting platform that tells you "this strategy is probably overfit": beyon
 
 ## 3. Core story (how to tell it in a demo)
 
-1. Run a parameter grid search on a moving-average strategy and find a combination with a very high in-sample Sharpe ratio
-2. The platform tests it with several methods and concludes: the probability of overfitting is high and the deflated Sharpe ratio is not significant
-3. Compare with a strategy whose parameters are robust: it passes
-4. Takeaway: try a few hundred parameter sets and you can always "find" a good strategy; this platform can detect that
+Three searches on SPY from 1993 to 2026, fixed in advance (D021): a moving-average crossover (128 settings), time-series momentum (34) and a random-signal control (100). The registered results are in `results/demo/`; analyses chosen after seeing them are marked post hoc ([DEMO.md](DEMO.md)).
+
+1. A search with no skill still finds a winner: the best random-signal setting has a positive Sharpe ratio, and the platform rates it red on six of eight checks.
+2. For both real strategies, the main finding of the search is that long-only beats long/short, because shorting SPY works against the equity premium. The in-sample winner is long-only in all but one of the 12,870 CSCV splits (post hoc), which keeps their PBO low (0.05 and 0.12). Both are rated yellow overall: the moving average narrowly misses a significant deflated Sharpe ratio (0.945 against 0.95), and the momentum PBO is above the green band.
+3. Among the long-only settings, picking the best is close to a coin flip (post hoc: PBO 0.42 for the moving average and 0.72 for momentum).
+4. The selected moving-average setting has a higher Sharpe ratio than buy and hold (0.80 against 0.64) because its drawdowns are smaller: its maximum drawdown is -21% against -55%, while its CAGR is lower, 9.7% against 10.8%.
+5. Takeaway: passing the overfitting checks says a result is unlikely to come from the search alone. Whether it beats the market is a separate question, and the report answers the two separately.
 
 ## 4. Scope
 
