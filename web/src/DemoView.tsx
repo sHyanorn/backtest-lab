@@ -3,6 +3,7 @@ import { DEMOS, loadDemo, type DemoKey, type Report } from './data.ts'
 import { settingText } from './format.ts'
 import { CheckCards } from './report/CheckCards.tsx'
 import { Overview } from './report/Overview.tsx'
+import { Sensitivity } from './report/Sensitivity.tsx'
 import { useAsync } from './useAsync.ts'
 
 export function DemoView({ demo }: { demo: DemoKey }) {
@@ -63,6 +64,7 @@ export function ReportView({
         />
       </section>
       <CheckCards report={report} />
+      <Sensitivity report={report} />
     </>
   )
 }

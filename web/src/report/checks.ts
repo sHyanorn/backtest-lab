@@ -9,6 +9,14 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
   red: 'Fail',
 }
 
+/** Checks whose details open in a dialog; sensitivity has its own section. */
+export const HAS_DETAILS: CheckKey[] = [
+  'holdout',
+  'walk_forward',
+  'purged_cv',
+  'pbo',
+]
+
 export interface CheckView {
   key: CheckKey
   title: string

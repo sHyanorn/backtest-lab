@@ -3,7 +3,8 @@ import { resolve } from 'node:path'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { asReport, type Report } from '../data.ts'
-import { signed, num, pct } from '../format.ts'
+import { colourScale } from '../charts/colour.ts'
+import { num, pct, signed, trialParams } from '../format.ts'
 import { CheckCards } from './CheckCards.tsx'
 import { Overview } from './Overview.tsx'
 
@@ -96,8 +97,8 @@ describe('check cards', () => {
     )
     const card = screen.getByRole('heading', { name: 'Holdout split' })
       .parentElement as HTMLElement
-    expect(within(card).getByText('n/a')).toBeTruthy()
-    expect(within(card).getByText('Fail')).toBeTruthy()
+    expect(card.querySelector('.figure-value')?.textContent).toBe('n/a')
+    expect(card.querySelector('.verdict')?.textContent).toBe('Fail')
   })
 
   it('notes that the seed sensitivity verdict is uninformative', () => {
@@ -112,5 +113,28 @@ describe('format', () => {
     expect(pct(-0.0001)).toBe('0.0%')
     expect(signed(num(0.16))).toBe('+0.16')
     expect(signed(num(-1.1, 1))).toBe('−1.1')
+  })
+})
+
+describe('grid helpers', () => {
+  it('recovers trial parameters with the last axis fastest', () => {
+    const { strategy, selected, checks } = load('ma_crossover')
+    expect(trialParams(strategy.grid, strategy.fixed, selected.trial)).toEqual(
+      selected.params,
+    )
+    expect(
+      trialParams(strategy.grid, strategy.fixed, checks.holdout.details.trial),
+    ).toEqual(checks.holdout.details.params)
+  })
+
+  it('colours one sign with one ramp and both signs around zero', () => {
+    const seq = colourScale([0.5, 0.8])
+    expect(seq.diverging).toBe(false)
+    expect(seq.fill(0.5)).toBe('var(--seq-0)')
+    expect(seq.fill(0.8)).toBe('var(--seq-6)')
+    const div = colourScale([-0.6, 0.2])
+    expect(div.diverging).toBe(true)
+    expect(div.fill(0)).toBe('var(--div-4)')
+    expect(div.fill(-0.6)).toBe('var(--div-0)')
   })
 })

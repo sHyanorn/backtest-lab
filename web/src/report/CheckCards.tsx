@@ -1,6 +1,7 @@
 import { InfoTip } from '../InfoTip.tsx'
 import type { Report } from '../report.gen.ts'
-import { checkViews } from './checks.ts'
+import { DetailsButton } from './CheckDetails.tsx'
+import { checkViews, HAS_DETAILS } from './checks.ts'
 import { Verdict } from './Verdict.tsx'
 
 export function CheckCards({ report }: { report: Report }) {
@@ -34,6 +35,26 @@ export function CheckCards({ report }: { report: Report }) {
             </p>
             <p className="figure-context">{c.context}</p>
             <p className="card-summary">{c.summary}</p>
+            {HAS_DETAILS.includes(c.key) && (
+              <div className="card-foot">
+                <DetailsButton report={report} check={c.key} />
+              </div>
+            )}
+            {c.key === 'sensitivity' && heatmap && (
+              <div className="card-foot">
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => {
+                    const target = document.getElementById('sensitivity')
+                    target?.scrollIntoView({ behavior: 'smooth' })
+                    target?.focus({ preventScroll: true })
+                  }}
+                >
+                  {heatmap.y ? 'Heatmap' : 'Chart'}
+                </button>
+              </div>
+            )}
           </li>
         ))}
       </ol>

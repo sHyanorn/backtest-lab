@@ -70,3 +70,18 @@ const dateFormat = new Intl.DateTimeFormat('en-US', {
 export function date(iso: string): string {
   return dateFormat.format(new Date(`${iso}T00:00:00Z`))
 }
+
+/** The parameters of a trial; trials enumerate the grid with the last axis fastest (D023). */
+export function trialParams(
+  grid: Record<string, Value[]>,
+  fixed: Record<string, Value>,
+  trial: number,
+): Record<string, Value> {
+  const params: Record<string, Value> = { ...fixed }
+  let rest = trial
+  for (const [name, values] of Object.entries(grid).reverse()) {
+    params[name] = values[rest % values.length] as Value
+    rest = Math.floor(rest / values.length)
+  }
+  return params
+}
