@@ -3,6 +3,7 @@ import { Columns } from '../charts/Columns.tsx'
 import { count, date, num, pct, settingText, trialParams } from '../format.ts'
 import type { Report } from '../report.gen.ts'
 import type { CheckKey } from './checks.ts'
+import { TableToggle } from '../TableToggle.tsx'
 
 type Strategy = Report['strategy']
 
@@ -209,36 +210,31 @@ function Fact({ name, children }: { name: string; children: ReactNode }) {
 
 function Table({ head, rows }: { head: string[]; rows: string[][] }) {
   return (
-    <details className="table-toggle">
-      <summary>Table</summary>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              {head.map((h) => (
-                <th scope="col" key={h}>
-                  {h}
+    <TableToggle label={head.join(', ')}>
+      <thead>
+        <tr>
+          {head.map((h) => (
+            <th scope="col" key={h}>
+              {h}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r, i) => (
+          <tr key={i}>
+            {r.map((c, j) =>
+              j === 0 ? (
+                <th scope="row" key={j}>
+                  {c}
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i}>
-                {r.map((c, j) =>
-                  j === 0 ? (
-                    <th scope="row" key={j}>
-                      {c}
-                    </th>
-                  ) : (
-                    <td key={j}>{c}</td>
-                  ),
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </details>
+              ) : (
+                <td key={j}>{c}</td>
+              ),
+            )}
+          </tr>
+        ))}
+      </tbody>
+    </TableToggle>
   )
 }

@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { date as formatDate, num, pct } from '../format.ts'
 import { useWidth } from './useWidth.ts'
+import { TableToggle } from '../TableToggle.tsx'
 
 export interface Line {
   label: string
@@ -328,40 +329,35 @@ function YearTable({ dates, lines }: { dates: string[]; lines: Line[] }) {
   }, [dates, lines])
 
   return (
-    <details className="table-toggle">
-      <summary>Table by year</summary>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Year end</th>
-              {lines.map((l) => (
-                <th scope="col" key={l.label}>
-                  {l.label}
-                </th>
-              ))}
-              {lines.map((l) => (
-                <th scope="col" key={l.label}>
-                  Deepest drawdown, {l.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.year}>
-                <th scope="row">{r.year}</th>
-                {r.equity.map((v, k) => (
-                  <td key={k}>{money(v)}</td>
-                ))}
-                {r.drawdown.map((v, k) => (
-                  <td key={k}>{pct(v)}</td>
-                ))}
-              </tr>
+    <TableToggle summary="Table by year" label="Equity and drawdown by year">
+      <thead>
+        <tr>
+          <th scope="col">Year end</th>
+          {lines.map((l) => (
+            <th scope="col" key={l.label}>
+              {l.label}
+            </th>
+          ))}
+          {lines.map((l) => (
+            <th scope="col" key={l.label}>
+              Deepest drawdown, {l.label}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.year}>
+            <th scope="row">{r.year}</th>
+            {r.equity.map((v, k) => (
+              <td key={k}>{money(v)}</td>
             ))}
-          </tbody>
-        </table>
-      </div>
-    </details>
+            {r.drawdown.map((v, k) => (
+              <td key={k}>{pct(v)}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </TableToggle>
   )
 }

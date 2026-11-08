@@ -3,6 +3,7 @@ import { HeatGrid, HeatLegend } from '../charts/HeatGrid.tsx'
 import { num, paramText, pct } from '../format.ts'
 import type { Report } from '../report.gen.ts'
 import { Verdict } from './Verdict.tsx'
+import { TableToggle } from '../TableToggle.tsx'
 
 const sharpe = (v: number) => num(v)
 
@@ -121,36 +122,31 @@ function SharpeTable({
       }))
   const columns = heatmap.y ? heatmap.x.values.map(String) : ['Sharpe']
   return (
-    <details className="table-toggle">
-      <summary>Table</summary>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">
-                {heatmap.y
-                  ? `${heatmap.y.name} \\ ${heatmap.x.name}`
-                  : heatmap.x.name}
-              </th>
-              {columns.map((c) => (
-                <th scope="col" key={c}>
-                  {c}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {(heatmap.y ? [...rows].reverse() : rows).map((r) => (
-              <tr key={r.name}>
-                <th scope="row">{r.name}</th>
-                {r.cells.map((v, i) => (
-                  <td key={i}>{num(v)}</td>
-                ))}
-              </tr>
+    <TableToggle label="Sharpe ratio of each setting">
+      <thead>
+        <tr>
+          <th scope="col">
+            {heatmap.y
+              ? `${heatmap.y.name} \\ ${heatmap.x.name}`
+              : heatmap.x.name}
+          </th>
+          {columns.map((c) => (
+            <th scope="col" key={c}>
+              {c}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {(heatmap.y ? [...rows].reverse() : rows).map((r) => (
+          <tr key={r.name}>
+            <th scope="row">{r.name}</th>
+            {r.cells.map((v, i) => (
+              <td key={i}>{num(v)}</td>
             ))}
-          </tbody>
-        </table>
-      </div>
-    </details>
+          </tr>
+        ))}
+      </tbody>
+    </TableToggle>
   )
 }
