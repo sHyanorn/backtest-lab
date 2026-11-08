@@ -13,7 +13,6 @@ from backtest_lab.data.fetch import with_retries
 from backtest_lab.data.storage import write_parquet_atomic
 
 FREDGRAPH_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={}"
-COLUMNS = ["series", "date", "value", "available_date"]
 
 
 class Frequency(StrEnum):

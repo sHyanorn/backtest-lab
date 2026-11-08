@@ -156,14 +156,15 @@ def check_macro(
         if df["value"].isna().any():
             issues.append(Issue("missing_value", err, series_id, None, "NaN value"))
         last = pd.Timestamp(df["date"].max())
-        if (as_of - last).days > MACRO_MAX_AGE[frequencies[series_id]]:
+        max_age = MACRO_MAX_AGE[frequencies[series_id]]
+        if (as_of - last).days > max_age:
             issues.append(
                 Issue(
                     "stale",
                     Severity.WARNING,
                     series_id,
                     f"{last:%Y-%m-%d}",
-                    f"older than {MACRO_MAX_AGE[frequencies[series_id]]} days at {as_of:%Y-%m-%d}",
+                    f"older than {max_age} days at {as_of:%Y-%m-%d}",
                 )
             )
     return issues
