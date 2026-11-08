@@ -50,8 +50,9 @@ export function HeatGrid({ heatmap, label, format, describe }: Props) {
   }
 
   const value = active ? heatmap.sharpe[active.y]?.[active.x] : undefined
+  const valueText = value == null ? 'n/a' : format(value)
   const readout = active
-    ? `${describe(active.x, active.y)}: Sharpe ${value == null ? 'n/a' : format(value)}`
+    ? `${describe(active.x, active.y)}: Sharpe ${valueText}`
     : ''
   const tipLeft = active ? M.left + (active.x + 1) * cell + 8 : 0
 
@@ -166,19 +167,15 @@ export function HeatGrid({ heatmap, label, format, describe }: Props) {
       {active && (
         <div
           className="tooltip"
-          style={
-            tipLeft + 180 > width
-              ? {
-                  right: width - M.left - active.x * cell + 8,
-                  top: M.top + top(active.y),
-                }
-              : { left: tipLeft, top: M.top + top(active.y) }
-          }
+          style={{
+            ...(tipLeft + 180 > width
+              ? { right: width - M.left - active.x * cell + 8 }
+              : { left: tipLeft }),
+            top: M.top + top(active.y),
+          }}
         >
           <div className="tooltip-date">{describe(active.x, active.y)}</div>
-          <strong className="tooltip-value">
-            Sharpe {value == null ? 'n/a' : format(value)}
-          </strong>
+          <strong className="tooltip-value">Sharpe {valueText}</strong>
         </div>
       )}
       <p id={`${id}-readout`} className="visually-hidden" aria-live="polite">
@@ -197,26 +194,20 @@ export function HeatLegend({
   format: (v: number) => string
 }) {
   const colour = colourScale(values)
+  // A diverging ramp is symmetric around zero.
+  const reach = Math.max(-colour.low, colour.high)
   const steps = colour.diverging
     ? Array.from({ length: DIV_HALF * 2 + 1 }, (_, i) => `var(--div-${i})`)
     : Array.from({ length: SEQ_STEPS }, (_, i) => `var(--seq-${i})`)
   return (
     <div className="heat-legend">
-      <span>
-        {format(
-          colour.diverging ? -Math.max(-colour.low, colour.high) : colour.low,
-        )}
-      </span>
+      <span>{format(colour.diverging ? -reach : colour.low)}</span>
       <span className="heat-ramp" aria-hidden="true">
         {steps.map((s) => (
           <span key={s} style={{ background: s }} />
         ))}
       </span>
-      <span>
-        {format(
-          colour.diverging ? Math.max(-colour.low, colour.high) : colour.high,
-        )}
-      </span>
+      <span>{format(colour.diverging ? reach : colour.high)}</span>
       <span className="heat-item">
         <span className="heat-key best" aria-hidden="true" />
         Selected

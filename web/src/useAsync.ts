@@ -18,6 +18,11 @@ interface Settled<T> {
   valueKey?: string
 }
 
+function statusOf(current: boolean, error?: Error): Async<unknown>['status'] {
+  if (!current) return 'loading'
+  return error ? 'error' : 'done'
+}
+
 /** Runs `load` whenever `key` changes; the last value stays while the next loads. */
 export function useAsync<T>(key: string, load: () => Promise<T>): Async<T> {
   const [attempt, setAttempt] = useState(0)
@@ -43,7 +48,7 @@ export function useAsync<T>(key: string, load: () => Promise<T>): Async<T> {
   const retry = useCallback(() => setAttempt((a) => a + 1), [])
   const current = settled.request === request
   return {
-    status: !current ? 'loading' : settled.error ? 'error' : 'done',
+    status: statusOf(current, settled.error),
     value: settled.value,
     valueKey: settled.valueKey,
     error: current ? settled.error : undefined,

@@ -59,8 +59,7 @@ const TITLES: Record<string, string> = {
 
 /** A registry name as a heading. */
 export function strategyTitle(name: string): string {
-  const words = name.replace(/_/g, ' ')
-  return TITLES[name] ?? words.charAt(0).toUpperCase() + words.slice(1)
+  return TITLES[name] ?? paramLabel(name)
 }
 
 /** A parameter name as a form label. */
@@ -72,9 +71,9 @@ export function paramLabel(name: string): string {
 /** A parameter value as a reader would say it. */
 export function paramText(name: string, value: Value): string {
   if (name === 'allow_short') return value ? 'long/short' : 'long only'
-  if (typeof value === 'boolean')
-    return `${name.replace(/_/g, ' ')} ${value ? 'on' : 'off'}`
-  return `${name.replace(/_/g, ' ')} ${value}`
+  const words = name.replace(/_/g, ' ')
+  if (typeof value === 'boolean') return `${words} ${value ? 'on' : 'off'}`
+  return `${words} ${value}`
 }
 
 /** The parameters that vary in the grid, in grid order. */

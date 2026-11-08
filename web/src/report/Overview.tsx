@@ -62,12 +62,12 @@ export function Overview({
                   title={`${c.title}: ${VERDICT_LABEL[c.verdict]}`}
                   onClick={(e) => {
                     e.preventDefault()
-                    document
-                      .getElementById(`check-${c.key}`)
-                      ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                    document
-                      .getElementById(`check-${c.key}`)
-                      ?.focus({ preventScroll: true })
+                    const card = document.getElementById(`check-${c.key}`)
+                    card?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'center',
+                    })
+                    card?.focus({ preventScroll: true })
                   }}
                 >
                   <VerdictIcon verdict={c.verdict} size={18} />

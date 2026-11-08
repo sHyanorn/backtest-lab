@@ -28,6 +28,13 @@ function initial(strategy: StrategyInfo): FormState {
   }
 }
 
+/** The sweep in the URL, as last polled; running until a poll answers. */
+function currentRun(sweepId: string | null, polled: Run | null): Run | null {
+  if (sweepId === null) return null
+  if (polled?.id === sweepId) return polled
+  return { id: sweepId, status: 'running' }
+}
+
 /** The sweep in the URL (#/sweep/<id>) survives a tab switch or a reload. */
 export default function SweepView({
   strategies,
@@ -47,12 +54,7 @@ export default function SweepView({
   const errors = built.ok ? {} : built.errors
   const shownErrors = touched ? errors : {}
   const zeroCost = Number(form.fee) === 0 && Number(form.slippage) === 0
-  const run: Run | null =
-    sweepId === null
-      ? null
-      : polled?.id === sweepId
-        ? polled
-        : { id: sweepId, status: 'running' }
+  const run = currentRun(sweepId, polled)
   const busy = sending || run?.status === 'running'
   const id = useId()
 

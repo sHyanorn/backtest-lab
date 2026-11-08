@@ -118,11 +118,13 @@ function RangeBars({ rows }: { rows: RangeRow[] }) {
   const right = 12
   const rowHeight = 40
   const high = Math.max(...rows.map((r) => r.range[1]))
+  const plotRight = Math.max(width - right, left + 10)
+  const plotBottom = rows.length * rowHeight
   const x = scaleLinear()
     .domain([Math.min(0, ...rows.map((r) => r.range[0])), high])
     .nice(4)
-    .range([left, Math.max(width - right, left + 10)])
-  const height = rows.length * rowHeight + 38
+    .range([left, plotRight])
+  const height = plotBottom + 38
   return (
     <div className="chart" ref={ref}>
       <svg
@@ -138,16 +140,16 @@ function RangeBars({ rows }: { rows: RangeRow[] }) {
       >
         {x.ticks(4).map((t) => (
           <g key={t} className="tick" transform={`translate(${x(t)},0)`}>
-            <line y1={4} y2={rows.length * rowHeight} />
-            <text y={rows.length * rowHeight + 16} textAnchor="middle">
+            <line y1={4} y2={plotBottom} />
+            <text y={plotBottom + 16} textAnchor="middle">
               {num(t, 1)}
             </text>
           </g>
         ))}
         <text
           className="axis-label"
-          x={(left + Math.max(width - right, left + 10)) / 2}
-          y={rows.length * rowHeight + 34}
+          x={(left + plotRight) / 2}
+          y={plotBottom + 34}
           textAnchor="middle"
         >
           Annualized Sharpe ratio

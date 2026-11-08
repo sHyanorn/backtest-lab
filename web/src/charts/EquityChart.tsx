@@ -146,16 +146,15 @@ export function EquityChart({ dates, lines, label }: Props) {
     setIndex(Math.min(Math.max(from + move, 0), last))
   }
 
-  const at = index === null ? null : index
-  const crossX = at === null ? 0 : scales.x(times[at] ?? 0)
+  const crossX = index === null ? 0 : scales.x(times[index] ?? 0)
   const readout =
-    at === null
+    index === null
       ? ''
-      : `${formatDate(dates[at] ?? '')}: ` +
+      : `${formatDate(dates[index] ?? '')}: ` +
         lines
           .map(
             (l) =>
-              `${l.label} ${money(l.equity[at] ?? 0)}, drawdown ${pct(l.drawdown[at])}`,
+              `${l.label} ${money(l.equity[index] ?? 0)}, drawdown ${pct(l.drawdown[index])}`,
           )
           .join('; ')
 
@@ -242,7 +241,7 @@ export function EquityChart({ dates, lines, label }: Props) {
               </g>
             ))}
           </g>
-          {at !== null && (
+          {index !== null && (
             <g transform={`translate(${M.left},0)`}>
               <line
                 className="crosshair"
@@ -255,7 +254,7 @@ export function EquityChart({ dates, lines, label }: Props) {
                 <g key={i}>
                   <circle
                     cx={crossX}
-                    cy={M.top + scales.equity(l.equity[at] ?? 1)}
+                    cy={M.top + scales.equity(l.equity[index] ?? 1)}
                     r={4}
                     fill={l.color}
                     stroke="var(--surface)"
@@ -263,7 +262,7 @@ export function EquityChart({ dates, lines, label }: Props) {
                   />
                   <circle
                     cx={crossX}
-                    cy={drawdownTop + scales.drawdown(l.drawdown[at] ?? 0)}
+                    cy={drawdownTop + scales.drawdown(l.drawdown[index] ?? 0)}
                     r={3.5}
                     fill={l.color}
                     stroke="var(--surface)"
@@ -285,7 +284,7 @@ export function EquityChart({ dates, lines, label }: Props) {
           />
         </svg>
       </div>
-      {at !== null && (
+      {index !== null && (
         <div
           className="tooltip"
           style={{
@@ -296,13 +295,13 @@ export function EquityChart({ dates, lines, label }: Props) {
                 : Math.min(M.left + crossX + 12, width - TIP_WIDTH),
           }}
         >
-          <div className="tooltip-date">{formatDate(dates[at] ?? '')}</div>
+          <div className="tooltip-date">{formatDate(dates[index] ?? '')}</div>
           {lines.map((l) => (
             <div className="tooltip-row" key={l.label}>
               <span className="key-line" style={{ background: l.color }} />
               <span className="muted">{l.short}</span>
-              <strong>{money(l.equity[at] ?? 0)}</strong>
-              <span>{pct(l.drawdown[at])}</span>
+              <strong>{money(l.equity[index] ?? 0)}</strong>
+              <span>{pct(l.drawdown[index])}</span>
             </div>
           ))}
         </div>

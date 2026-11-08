@@ -48,45 +48,11 @@ export function Sensitivity({ report }: { report: Report }) {
               }
             />
           </div>
-          <dl className="facts side">
-            <div>
-              <dt>Best Sharpe ratio</dt>
-              <dd>{num(check.metrics.best_sharpe)}</dd>
-            </div>
-            <div>
-              <dt>Neighbour mean</dt>
-              <dd>{num(check.metrics.neighbour_mean)}</dd>
-            </div>
-            <div>
-              <dt>Neighbour spread</dt>
-              <dd>{num(check.metrics.neighbour_std)}</dd>
-            </div>
-            <div>
-              <dt>Kept by neighbours</dt>
-              <dd>{pct(check.metrics.retention, 0)}</dd>
-            </div>
-          </dl>
+          <NeighbourFacts className="facts side" metrics={check.metrics} />
         </div>
       ) : (
         <>
-          <dl className="facts stats">
-            <div>
-              <dt>Best Sharpe ratio</dt>
-              <dd>{num(check.metrics.best_sharpe)}</dd>
-            </div>
-            <div>
-              <dt>Neighbour mean</dt>
-              <dd>{num(check.metrics.neighbour_mean)}</dd>
-            </div>
-            <div>
-              <dt>Neighbour spread</dt>
-              <dd>{num(check.metrics.neighbour_std)}</dd>
-            </div>
-            <div>
-              <dt>Kept by neighbours</dt>
-              <dd>{pct(check.metrics.retention, 0)}</dd>
-            </div>
-          </dl>
+          <NeighbourFacts className="facts stats" metrics={check.metrics} />
           {heatmap === null ? (
             <p className="note">No ordered axis with more than one value.</p>
           ) : (
@@ -129,6 +95,35 @@ export function Sensitivity({ report }: { report: Report }) {
       )}
       {heatmap && <SharpeTable heatmap={heatmap} />}
     </section>
+  )
+}
+
+function NeighbourFacts({
+  className,
+  metrics,
+}: {
+  className: string
+  metrics: Report['checks']['sensitivity']['metrics']
+}) {
+  return (
+    <dl className={className}>
+      <div>
+        <dt>Best Sharpe ratio</dt>
+        <dd>{num(metrics.best_sharpe)}</dd>
+      </div>
+      <div>
+        <dt>Neighbour mean</dt>
+        <dd>{num(metrics.neighbour_mean)}</dd>
+      </div>
+      <div>
+        <dt>Neighbour spread</dt>
+        <dd>{num(metrics.neighbour_std)}</dd>
+      </div>
+      <div>
+        <dt>Kept by neighbours</dt>
+        <dd>{pct(metrics.retention, 0)}</dd>
+      </div>
+    </dl>
   )
 }
 

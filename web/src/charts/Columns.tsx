@@ -73,6 +73,7 @@ export function Columns({
   }
 
   const current = active === null ? null : columns[active]
+  const currentValue = current?.value == null ? 'n/a' : format(current.value)
   const currentX = active === null ? 0 : M.left + (x(active) ?? 0) + band / 2
   // Beside the hovered column, level with its end, so taller columns stay visible.
   const currentTop =
@@ -189,15 +190,11 @@ export function Columns({
           }}
         >
           <div className="tooltip-date">{current.detail ?? current.label}</div>
-          <strong className="tooltip-value">
-            {current.value === null ? 'n/a' : format(current.value)}
-          </strong>
+          <strong className="tooltip-value">{currentValue}</strong>
         </div>
       )}
       <p id={`${id}-readout`} className="visually-hidden" aria-live="polite">
-        {current
-          ? `${current.detail ?? current.label}: ${current.value === null ? 'n/a' : format(current.value)}`
-          : ''}
+        {current ? `${current.detail ?? current.label}: ${currentValue}` : ''}
       </p>
     </div>
   )
