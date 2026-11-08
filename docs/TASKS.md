@@ -26,7 +26,7 @@
 - [x] Purged and embargoed K-fold
 - [x] Combinatorially symmetric cross-validation (CSCV) and PBO
 - [x] Deflated Sharpe ratio, probabilistic Sharpe ratio, minimum backtest length
-- [ ] Parameter sensitivity analysis
+- [x] Parameter sensitivity analysis
 - [ ] Control test with a random-signal strategy
 - [ ] Credibility report generation (JSON)
 
