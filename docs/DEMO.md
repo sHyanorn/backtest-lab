@@ -25,6 +25,8 @@ The configuration (D021) and the verdict thresholds (D022) were fixed before any
 
 The random-signal PBO of 0.299 sits just below the red line of 0.30; about one search in ten with no skill lands there (D022).
 
+The random-signal grid varies `seed`, a number, so the grid search treats it as an ordered axis (D023) and the sensitivity check compares adjacent seeds. Neighbouring seeds are unrelated, so that verdict carries no information about the control.
+
 ## Post hoc analysis
 
 Not pre-registered. These questions were chosen after seeing the results above, to explain them. Restricting a grid to the half that won is a choice made knowing the outcome, so the numbers below are exploratory and carry no confirmatory weight; they are kept out of the credibility reports (D029). `python -m backtest_lab.validation.posthoc` writes them to `results/posthoc/long_only.json`.
