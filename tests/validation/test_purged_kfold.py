@@ -85,6 +85,12 @@ def test_cv_selection_ignores_purged_and_embargoed_rows() -> None:
     assert fold.trial == 3
 
 
+def test_cv_uses_an_explicit_embargo() -> None:
+    cv = purged_cv(_matrix(1000, 3, seed=0), k=5, embargo=3)  # the default would be 10
+    assert cv.embargo == 3
+    assert cv.folds[1].n_train == 1000 - 200 - 1 - (1 + 3)
+
+
 def test_cv_selects_a_planted_edge_in_every_fold() -> None:
     x = _matrix(2000, 20, seed=0)
     x[11] += 0.002
