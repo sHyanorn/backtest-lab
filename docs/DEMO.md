@@ -31,7 +31,7 @@ The random-signal grid varies `seed`, a number, so the grid search treats it as 
 
 ## Post hoc analysis
 
-Not pre-registered. These questions were chosen after seeing the results above, to explain them. Restricting a grid to the half that won is a choice made knowing the outcome, so the numbers below are exploratory and carry no confirmatory weight; they are kept out of the credibility reports (D029). `python -m backtest_lab.validation.posthoc` writes them to `results/posthoc/long_only.json`.
+Not pre-registered. These questions were chosen after seeing the results above, to explain them. Restricting a grid to the half that won is a choice made knowing the outcome, so the numbers below are exploratory and carry no confirmatory weight; they are kept out of the credibility reports (D029). They come from `python -m backtest_lab.validation.posthoc`, which wrote `results/posthoc/long_only.json`; that file is fixed like the registered results, so a new run should pass `--out` with another directory.
 
 **Long-only against long/short.** Each grid has an `allow_short` axis.
 
