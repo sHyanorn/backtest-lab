@@ -116,7 +116,7 @@ where $\bar r_{OOS}$ is the mean of the whole OOS series and $K$ the number of w
 
 **Pitfalls.**
 
-- The engine's one-day fill delay already separates IS from OOS: the last IS return and the first OOS return come from different signals. No extra purge is needed for daily returns with daily rebalancing.
+- The engine's one-day fill delay already separates IS from OOS: the last IS return and the first OOS return come from different signals (see D036). No extra purge is needed for daily returns with daily rebalancing.
 - WFE is unstable when IS returns are near zero or negative; it is reported only when the mean IS annualized return is positive.
 - Walk-forward is itself a single path through history: its OOS sample is small and it does not account for how many configurations were searched. Sections 4 and 5 address that.
 
@@ -138,7 +138,7 @@ where $\bar r_{OOS}$ is the mean of the whole OOS series and $K$ the number of w
 
 **Problem.** Standard K-fold assumes independent observations. In finance an observation's outcome spans time, and features use trailing windows, so training observations adjacent to a test fold carry information about it. That leaks test information into training and inflates CV scores.
 
-**Definitions.** Observation $i$ has an information interval $[t_{0,i}, t_{1,i}]$ in trading days: $t_{0,i}$ is the close at which its signal is formed and $t_{1,i}$ is the last date whose price enters its return. $t_{1,i} - t_{0,i}$ depends on the engine's fill convention and holding period (1 for a fill at the next open with returns marked to the next close; 2 for a fill at the next close with a one-day hold), so the implementation derives it from the engine settings and does not hard-code it.
+**Definitions.** Observation $i$ has an information interval $[t_{0,i}, t_{1,i}]$ in trading days: $t_{0,i}$ is the close at which its signal is formed and $t_{1,i}$ is the last date whose price enters its return. $t_{1,i} - t_{0,i}$ depends on the engine's fill convention and holding period (1 for a fill at the next open with returns marked to the next close; 2 for a fill at the next close with a one-day hold), so the implementation derives it from the engine settings and does not hard-code it (see D036).
 
 The data are split into $K$ contiguous folds without shuffling (sizes as in `numpy.array_split`). For a test fold with $t_0^{\min} = \min_{i \in \text{test}} t_{0,i}$ and $t_1^{\max} = \max_{i \in \text{test}} t_{1,i}$, a non-test observation $j$ stays in the training set only if
 
@@ -196,7 +196,7 @@ $$
 \widehat{PBO} = \frac{1}{\binom{S}{S/2}} \sum_{c} \mathbf{1}[\lambda_c \le 0].
 $$
 
-$\lambda_c = 0$ means the pick ranks exactly at the median (odd $N$, or ties under averaged ranks). It counts as overfit, following the estimator $\int_{-\infty}^{0} f(\lambda)\,d\lambda$ of Section 3.1; the paper's Definition 2.2 uses a strict inequality, so the two differ only at this point. Under the null (no skill, no ties) the expected PBO is therefore $0.5$ for even $N$ and $(N+1)/(2N)$ for odd $N$.
+$\lambda_c = 0$ means the pick ranks exactly at the median (odd $N$, or ties under averaged ranks). It counts as overfit, following the estimator $\int_{-\infty}^{0} f(\lambda)\,d\lambda$ of Section 3.1; the paper's Definition 2.2 uses a strict inequality, so the two differ only at this point (see D035). Under the null (no skill, no ties) the expected PBO is therefore $0.5$ for even $N$ and $(N+1)/(2N)$ for odd $N$.
 
 The report also includes two by-products from Section 3.2 of the paper: the OLS slope of $\bar R^c_{n^*}$ on $R^c_{n^*}$ across combinations (performance degradation) and the probability of OOS loss, $\Pr[\bar R^c_{n^*} < 0]$. The slope is descriptive only: IS and OOS are complementary halves of one fixed series, so the slope tends to be negative even when the selection has real skill (it was between $-0.8$ and $-0.1$ in the planted-edge runs below, all with PBO under 0.1).
 

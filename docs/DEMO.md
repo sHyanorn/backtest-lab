@@ -45,6 +45,8 @@ Not pre-registered. These questions were chosen after seeing the results above, 
 
 An in-sample winner that is always long-only ranks in the top half out of sample because the long/short half is worse, so the whole-grid PBO is low. Within the long-only half, which setting wins is no better than chance. The best long-only setting still has a significant deflated Sharpe ratio within that half (about 1.00 for both, with 10.5 and 3.8 effectively independent settings).
 
+Counting every setting of the grid, as METHODS.md Section 5 requires, the deflated Sharpe ratios of the same two settings are the registered 0.945 and 0.988; the values near 1.00 hold only when the long/short half is left out.
+
 **Selected setting against buy and hold.**
 
 | | Moving average | Momentum | Buy and hold |
@@ -66,3 +68,7 @@ Returns over the three deepest buy-and-hold drawdowns:
 | 2020-02-19 to 2020-03-23 | -33.7% | -15.9% | -21.1% |
 
 Both selected settings earn less than buy and hold on average and owe their higher Sharpe ratio to lower volatility. In the two long bear markets they lost 10% to 15% while buy and hold lost 48% to 55%.
+
+**Stale opens.** This analysis is not in `results/posthoc/`; it uses SPY prices fetched on 2026-11-08 with the registered configuration and dates. Of the 8,497 bars from 1993-01-29 to 2026-10-30, 159 have an open equal to the previous close. Most fall in 1993 to 1995 (69), when SPY was quoted in fractions of a dollar down to 1/64 and such ties are expected, and in 2016 to 2017 (23). In the later group 21.7% of these opens also equal the day's high or low, against 0.4% of the other days of those two years, which points to stale data. A stale open turns a fill at the next open into a fill at the close that formed the signal.
+
+Replacing the 159 opens with draws from each year's overnight volatility, clipped to the day's range (30 seeds), or with the day's low or high, leaves every moving-average and momentum verdict unchanged: the moving-average deflated Sharpe ratio stays between 0.944 and 0.946 and the momentum PBO between 0.119 and 0.129. The random-signal PBO, 8 splits below the red line, turns red in 12 of the 30 draws and with the highs, so 7 of 8 checks fail instead of 6; with the lows its holdout check turns green instead and 5 fail. Its overall verdict is red in every variant.

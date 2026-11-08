@@ -131,6 +131,7 @@
 - Sensitivity retention: green from 0.75, yellow from 0.5, red below 0.5 or when the best Sharpe is not positive. A project convention; there is no published threshold
 - Overall: the worst verdict among the checks
 - Rationale: fixed before any real-data run so the thresholds cannot be fitted to the demo
+- See also D037
 
 ## D023 Grid search and stored trials
 - Date: 2026-11-08
@@ -151,6 +152,7 @@
 - Each row of the trial matrix is one daily return with information interval [t - 1, t]: the target is decided at close t - 1 and the return is marked to close t (D013). The span is a constant of the engine, `INFORMATION_SPAN`, which purged K-fold reads. With closed intervals each test fold loses one training row before it, and training resumes h + 1 rows after it
 - In each fold the best trial is selected by Sharpe on the training rows taken together, which are not contiguous when the test fold is inside the sample. The CV score is the mean annualized test-fold Sharpe; a fold where the selected trial is flat counts as 0
 - Rationale: ten folds of the demo sample are over three years each, long enough for a test-fold Sharpe ratio to mean something
+- See also D036
 
 ## D026 Normal distribution from the standard library
 - Date: 2026-11-08
@@ -172,6 +174,7 @@
 - Sensitivity needs an ordered axis with more than one value. A grid without one has no neighbourhood; its sensitivity check is yellow ("cannot be assessed"), the one case D022 does not cover. All pre-registered grids have such an axis (D021)
 - Rationale: one source of truth for the format across the Python code, the API and the dashboard
 - See also D033: the dashboard's types are generated from this schema
+- See also D037
 
 ## D029 Demo conclusions follow the pre-registered results
 - Date: 2026-11-08
@@ -209,3 +212,19 @@
 - The `pages` workflow builds `web/` with the base path `/<repository>/` and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages` after the `ci` workflow succeeds on a push to `main`, so a pushed commit that fails the tests, the browser checks or the frozen-results check (D032) is not deployed. A manual run deploys the branch it is started on without waiting for CI. The repository's Pages source must be set to GitHub Actions
 - Views are addressed by the URL hash (`#/momentum`), so a static host needs no rewrite rules for links into the dashboard
 - Rationale: GitHub Pages is free and serves the static build directly (D002); deploying from Actions keeps build output out of the repository
+
+## D035 PBO estimator and the paper's Definition 2.2
+- Date: 2026-11-08
+- The code counts a combination as overfit when its logit is at most 0, the estimator ∫ f(λ) dλ over λ ≤ 0 of Bailey et al. (2017, Section 3.1). Their Definition 2.2 writes PBO with r̄ < N/2. Since ω̄ = r̄ / (N + 1), λ ≤ 0 means r̄ ≤ (N + 1) / 2, so for even N the two also differ at rank N/2 (λ = ln(N / (N + 2)) < 0): the estimator counts it and Definition 2.2 does not. Under the null that rank has probability 1/N. The statement in METHODS.md Section 4 that the two differ only at λ = 0 holds for odd N only
+- A rerun of the registered searches reproduces the registered counts of 607, 1,590 and 3,853 of 12,870 combinations for the moving average, momentum and the random-signal control. Under Definition 2.2 the same trial matrices give 585, 1,393 and 3,748 (PBO 0.045, 0.108 and 0.291), with every verdict the same. The registered reports keep the estimator
+
+## D036 Information interval of a daily return
+- Date: 2026-11-08
+- The return of row t spans the prices from close t - 1 to close t. Its overnight leg is earned by the position set from the target at close t - 2, its intraday leg by the target set at close t - 1 (D013). `INFORMATION_SPAN = 1` describes that price span: t0 in METHODS.md Section 3 is the first close of the return interval. The older target is a feature of the row, like a trailing indicator window, and the embargo is what covers features
+- So the last in-sample and first out-of-sample returns share the target from close e - 2, which is set before the selection at close e - 1 and leaks nothing; and the span is a constant of the engine pinned by a test, not a value derived from engine settings
+- On a rerun of the registered searches, a span of 2 makes the random-signal search select trial 51 instead of 55 in fold 4 and moves its CV Sharpe ratio from -0.331 to -0.326; the moving-average and momentum folds do not change. Every verdict is the same
+
+## D037 Sensitivity without neighbours when the best Sharpe ratio is not positive
+- Date: 2026-11-08
+- D022 makes the sensitivity check red when the best Sharpe ratio is not positive, and D028 makes it yellow when the grid has no neighbourhood. When both hold, the check is yellow: the code tests for neighbours first
+- The overall verdict is red in that case anyway: the selected trial is the best one, and MinBTL is red whenever its Sharpe ratio is not positive. All registered grids have neighbours

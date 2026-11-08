@@ -52,8 +52,9 @@ def test_intervals_follow_the_engine() -> None:
 def test_daily_returns_purge_rows_sharing_a_close_with_the_test_fold() -> None:
     train, test = kfold_splits(*information_intervals(100), k=4, embargo=2)[1]
     assert test.tolist() == list(range(25, 50))
-    # Row 24 ends at close 24, where row 25's signal forms, and row 50's signal forms at
-    # close 49, the last test close: both are purged. Rows 51 and 52 are embargoed.
+    # Row 24's return interval ends at close 24, where row 25's begins, and row 50's begins
+    # at close 49, where the last test row's ends: both are purged (D036). Rows 51 and 52
+    # are embargoed.
     assert train.tolist() == [*range(24), *range(53, 100)]
 
 
