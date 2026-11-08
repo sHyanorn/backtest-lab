@@ -15,6 +15,12 @@ export function num(value: number | null | undefined, digits = 2): string {
   return /^-0(\.0*)?$/.test(text) ? text.slice(1) : text.replace('-', MINUS)
 }
 
+/** A probability; values that round to 1 are shown as above 0.999. */
+export function prob(value: number | null | undefined): string {
+  if (value === null || value === undefined) return MISSING
+  return value >= 0.9995 ? '> 0.999' : num(value, 3)
+}
+
 export function pct(value: number | null | undefined, digits = 1): string {
   if (value === null || value === undefined) return MISSING
   return `${num(value * 100, digits)}%`
@@ -31,7 +37,7 @@ export function costText(costs: {
   slippage_bps: number
 }): string {
   const bps = (v: number) => num(v, Number.isInteger(v) ? 0 : 1)
-  return `${bps(costs.fee_bps)} bp fees + ${bps(costs.slippage_bps)} bps slippage`
+  return `${bps(costs.fee_bps)} bp fees + ${bps(costs.slippage_bps)} bps slippage per side`
 }
 
 export function count(value: number): string {

@@ -12,7 +12,15 @@ import type { Report } from '../report.gen.ts'
 import { checkViews, VERDICT_LABEL } from './checks.ts'
 import { Verdict, VerdictIcon } from './Verdict.tsx'
 
-export function Overview({ report, title }: { report: Report; title: string }) {
+export function Overview({
+  report,
+  title,
+  kind,
+}: {
+  report: Report
+  title: string
+  kind: string
+}) {
   const { strategy, sample, costs, selected, overall } = report
   const zeroCost = costs.fee_bps === 0 && costs.slippage_bps === 0
   return (
@@ -20,6 +28,7 @@ export function Overview({ report, title }: { report: Report; title: string }) {
       <header className="overview">
         <h1>{title}</h1>
         <p className="meta">
+          <span className="tag">{kind}</span>
           <span>{count(strategy.n_trials)} settings</span>
           <span>
             {date(sample.start)} to {date(sample.end)}
@@ -114,7 +123,7 @@ function Benchmark({ report }: { report: Report }) {
           {report.overall.benchmark_summary}
         </InfoTip>
       </div>
-      <table className="compare">
+      <table className="compare diff">
         <thead>
           <tr>
             <th scope="col">

@@ -23,14 +23,26 @@ afterEach(cleanup)
 
 describe('overview', () => {
   it('labels the overall verdict in words', () => {
-    render(<Overview report={load('ma_crossover')} title="MA" />)
+    render(
+      <Overview
+        report={load('ma_crossover')}
+        title="MA"
+        kind="Pre-registered"
+      />,
+    )
     const panel = screen.getByRole('region', { name: 'Overfitting checks' })
     expect(within(panel).getByText('Borderline')).toBeTruthy()
     expect(within(panel).getByText(/1 of 8 are borderline/)).toBeTruthy()
   })
 
   it('keeps the benchmark out of the verdict panel', () => {
-    render(<Overview report={load('ma_crossover')} title="MA" />)
+    render(
+      <Overview
+        report={load('ma_crossover')}
+        title="MA"
+        kind="Pre-registered"
+      />,
+    )
     const checks = screen.getByRole('region', { name: 'Overfitting checks' })
     const benchmark = screen.getByRole('region', {
       name: 'Against SPY buy and hold',
@@ -43,13 +55,18 @@ describe('overview', () => {
 
   it('states the costs, and marks a zero-cost run as a reference', () => {
     const report = load('momentum')
-    const { unmount } = render(<Overview report={report} title="M" />)
-    expect(screen.getByText('Net of 1 bp fees + 5 bps slippage')).toBeTruthy()
+    const { unmount } = render(
+      <Overview report={report} title="M" kind="Pre-registered" />,
+    )
+    expect(
+      screen.getByText('Net of 1 bp fees + 5 bps slippage per side'),
+    ).toBeTruthy()
     unmount()
     render(
       <Overview
         report={{ ...report, costs: { fee_bps: 0, slippage_bps: 0 } }}
         title="M"
+        kind="Pre-registered"
       />,
     )
     expect(screen.getByText('Zero-cost reference')).toBeTruthy()

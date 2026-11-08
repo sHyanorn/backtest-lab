@@ -30,75 +30,101 @@ export function Sensitivity({ report }: { report: Report }) {
         <Verdict verdict={check.verdict} />
         {held.length > 0 && <span className="tag">{held.join(' · ')}</span>}
       </div>
-      <dl className="facts stats">
-        <div>
-          <dt>Best Sharpe ratio</dt>
-          <dd>{num(check.metrics.best_sharpe)}</dd>
+      {heatmap?.y ? (
+        <div className="heat-layout">
+          <div className="heat-col">
+            <HeatLegend
+              values={heatmap.sharpe
+                .flat()
+                .filter((v): v is number => v !== null)}
+              format={sharpe}
+            />
+            <HeatGrid
+              heatmap={heatmap}
+              format={sharpe}
+              label={`Annualized Sharpe ratio by ${heatmap.x.name} and ${heatmap.y.name}`}
+              describe={(x, y) =>
+                `${paramText(heatmap.x.name, heatmap.x.values[x] ?? '')} · ${paramText(heatmap.y?.name ?? '', heatmap.y?.values[y] ?? '')}`
+              }
+            />
+          </div>
+          <dl className="facts side">
+            <div>
+              <dt>Best Sharpe ratio</dt>
+              <dd>{num(check.metrics.best_sharpe)}</dd>
+            </div>
+            <div>
+              <dt>Neighbour mean</dt>
+              <dd>{num(check.metrics.neighbour_mean)}</dd>
+            </div>
+            <div>
+              <dt>Neighbour spread</dt>
+              <dd>{num(check.metrics.neighbour_std)}</dd>
+            </div>
+            <div>
+              <dt>Kept by neighbours</dt>
+              <dd>{pct(check.metrics.retention, 0)}</dd>
+            </div>
+          </dl>
         </div>
-        <div>
-          <dt>Neighbour mean</dt>
-          <dd>{num(check.metrics.neighbour_mean)}</dd>
-        </div>
-        <div>
-          <dt>Neighbour spread</dt>
-          <dd>{num(check.metrics.neighbour_std)}</dd>
-        </div>
-        <div>
-          <dt>Kept by neighbours</dt>
-          <dd>{pct(check.metrics.retention, 0)}</dd>
-        </div>
-      </dl>
-      {heatmap === null ? (
-        <p className="note">No ordered axis with more than one value.</p>
-      ) : heatmap.y ? (
-        <>
-          <HeatLegend
-            values={heatmap.sharpe
-              .flat()
-              .filter((v): v is number => v !== null)}
-            format={sharpe}
-          />
-          <HeatGrid
-            heatmap={heatmap}
-            format={sharpe}
-            label={`Annualized Sharpe ratio by ${heatmap.x.name} and ${heatmap.y.name}`}
-            describe={(x, y) =>
-              `${paramText(heatmap.x.name, heatmap.x.values[x] ?? '')} · ${paramText(heatmap.y?.name ?? '', heatmap.y?.values[y] ?? '')}`
-            }
-          />
-        </>
       ) : (
         <>
-          <ul className="legend start">
-            <li>
-              <span className="key-box accent" />
-              Selected
-            </li>
-            <li>
-              <span className="key-box soft" />
-              Neighbours
-            </li>
-            <li>
-              <span className="key-box ref" />
-              Other settings
-            </li>
-          </ul>
-          <Columns
-            label={`Annualized Sharpe ratio by ${heatmap.x.name}`}
-            format={sharpe}
-            columns={heatmap.x.values.map((v, i): Column => ({
-              label: String(v),
-              value: heatmap.sharpe[0]?.[i] ?? null,
-              detail: paramText(heatmap.x.name, v),
-              tone:
-                i === heatmap.best.x
-                  ? 'accent'
-                  : heatmap.neighbours.some((n) => n.x === i)
-                    ? 'soft'
-                    : 'ref',
-            }))}
-          />
-          <p className="axis-caption">{heatmap.x.name.replace(/_/g, ' ')}</p>
+          <dl className="facts stats">
+            <div>
+              <dt>Best Sharpe ratio</dt>
+              <dd>{num(check.metrics.best_sharpe)}</dd>
+            </div>
+            <div>
+              <dt>Neighbour mean</dt>
+              <dd>{num(check.metrics.neighbour_mean)}</dd>
+            </div>
+            <div>
+              <dt>Neighbour spread</dt>
+              <dd>{num(check.metrics.neighbour_std)}</dd>
+            </div>
+            <div>
+              <dt>Kept by neighbours</dt>
+              <dd>{pct(check.metrics.retention, 0)}</dd>
+            </div>
+          </dl>
+          {heatmap === null ? (
+            <p className="note">No ordered axis with more than one value.</p>
+          ) : (
+            <>
+              <ul className="legend start">
+                <li>
+                  <span className="key-box accent" />
+                  Selected
+                </li>
+                <li>
+                  <span className="key-dot" />
+                  Neighbours
+                </li>
+                <li>
+                  <span className="key-box ref" />
+                  Other settings
+                </li>
+              </ul>
+              <Columns
+                label={`Annualized Sharpe ratio by ${heatmap.x.name}`}
+                format={sharpe}
+                columns={heatmap.x.values.map((v, i): Column => {
+                  const best = i === heatmap.best.x
+                  const near = heatmap.neighbours.some((n) => n.x === i)
+                  return {
+                    label: String(v),
+                    value: heatmap.sharpe[0]?.[i] ?? null,
+                    detail: paramText(heatmap.x.name, v),
+                    tone: best ? 'accent' : near ? 'soft' : 'ref',
+                    mark: best ? 'value' : near ? 'dot' : undefined,
+                  }
+                })}
+              />
+              <p className="axis-caption">
+                {heatmap.x.name.replace(/_/g, ' ')}
+              </p>
+            </>
+          )}
         </>
       )}
       {heatmap && <SharpeTable heatmap={heatmap} />}

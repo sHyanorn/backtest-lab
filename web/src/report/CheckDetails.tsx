@@ -33,26 +33,33 @@ export function DetailsButton({
         aria-labelledby={`${check}-dialog-title`}
         onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
       >
-        <div className="dialog-head">
-          <h2 id={`${check}-dialog-title`}>{title}</h2>
-          <button
-            type="button"
-            className="icon-button"
-            aria-label="Close"
-            onClick={() => dialog.current?.close()}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-              <path
-                d="m3 3 8 8m0-8-8 8"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
+        <div className="dialog-body">
+          <div className="dialog-head">
+            <h2 id={`${check}-dialog-title`}>{title}</h2>
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="Close"
+              onClick={() => dialog.current?.close()}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                aria-hidden="true"
+              >
+                <path
+                  d="m3 3 8 8m0-8-8 8"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+          <p className="dialog-summary">{report.checks[check].summary}</p>
+          <Body report={report} check={check} />
         </div>
-        <p className="dialog-summary">{report.checks[check].summary}</p>
-        <Body report={report} check={check} />
       </dialog>
     </>
   )
@@ -95,6 +102,7 @@ function Body({ report, check }: { report: Report; check: CheckKey }) {
             }))}
           />
           <Table
+            label="Walk-forward windows"
             head={[
               'Out of sample',
               'Picked setting',
@@ -130,6 +138,7 @@ function Body({ report, check }: { report: Report; check: CheckKey }) {
             }))}
           />
           <Table
+            label="Purged cross-validation folds"
             head={[
               'Test fold',
               'Training days',
@@ -174,6 +183,15 @@ function Body({ report, check }: { report: Report; check: CheckKey }) {
               }
             })}
           />
+          <Table
+            label="Logit histogram"
+            head={['Logit', 'Splits', 'Share']}
+            rows={counts.map((c, i) => [
+              `${num(edges[i], 2)} to ${num(edges[i + 1], 2)}`,
+              count(c),
+              pct(c / metrics.n_combinations),
+            ])}
+          />
           <dl className="facts">
             <Fact name="PBO">{num(metrics.pbo, 3)}</Fact>
             <Fact name="Blocks">{metrics.n_blocks}</Fact>
@@ -208,9 +226,17 @@ function Fact({ name, children }: { name: string; children: ReactNode }) {
   )
 }
 
-function Table({ head, rows }: { head: string[]; rows: string[][] }) {
+function Table({
+  label,
+  head,
+  rows,
+}: {
+  label: string
+  head: string[]
+  rows: string[][]
+}) {
   return (
-    <TableToggle label={head.join(', ')}>
+    <TableToggle label={label}>
       <thead>
         <tr>
           {head.map((h) => (

@@ -8,6 +8,8 @@ export interface Column {
   /** Shown in the tooltip, e.g. a setting or a date range. */
   detail?: string
   tone?: 'accent' | 'soft' | 'ref'
+  /** A value label or a dot beyond the bar's end, for the columns the story is about. */
+  mark?: 'value' | 'dot'
 }
 
 interface Props {
@@ -53,7 +55,11 @@ export function Columns({
   function onKey(event: KeyboardEvent<HTMLDivElement>) {
     const last = columns.length - 1
     const moves: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 }
-    if (event.key === 'Escape') return setActive(null)
+    if (event.key === 'Escape') {
+      // The first Escape clears the readout; the next may close a dialog.
+      if (active !== null) event.preventDefault()
+      return setActive(null)
+    }
     if (event.key === 'Home' || event.key === 'End') {
       event.preventDefault()
       return setActive(event.key === 'Home' ? 0 : last)
@@ -68,6 +74,14 @@ export function Columns({
 
   const current = active === null ? null : columns[active]
   const currentX = active === null ? 0 : M.left + (x(active) ?? 0) + band / 2
+  // Beside the hovered column, level with its end, so taller columns stay visible.
+  const currentTop =
+    current?.value == null
+      ? 0
+      : Math.min(
+          Math.max(M.top + y(Math.max(current.value, 0)) - 12, 0),
+          height - 64,
+        )
 
   return (
     <div className="chart" ref={ref}>
@@ -116,6 +130,24 @@ export function Columns({
                     onPointerEnter={() => setActive(i)}
                     onPointerDown={() => setActive(i)}
                   />
+                  {c.mark === 'value' && c.value !== null && (
+                    <text
+                      className="column-value"
+                      x={cx}
+                      y={v >= 0 ? top - 6 : top + h + 14}
+                      textAnchor="middle"
+                    >
+                      {format(v)}
+                    </text>
+                  )}
+                  {c.mark === 'dot' && (
+                    <circle
+                      className="mark-dot"
+                      cx={cx}
+                      cy={v >= 0 ? top - 8 : top + h + 8}
+                      r={3.5}
+                    />
+                  )}
                   {i % every === 0 && (
                     <text
                       className="tick-label"
@@ -149,11 +181,12 @@ export function Columns({
       {current && (
         <div
           className="tooltip"
-          style={
-            currentX > width / 2
+          style={{
+            top: currentTop,
+            ...(currentX > width / 2
               ? { right: width - currentX + 10 }
-              : { left: currentX + 10 }
-          }
+              : { left: currentX + 10 }),
+          }}
         >
           <div className="tooltip-date">{current.detail ?? current.label}</div>
           <strong className="tooltip-value">

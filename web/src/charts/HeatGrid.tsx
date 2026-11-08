@@ -33,7 +33,10 @@ export function HeatGrid({ heatmap, label, format, describe }: Props) {
       ArrowUp: [0, 1],
       ArrowDown: [0, -1],
     }
-    if (event.key === 'Escape') return setActive(null)
+    if (event.key === 'Escape') {
+      if (active !== null) event.preventDefault()
+      return setActive(null)
+    }
     const move = moves[event.key]
     if (!move) return
     event.preventDefault()
@@ -92,14 +95,12 @@ export function HeatGrid({ heatmap, label, format, describe }: Props) {
               )),
             )}
             {heatmap.neighbours.map((n) => (
-              <rect
+              <circle
                 key={`n${n.x}-${n.y}`}
-                className="cell-neighbour"
-                x={n.x * cell + 2.5}
-                y={top(n.y) + 2.5}
-                width={cell - 5}
-                height={cell - 5}
-                rx={2}
+                className="mark-dot"
+                cx={n.x * cell + cell / 2}
+                cy={top(n.y) + cell / 2}
+                r={Math.max(Math.min(cell / 10, 4), 2.5)}
               />
             ))}
             <rect

@@ -33,7 +33,6 @@ export function CheckCards({ report }: { report: Report }) {
               <span className="figure-value">{c.value}</span>
               <span className="figure-measure">{c.measure}</span>
             </p>
-            <p className="figure-context">{c.context}</p>
             <p className="card-summary">{c.summary}</p>
             {HAS_DETAILS.includes(c.key) && (
               <div className="card-foot">

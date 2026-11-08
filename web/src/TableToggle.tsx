@@ -12,7 +12,10 @@ export function TableToggle({
 }) {
   return (
     <details className="table-toggle">
-      <summary>{summary}</summary>
+      <summary>
+        {summary}
+        <span className="visually-hidden">: {label}</span>
+      </summary>
       {/* Focusable so the scrolled table can be read from the keyboard. */}
       <div className="table-wrap" tabIndex={0} role="region" aria-label={label}>
         <table>{children}</table>

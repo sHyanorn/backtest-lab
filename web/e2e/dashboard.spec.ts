@@ -38,12 +38,19 @@ for (const demo of DEMOS) {
       page.getByRole('region', { name: 'Against SPY buy and hold' }),
     ).toContainText('Not part of the verdict')
     await expect(
-      page.getByText('Net of 1 bp fees + 5 bps slippage'),
+      page.getByText('Net of 1 bp fees + 5 bps slippage per side'),
     ).toBeVisible()
     await expect(page.locator('.card')).toHaveCount(8)
     const postHoc = page.getByRole('region', { name: 'Post hoc' })
     if (demo.key === 'random_signal') await expect(postHoc).toHaveCount(0)
     else await expect(postHoc).toContainText('Not pre-registered')
+    await expect(page.locator('.meta .tag')).toHaveText('Pre-registered')
+    const overflow = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    )
+    expect(overflow).toBe(0)
     expect(errors).toEqual([])
   })
 
@@ -87,7 +94,7 @@ test('the equity chart reads out values from the keyboard', async ({
   await chart.focus()
   await page.keyboard.press('End')
   await expect(page.locator('.tooltip')).toContainText('Oct 30, 2026')
-  await expect(page.locator('.tooltip')).toContainText('SPY buy and hold')
+  await expect(page.locator('.tooltip')).toContainText('SPY$28.54')
 })
 
 test('the theme toggle switches and is remembered', async ({ page }) => {
@@ -111,4 +118,37 @@ test('the static build has no live sweeps and the page fits its width', async ({
       document.documentElement.clientWidth,
   )
   expect(overflow).toBe(0)
+})
+
+test('a failed load says so instead of showing the previous search', async ({
+  page,
+}) => {
+  await open(page, 'ma_crossover')
+  await page.route(/momentum-[^/]*\.json$/, (route) => route.abort())
+  await page.getByRole('link', { name: 'Momentum' }).click()
+  await expect(page.getByRole('alert')).toContainText(
+    'Could not load the results',
+  )
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(0)
+  await page.unroute(/momentum-[^/]*\.json$/)
+  await page.getByRole('button', { name: 'Retry' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Time-series momentum on SPY',
+  )
+})
+
+test('the heat grid marks the selected setting and reads it out', async ({
+  page,
+}) => {
+  await open(page, 'ma_crossover')
+  const grid = page.getByRole('group', {
+    name: /Sharpe ratio by fast and slow/,
+  })
+  await grid.focus()
+  // The first arrow key starts at the selected setting.
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('.heat .tooltip')).toContainText(
+    'fast 10 · slow 200',
+  )
+  await expect(page.locator('.heat .tooltip')).toContainText('Sharpe 0.80')
 })

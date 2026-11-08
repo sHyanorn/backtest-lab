@@ -2,7 +2,7 @@ import { scaleLinear } from 'd3-scale'
 import { useWidth } from '../charts/useWidth.ts'
 import { InfoTip } from '../InfoTip.tsx'
 import type { PostHocSearch } from '../data.ts'
-import { count, date, num, pct } from '../format.ts'
+import { count, date, num, pct, prob } from '../format.ts'
 
 /** Analyses chosen after seeing the registered results (docs/DEMO.md, D029). */
 export function PostHoc({
@@ -55,7 +55,7 @@ export function PostHoc({
           </h3>
           <dl className="pair">
             <div>
-              <dt>Whole grid</dt>
+              <dt>Whole grid, registered</dt>
               <dd>{num(pbo.full_grid, 2)}</dd>
             </div>
             <div>
@@ -64,9 +64,9 @@ export function PostHoc({
             </div>
           </dl>
           <p className="note">
-            Deflated Sharpe ratio of the best long-only setting{' '}
-            {num(dsr.dsr, 2)}, with about {num(dsr.n_effective, 1)} independent
-            settings of {dsr.n_trials}.
+            Deflated Sharpe ratio of the best long-only setting {prob(dsr.dsr)},
+            with about {num(dsr.n_effective, 1)} independent settings of{' '}
+            {dsr.n_trials}.
           </p>
         </section>
         <section className="panel" aria-labelledby="posthoc-drawdowns">
@@ -122,7 +122,7 @@ function RangeBars({ rows }: { rows: RangeRow[] }) {
     .domain([Math.min(0, ...rows.map((r) => r.range[0])), high])
     .nice(4)
     .range([left, Math.max(width - right, left + 10)])
-  const height = rows.length * rowHeight + 22
+  const height = rows.length * rowHeight + 38
   return (
     <div className="chart" ref={ref}>
       <svg
@@ -144,6 +144,14 @@ function RangeBars({ rows }: { rows: RangeRow[] }) {
             </text>
           </g>
         ))}
+        <text
+          className="axis-label"
+          x={(left + Math.max(width - right, left + 10)) / 2}
+          y={rows.length * rowHeight + 34}
+          textAnchor="middle"
+        >
+          Annualized Sharpe ratio
+        </text>
         {rows.map((r, i) => {
           const cy = i * rowHeight + rowHeight / 2 + 2
           return (

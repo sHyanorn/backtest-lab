@@ -15,25 +15,31 @@ import { useAsync } from './useAsync.ts'
 
 export function DemoView({ demo }: { demo: DemoKey }) {
   const report = useAsync(demo, () => loadDemo(demo))
-  if (report.status === 'error' && !report.value) {
+  if (report.status === 'error') {
     return (
-      <p className="error" role="alert">
-        Could not load the results: {report.error.message}
-      </p>
+      <div className="view">
+        <div className="error" role="alert">
+          Could not load the results: {report.error?.message}{' '}
+          <button type="button" className="text-button" onClick={report.retry}>
+            Retry
+          </button>
+        </div>
+      </div>
     )
   }
   if (!report.value) return <div className="view" aria-busy="true" />
   // While the next search loads, the previous one stays on screen, dimmed.
   const shown = report.value
-  const meta = DEMOS.find((d) => d.key === shown.strategy.name)
   const ticker = String(shown.strategy.fixed.ticker ?? '')
+  const shownKey = DEMOS.find((d) => d.key === report.valueKey)?.key
   return (
-    <div className="view" aria-busy={report.status === 'loading'}>
+    <div className="view" aria-busy={report.valueKey !== demo}>
       <ReportView
         report={shown}
         title={`${strategyTitle(shown.strategy.name)} on ${ticker}`}
+        kind="Pre-registered"
       />
-      {meta && <PostHocFor demo={meta.key} benchmark={ticker} />}
+      {shownKey && <PostHocFor demo={shownKey} benchmark={ticker} />}
     </div>
   )
 }
@@ -47,19 +53,23 @@ function PostHocFor({ demo, benchmark }: { demo: DemoKey; benchmark: string }) {
 export function ReportView({
   report,
   title,
+  kind,
 }: {
   report: Report
   title: string
+  kind: string
 }) {
   const lines: Line[] = [
     {
       label: settingText(report.selected.params, report.strategy.grid),
+      short: 'Selected',
       color: 'var(--series-1)',
       wash: 'var(--series-1-wash)',
       ...report.series.selected,
     },
     {
       label: report.benchmark.name,
+      short: report.benchmark.name.replace(/ buy and hold$/, ''),
       color: 'var(--series-ref)',
       wash: 'var(--series-ref-wash)',
       ...report.series.benchmark,
@@ -67,7 +77,7 @@ export function ReportView({
   ]
   return (
     <>
-      <Overview report={report} title={title} />
+      <Overview report={report} title={title} kind={kind} />
       <section className="panel" aria-labelledby="equity-title">
         <div className="panel-head">
           <h2 className="panel-title" id="equity-title">

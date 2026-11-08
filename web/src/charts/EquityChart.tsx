@@ -14,6 +14,8 @@ import { TableToggle } from '../TableToggle.tsx'
 
 export interface Line {
   label: string
+  /** A short name for the tooltip. */
+  short: string
   color: string
   wash: string
   equity: number[]
@@ -28,6 +30,7 @@ interface Props {
 
 const M = { top: 8, right: 12, bottom: 24, left: 48 }
 const GAP = 28
+const TIP_WIDTH = 168
 const LOG_TICKS = [0.25, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500]
 const byTime = bisector<number, number>((t) => t)
 
@@ -132,6 +135,7 @@ export function EquityChart({ dates, lines, label }: Props) {
       End: Infinity,
     }
     if (event.key === 'Escape') {
+      if (index !== null) event.preventDefault()
       setIndex(null)
       return
     }
@@ -284,17 +288,19 @@ export function EquityChart({ dates, lines, label }: Props) {
       {at !== null && (
         <div
           className="tooltip"
-          style={
-            crossX > innerWidth / 2
-              ? { right: width - M.left - crossX + 12 }
-              : { left: M.left + crossX + 12 }
-          }
+          style={{
+            // Beside the crosshair, on the side with room, and inside the chart.
+            left:
+              crossX > innerWidth / 2
+                ? Math.max(M.left + crossX - TIP_WIDTH - 12, 0)
+                : Math.min(M.left + crossX + 12, width - TIP_WIDTH),
+          }}
         >
           <div className="tooltip-date">{formatDate(dates[at] ?? '')}</div>
           {lines.map((l) => (
             <div className="tooltip-row" key={l.label}>
               <span className="key-line" style={{ background: l.color }} />
-              <span className="muted">{l.label}</span>
+              <span className="muted">{l.short}</span>
               <strong>{money(l.equity[at] ?? 0)}</strong>
               <span>{pct(l.drawdown[at])}</span>
             </div>
