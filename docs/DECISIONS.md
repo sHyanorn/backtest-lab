@@ -177,8 +177,27 @@
 - Analyses designed after seeing those results (the long-only half of each grid, the CSCV winners, the comparison with buy and hold in its deepest drawdowns) live in `backtest_lab.validation.posthoc` and `results/posthoc/`, and every place that shows them labels them post hoc (docs/DEMO.md)
 - Rationale: choosing which subset or statistic to show after seeing the results is itself a selection, the effect this project measures. Labelling keeps confirmatory and exploratory evidence apart
 
+## D040 Dashboard charts drawn as SVG with d3-scale and d3-shape
+- Date: 2026-11-08
+- The dashboard draws four chart forms: equity on a log scale with drawdown below it, columns (sensitivity over one axis, walk-forward windows, purged CV folds, the PBO logit histogram), a heat grid over two axes, and range bars. Each is a small React component on d3-scale and d3-shape; colours are CSS variables, so both themes come from one stylesheet
+- Measured as the gzipped size of a minimal line chart bundled with esbuild: ECharts 6 with tree-shaken imports 176 kB, Recharts 3 71 kB, visx xychart 45 kB, uPlot 23 kB (canvas, no heat map), d3-scale with d3-shape 16 kB
+- Every chart is keyboard focusable with a spoken readout and has a data table next to it. Verdicts pair a status colour with an icon and a word; the heat grid uses one blue ramp, or blue and red around zero when Sharpe ratios change sign
+
+## D041 Static and local modes of the dashboard
+- Date: 2026-11-08
+- The production build, deployed to GitHub Pages, reads only the committed reports: Vite emits `results/demo/*.json` and `results/posthoc/long_only.json` as hashed assets and the page fetches them, so nothing is copied or regenerated
+- The dev server (`npm run dev`) proxies `/api` to the local FastAPI service on 127.0.0.1:8000 (D016). When it answers, a Custom sweep view submits a sweep, polls its progress and renders the report with the same components. The view is loaded only when `import.meta.env.DEV` is true, so the static build contains no API code
+- Costs default to D014 in the form. A report with both costs at zero is labelled a zero-cost reference in its header and verdict panel
+- Rationale: the public demo stays free and needs no server (D002); custom searches remain possible for anyone who runs the project locally
+
 ## D042 The demo results stay frozen; the weekly workflow only updates data
 - Date: 2026-11-08
 - `results/demo` holds the reports produced once with the configuration of D021. They are not regenerated, by the weekly workflow or by hand; CI checks them against `results/demo/SHA256SUMS`. The weekly `data` workflow (D012) fetches and checks data only
 - Rationale: rerunning on newer data changes the sample, and so the numbers, after the conclusions were drawn from them. A pre-registered result has to stay the one that was registered; an analysis of newer data would be a new, separately labelled result
 - Not done: a weekly rerun over the registered dates to detect revisions in Yahoo's history. It would need the raw data that is not committed (D003), and a difference would only say that the data changed, which the quality checks already watch
+
+## D043 Dashboard types generated from the report schema
+- Date: 2026-11-08
+- `web/src/report.gen.ts` is generated from `docs/report.schema.json` with json-schema-to-typescript (`npm run gen:types`), and CI fails if the committed file differs. The loader accepts only `schema_version` 1.0 and checks the top-level sections before rendering
+- Post hoc results have no schema (D029), so their type is written by hand and the loader requires `post_hoc: true`
+- Rationale: one source of truth for the report format across the Python models, the API and the dashboard (D028)
