@@ -25,7 +25,7 @@ The configuration (D021) and the verdict thresholds (D022) were fixed before any
 
 The random-signal PBO of 0.299 sits just below the red line of 0.30; about one search in ten with no skill lands there (D022).
 
-The random-signal grid varies `seed`, a number, so the grid search treats it as an ordered axis (D023) and the sensitivity check compares adjacent seeds. Neighbouring seeds are unrelated, so that verdict carries no information about the control.
+The random-signal grid varies `seed`, a number, so the grid search treats it as an ordered axis (D023) and the sensitivity check compares adjacent seeds. Neighbouring seeds are unrelated, so that verdict carries no information about the control. A grid can now declare such an axis categorical (D019); the registered configuration is kept as it was run.
 
 ## Post hoc analysis
 

@@ -36,21 +36,26 @@ def _is_ordered(values: Sequence[ParamValue]) -> bool:
 class Grid:
     """Every combination of the axis values, enumerated with the last axis fastest.
 
-    Numeric axes are ordered and must be strictly increasing; bool and str axes are
-    categorical (METHODS.md Section 7).
+    Numeric axes are ordered and must be strictly increasing; bool and str axes, and
+    numeric axes listed in `categorical` (such as a random seed), are categorical
+    (METHODS.md Section 7, D019).
     """
 
     axes: tuple[tuple[str, tuple[ParamValue, ...]], ...]
     fixed: tuple[tuple[str, ParamValue], ...] = ()
+    categorical: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         names = [name for name, _ in self.axes] + [name for name, _ in self.fixed]
         if not self.axes or len(set(names)) != len(names):
             raise ValueError("need at least one axis and unique parameter names")
-        for name, values in self.axes:
+        unknown = set(self.categorical) - set(self.names)
+        if unknown or len(set(self.categorical)) != len(self.categorical):
+            raise ValueError(f"categorical must name distinct axes, got {list(self.categorical)}")
+        for (name, values), ordered in zip(self.axes, self.ordered, strict=True):
             if not values:
                 raise ValueError(f"axis {name!r} is empty")
-            if _is_ordered(values):
+            if ordered:
                 if any(b <= a for a, b in itertools.pairwise(values)):  # type: ignore[operator]
                     raise ValueError(f"numeric axis {name!r} must be strictly increasing")
             elif len(set(values)) != len(values):
@@ -61,10 +66,12 @@ class Grid:
         cls,
         axes: Mapping[str, Sequence[ParamValue]],
         fixed: Mapping[str, ParamValue] | None = None,
+        categorical: Sequence[str] = (),
     ) -> Grid:
         return cls(
             axes=tuple((name, tuple(values)) for name, values in axes.items()),
             fixed=tuple((fixed or {}).items()),
+            categorical=tuple(categorical),
         )
 
     @property
@@ -77,7 +84,9 @@ class Grid:
 
     @property
     def ordered(self) -> tuple[bool, ...]:
-        return tuple(_is_ordered(values) for _, values in self.axes)
+        return tuple(
+            _is_ordered(values) and name not in self.categorical for name, values in self.axes
+        )
 
     def __len__(self) -> int:
         return int(np.prod(self.shape))
@@ -93,14 +102,17 @@ class Grid:
         return tuple(int(i) for i in np.unravel_index(trial, self.shape))
 
     def to_json(self) -> dict[str, Any]:
-        return {
+        out: dict[str, Any] = {
             "axes": {name: list(values) for name, values in self.axes},
             "fixed": dict(self.fixed),
         }
+        if self.categorical:  # omitted when empty, so earlier files are unchanged
+            out["categorical"] = list(self.categorical)
+        return out
 
     @classmethod
     def from_json(cls, obj: Mapping[str, Any]) -> Grid:
-        return cls.of(obj["axes"], obj["fixed"])
+        return cls.of(obj["axes"], obj["fixed"], obj.get("categorical", ()))
 
 
 @dataclass(frozen=True)

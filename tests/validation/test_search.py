@@ -7,6 +7,7 @@ import pytest
 from backtest_lab.engine.backtest import Costs, run
 from backtest_lab.strategies import MovingAverageCrossover
 from backtest_lab.validation.search import Grid, Trials, run_grid
+from backtest_lab.validation.sensitivity import neighbours
 from tests.factories import synthetic_market
 
 GRID = Grid.of({"fast": [5, 10], "slow": [20, 40], "allow_short": [False, True]}, {"ticker": "SPY"})
@@ -42,6 +43,31 @@ def test_grid_rejects_invalid_axes(axes: dict[str, list[int]], fixed: dict[str, 
 
 def test_grid_json_round_trip() -> None:
     assert Grid.from_json(GRID.to_json()) == GRID
+    assert "categorical" not in GRID.to_json()  # files written before D019 are unchanged
+    seeds = Grid.of({"seed": [3, 1, 2]}, {"hold": 5}, categorical=["seed"])
+    assert Grid.from_json(seeds.to_json()) == seeds
+
+
+def test_numeric_axis_can_be_categorical() -> None:
+    grid = Grid.of({"seed": [3, 1, 2], "hold": [5, 10]}, categorical=["seed"])
+    assert grid.ordered == (False, True)
+    # Seeds have no neighbours; only the ordered axis varies around a trial.
+    assert neighbours(grid, grid.params().index({"seed": 1, "hold": 5})) == (3,)
+
+
+@pytest.mark.parametrize(
+    ("axes", "categorical"),
+    [
+        ({"seed": [1, 1]}, ["seed"]),
+        ({"seed": [1, 2]}, ["hold"]),
+        ({"seed": [1, 2]}, ["seed", "seed"]),
+    ],
+)
+def test_grid_rejects_invalid_categorical(
+    axes: dict[str, list[int]], categorical: list[str]
+) -> None:
+    with pytest.raises(ValueError):
+        Grid.of(axes, categorical=categorical)
 
 
 def test_trials_are_backtests_aligned_on_the_latest_start() -> None:

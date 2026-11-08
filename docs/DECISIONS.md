@@ -76,6 +76,12 @@
 - A day that loses 100% or more ends the backtest: its return is -1 and later returns are 0
 - Limitation: ignoring interest on cash understates the returns of strategies that are often flat when rates are high
 
+## D019 Categorical numeric grid axes
+- Date: 2026-11-08
+- A grid can list numeric axes as categorical, such as a random seed. Their values need not be ordered, and sensitivity compares a trial only with neighbours along ordered axes, so a categorical axis never supplies neighbours
+- `trials.json` writes the list only when it is not empty, so files saved before this change load unchanged. The pre-registered demo (D021) keeps its configuration, in which `seed` is an ordered axis
+- Rationale: adjacent seeds are unrelated, so treating them as neighbours gives a sensitivity verdict with no meaning
+
 ## D020 Metrics return NaN in degenerate cases
 - Date: 2026-11-08
 - A standard deviation or downside deviation below 1e-12 counts as zero, and a ratio with a zero denominator is NaN; CAGR is NaN when final wealth is not positive (METHODS.md, Conventions and Section 1)
