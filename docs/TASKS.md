@@ -25,7 +25,7 @@
 - [x] In-sample/out-of-sample split and walk-forward analysis
 - [x] Purged and embargoed K-fold
 - [x] Combinatorially symmetric cross-validation (CSCV) and PBO
-- [ ] Deflated Sharpe ratio, probabilistic Sharpe ratio, minimum backtest length
+- [x] Deflated Sharpe ratio, probabilistic Sharpe ratio, minimum backtest length
 - [ ] Parameter sensitivity analysis
 - [ ] Control test with a random-signal strategy
 - [ ] Credibility report generation (JSON)

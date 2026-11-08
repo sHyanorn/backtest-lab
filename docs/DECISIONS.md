@@ -121,3 +121,9 @@
 - Each row of the trial matrix is one daily return with information interval [t - 1, t]: the target is decided at close t - 1 and the return is marked to close t (D013). The span is a constant of the engine, `INFORMATION_SPAN`, which purged K-fold reads. With closed intervals each test fold loses one training row before it, and training resumes h + 1 rows after it
 - In each fold the best trial is selected by Sharpe on the training rows taken together, which are not contiguous when the test fold is inside the sample. The CV score is the mean annualized test-fold Sharpe; a fold where the selected trial is flat counts as 0
 - Rationale: ten folds of the demo sample are over three years each, long enough for a test-fold Sharpe ratio to mean something
+
+## D026 Normal distribution from the standard library
+- Date: 2026-11-08
+- PSR, DSR, MinTRL and MinBTL need only the standard normal CDF and its inverse, taken from `statistics.NormalDist` (the inverse is Wichura's AS241 algorithm, accurate to double precision). Skewness and raw kurtosis are population moments computed with numpy, the definitions `scipy.stats.skew` and `scipy.stats.kurtosis(fisher=False)` use (METHODS.md, Conventions); a test checks them against pandas' bias-corrected estimates after converting those back
+- Rationale: scipy would be a large dependency for two functions. The paper examples reproduce to the stated precision without it
+- The average pairwise correlation skips degenerate trials and is 0 when fewer than two trials remain, so N-hat falls back to N, the conservative side
