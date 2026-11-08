@@ -61,21 +61,25 @@ class JobStore:
         self._lock = threading.Lock()
         self._db.execute(_SCHEMA)
 
-    def _execute(self, sql: str, args: tuple[Any, ...] = ()) -> sqlite3.Cursor:
+    def _write(self, sql: str, args: tuple[Any, ...]) -> int:
         with self._lock:
-            return self._db.execute(sql, args)
+            return self._db.execute(sql, args).rowcount
+
+    def _read_one(self, sql: str, args: tuple[Any, ...]) -> sqlite3.Row | None:
+        with self._lock:
+            row: sqlite3.Row | None = self._db.execute(sql, args).fetchone()
+            return row
 
     def directory(self, job_id: str) -> Path:
         return self.root / job_id
 
     def fail_unfinished(self, reason: str) -> int:
         """Mark jobs left queued or running by a previous server process as failed."""
-        cur = self._execute(
+        return self._write(
             "UPDATE jobs SET status = 'failed', error = ?, finished_at = ? "
             "WHERE status IN ('queued', 'running')",
             (reason, _now()),
         )
-        return cur.rowcount
 
     def enqueue(
         self, job_id: str, strategy: str, request: str, n_trials: int, max_queued: int
@@ -95,7 +99,7 @@ class JobStore:
             return True
 
     def get(self, job_id: str) -> dict[str, Any] | None:
-        row = self._execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        row = self._read_one("SELECT * FROM jobs WHERE id = ?", (job_id,))
         if row is None:
             return None
         out = dict(row)
@@ -105,22 +109,22 @@ class JobStore:
         return out
 
     def started(self, job_id: str) -> None:
-        self._execute(
+        self._write(
             "UPDATE jobs SET status = 'running', started_at = ? WHERE id = ?", (_now(), job_id)
         )
 
     def progress(self, job_id: str, done: int) -> None:
-        self._execute("UPDATE jobs SET done = ? WHERE id = ?", (done, job_id))
+        self._write("UPDATE jobs SET done = ? WHERE id = ?", (done, job_id))
 
     def finished(self, job_id: str, trial: int, params: dict[str, Any], verdict: str) -> None:
-        self._execute(
+        self._write(
             "UPDATE jobs SET status = 'done', finished_at = ?, selected_trial = ?, "
             "selected_params = ?, verdict = ? WHERE id = ?",
             (_now(), trial, json.dumps(params), verdict, job_id),
         )
 
     def failed(self, job_id: str, error: str) -> None:
-        self._execute(
+        self._write(
             "UPDATE jobs SET status = 'failed', error = ?, finished_at = ? WHERE id = ?",
             (error, _now(), job_id),
         )

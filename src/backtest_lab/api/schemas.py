@@ -91,7 +91,7 @@ class SweepStatus(_Response):
     status: Literal["queued", "running", "done", "failed"]
     strategy: str
     n_trials: int
-    done: int  # trials backtested so far
+    done: int  # trials backtested so far; the status stays running while the report is built
     error: str | None
     created_at: datetime
     started_at: datetime | None
