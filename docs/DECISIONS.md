@@ -101,3 +101,10 @@
 - Sensitivity retention: green from 0.75, yellow from 0.5, red below 0.5 or when the best Sharpe is not positive. A project convention; there is no published threshold
 - Overall: the worst verdict among the checks
 - Rationale: fixed before any real-data run so the thresholds cannot be fitted to the demo
+
+## D023 Grid search and stored trials
+- Date: 2026-11-08
+- A grid is rectangular: every combination of its axis values, enumerated with the last axis fastest, and the trial number is the position in that order. Numeric axes must be strictly increasing so that sensitivity neighbours are adjacent values; bool and string axes are categorical. A grid with any invalid combination is rejected before work starts
+- Trials run in a process pool. Each trial is a deterministic backtest of its parameters, and results are collected in grid order, so the output is identical for any number of processes. Market data and costs reach each worker once through the pool initializer, which works under the spawn start method used on Windows
+- Storage is one directory per search: `returns.parquet` (T x N net daily returns from the first date all trials are live, one column per trial) and `trials.json` (strategy, grid, costs, sample dates and each trial's parameters and first live date). The API can keep one directory per job; the dashboard reads the report instead of the matrix
+- Strategies are looked up by name in a registry, so stored trials and worker jobs carry a name, not a class
