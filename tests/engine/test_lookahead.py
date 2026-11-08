@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from backtest_lab.engine.backtest import Prices, Result, run
+from backtest_lab.engine.backtest import Costs, Prices, Result, run
 
 N, K = 120, 3
 CUTS = [10, 47, 80, 118]
@@ -55,3 +55,34 @@ def test_targets_are_held_from_the_next_open() -> None:
     weights, prices = _market(seed=1)
     held = run(weights, prices).weights
     pd.testing.assert_frame_equal(held, weights.shift(1).iloc[1:])
+
+
+@pytest.mark.parametrize("cut", CUTS)
+def test_trade_at_an_open_ignores_that_days_close(cut: int) -> None:
+    # Turnover, costs and positions at the open of day t are fixed before close t exists.
+    weights, prices = _market(seed=cut)
+    t = weights.index[cut]
+    close = prices.close.copy()
+    close.loc[t:] *= 1.3
+    moved = Prices(open=prices.open, close=close)
+    a, b = run(weights, prices), run(weights, moved)
+    for field in ("turnover", "costs"):
+        assert getattr(a, field).loc[t] == getattr(b, field).loc[t]
+    pd.testing.assert_series_equal(a.weights.loc[t], b.weights.loc[t])
+
+
+@pytest.mark.parametrize("cut", CUTS[:-1])
+def test_new_target_does_not_earn_the_overnight_gap(cut: int) -> None:
+    # With no intraday move on day t+1, its return comes only from the previous
+    # positions' overnight gap, so it cannot depend on the target formed at close t.
+    weights, prices = _market(seed=cut)
+    t, nxt = weights.index[cut], weights.index[cut + 1]
+    close = prices.close.copy()
+    close.loc[nxt] = prices.open.loc[nxt]
+    flat_day = Prices(open=prices.open, close=close)
+    zero = Costs(fee_bps=0.0, slippage_bps=0.0)
+    changed = weights.copy()
+    changed.loc[t] = -changed.loc[t]
+    a = run(weights, flat_day, zero).returns.loc[nxt]
+    b = run(changed, flat_day, zero).returns.loc[nxt]
+    assert a == pytest.approx(b, abs=1e-15)
