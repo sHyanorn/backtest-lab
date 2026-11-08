@@ -1,8 +1,15 @@
-import { useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 
 const EDGE = 12
 
-/** A small "i" button whose text shows on hover, focus or tap. */
+/** A small "i" button whose text shows on hover or focus, and toggles on tap. */
 export function InfoTip({
   label,
   children,
@@ -15,13 +22,41 @@ export function InfoTip({
   const id = useId()
   const [hover, setHover] = useState(false)
   const [focus, setFocus] = useState(false)
+  const [pinned, setPinned] = useState(false)
+  // Escape hides the tip until the pointer or focus leaves and comes back.
+  const [dismissed, setDismissed] = useState(false)
   const [shift, setShift] = useState(0)
+  const root = useRef<HTMLSpanElement>(null)
   const tip = useRef<HTMLSpanElement>(null)
-  const open = hover || focus
+  const pointer = useRef('')
+  const open = (hover || focus || pinned) && !dismissed
+
+  useEffect(() => {
+    if (!open) return
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return
+      // Inside a dialog, the first Escape closes the tip, not the dialog.
+      event.preventDefault()
+      setPinned(false)
+      setDismissed(true)
+    }
+    function onPointer(event: PointerEvent) {
+      if (!root.current?.contains(event.target as Node)) setPinned(false)
+    }
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('pointerdown', onPointer)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('pointerdown', onPointer)
+    }
+  }, [open])
 
   // Keep the tip inside the viewport on narrow screens.
   useLayoutEffect(() => {
-    if (!open || tip.current === null) return setShift(0)
+    if (!open || tip.current === null) {
+      setShift(0)
+      return
+    }
     const box = tip.current.getBoundingClientRect()
     const width = document.documentElement.clientWidth
     if (box.right > width - EDGE) setShift(width - EDGE - box.right)
@@ -30,22 +65,40 @@ export function InfoTip({
 
   return (
     <span
+      ref={root}
       className={`info ${align}`}
       onPointerEnter={(e) => e.pointerType === 'mouse' && setHover(true)}
-      onPointerLeave={() => setHover(false)}
+      onPointerLeave={() => {
+        setHover(false)
+        if (!focus) setDismissed(false)
+      }}
     >
       <button
         type="button"
         className="info-button"
         aria-label={label}
         aria-describedby={id}
-        onFocus={() => setFocus(true)}
-        onBlur={() => setFocus(false)}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') {
-            setFocus(false)
-            setHover(false)
+        aria-expanded={open}
+        onPointerDown={(e) => (pointer.current = e.pointerType)}
+        onClick={() => {
+          // A mouse already opened it on hover; a tap or a key toggles it.
+          if (pointer.current === 'mouse') return
+          if (open) {
+            setPinned(false)
+            setDismissed(true)
+          } else {
+            setDismissed(false)
+            setPinned(true)
           }
+        }}
+        onKeyDown={() => (pointer.current = '')}
+        // Focus from a pointer is handled by hover or by the tap itself.
+        onFocus={() => pointer.current === '' && setFocus(true)}
+        onBlur={() => {
+          pointer.current = ''
+          setFocus(false)
+          setPinned(false)
+          setDismissed(false)
         }}
       >
         <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
