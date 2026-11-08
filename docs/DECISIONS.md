@@ -40,7 +40,7 @@
 
 ## D010 Macro publication lag and revisions
 - Date: 2026-11-07
-- FRED dates are observation periods, so each value gets an `available_date`: daily rates (DGS10, DGS3MO, DFF) the next Federal Reserve business day, after the H.15 release (the Fed is closed on some days the stock market is open, such as Veterans Day); a monthly value (CPIAUCSL, UNRATE) for month M at the end of M+1. Strategies may only read values whose `available_date` has passed
+- FRED dates are observation periods, so each value gets an `available_date`: daily rates (DGS10, DGS3MO, DFF) the next Federal Reserve business day, after the H.15 release (the Fed is closed on some days the stock market is open, such as Veterans Day); a monthly value (CPIAUCSL, UNRATE) for month M at the end of M+1. A signal generated after the close of day t and filled at the next open may use values whose `available_date` is on or before t
 - Checked against ALFRED vintages at every month-end from 1998 to 2026: each monthly value was published by the end of M+1 except UNRATE for September 2025, delayed by the government shutdown to 2025-11-20, which is hard-coded. October 2025 was never published for either series
 - Limitation: fredgraph serves the latest revised values, so even with the lag a backtest sees revised numbers. Measured against ALFRED vintages at 84 quarter-ends from 2005 to 2025, the first-release value differed from today's by a mean of 0.048 pp (max 0.20 pp) for UNRATE and 0.030 pp (max 0.13 pp) for CPI year-over-year inflation. Treasury and fed funds rates are not revised. The rotation strategy conditions on rates only, so this does not affect it; using CPI or UNRATE as signals would need ALFRED vintages
 
@@ -57,17 +57,18 @@
 - The incremental update refetches a ticker in full only when the last 10 cached rows change; a correction to an older dividend is picked up by the next full fetch (a cache miss, or `--full`)
 - GitHub disables scheduled workflows after 60 days without repository activity; it has to be re-enabled from the Actions tab
 
-## D020 Metrics return NaN in degenerate cases
-- Date: 2026-11-08
-- A standard deviation or downside deviation below 1e-12 counts as zero, and a ratio with a zero denominator is NaN; CAGR is NaN when final wealth is not positive (METHODS.md, Conventions and Section 1)
-- empyrical-reloaded returns `inf`, or a large value from float noise in the standard deviation, for constant or all-positive series. An infinite Sharpe would rank first in parameter search and PBO, so the project uses NaN and treats it as Sharpe 0 in rankings. Cross-checks against empyrical (D008) cover non-degenerate series only
-
 ## D013 Fills at the next open
 - Date: 2026-11-08
 - Target weights are decided at the close of day t and traded at the open of t+1. The return of t+1 is `(1 + overnight)(1 + intraday) - 1`: the previous positions, drifted with prices, earn the gap from close t to open t+1; the portfolio is then rebalanced to the target and earns open to close. Trading costs (D014) are taken at the open, between the two legs
-- The portfolio is rebalanced to its targets every day, so a multi-asset portfolio trades a little every day as prices drift. A single fully invested asset does not drift and trades only when its target changes
+- The portfolio is rebalanced to its targets every day, so it trades a little every day as prices drift. Only a single asset held at weight +1 does not drift; a short or partial position is resized as its price moves (a constant -1 short in SPY trades about 4 times a year, roughly 24 bps a year at default costs)
 - Opens are adjusted with the same day's `Adj Close / Close` factor. Back-adjustment rescales all prices before a later dividend by one constant, so signals must be scale-invariant functions of prices (returns, ratios, crossovers, z-scores) to stay free of look-ahead
 - Rationale: matches the hard rule that a signal fills no earlier than t+1, and the one-day information interval assumed in METHODS.md Section 3. Filling at the next close would add a day of delay for no extra realism
+
+## D014 Transaction costs
+- Date: 2026-11-08
+- Costs are proportional to traded notional, `rate = (fee_bps + slippage_bps) / 1e4`, with defaults of 1 bp fees and 5 bps slippage per side. They are on by default; a zero-cost run is only a reference
+- Turnover at an open is the sum of `|target - drifted weight|`, so building a position from cash costs `rate x gross exposure` and daily rebalancing of a multi-asset portfolio pays for its drift (D013)
+- Rationale: commissions on liquid US ETFs and large caps are near zero; 5 bps covers the half-spread and impact at the open with room to spare
 
 ## D015 Cash, shorting and leverage
 - Date: 2026-11-08
@@ -75,8 +76,7 @@
 - A day that loses 100% or more ends the backtest: its return is -1 and later returns are 0
 - Limitation: ignoring interest on cash understates the returns of strategies that are often flat when rates are high
 
-## D014 Transaction costs
+## D020 Metrics return NaN in degenerate cases
 - Date: 2026-11-08
-- Costs are proportional to traded notional, `rate = (fee_bps + slippage_bps) / 1e4`, with defaults of 1 bp fees and 5 bps slippage per side. They are on by default; a zero-cost run is only a reference
-- Turnover at an open is the sum of `|target - drifted weight|`, so building a position from cash costs `rate x gross exposure` and daily rebalancing of a multi-asset portfolio pays for its drift (D013)
-- Rationale: commissions on liquid US ETFs and large caps are near zero; 5 bps covers the half-spread and impact at the open with room to spare
+- A standard deviation or downside deviation below 1e-12 counts as zero, and a ratio with a zero denominator is NaN; CAGR is NaN when final wealth is not positive (METHODS.md, Conventions and Section 1)
+- empyrical-reloaded returns `inf`, or a large value from float noise in the standard deviation, for constant or all-positive series. An infinite Sharpe would rank first in parameter search and PBO, so the project uses NaN and treats it as Sharpe 0 in rankings. Cross-checks against empyrical (D008) cover non-degenerate series only
