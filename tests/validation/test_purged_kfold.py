@@ -68,6 +68,23 @@ def _matrix(t: int, n: int, seed: int) -> pd.DataFrame:
     return pd.DataFrame(x, index=pd.bdate_range("2000-01-03", periods=t))
 
 
+def test_cv_selection_ignores_purged_and_embargoed_rows() -> None:
+    # Identical trials, except that a row where the common return is 0 pays one trial a
+    # gain; the larger the gain, the higher that trial's Sharpe on any rows that include it.
+    t, h = 1000, 10
+    base = 0.0005 + 0.01 * np.random.default_rng(0).standard_normal(t)
+    rigged = {1: (199, 0.08), 2: (410, 0.07), 3: (411, 0.05)}
+    base[[row for row, _ in rigged.values()]] = 0.0
+    x = np.tile(base[:, None], (1, 4))
+    for trial, (row, gain) in rigged.items():
+        x[row, trial] = gain
+    frame = pd.DataFrame(x, index=pd.bdate_range("2000-01-03", periods=t))
+    fold = purged_cv(frame, k=5, embargo=h).folds[1]  # test rows 200-399
+    # Row 199 is purged, rows 400 (purged) to 410 (embargoed) are dropped, 411 is kept.
+    assert fold.n_train == t - 200 - 1 - (1 + h)
+    assert fold.trial == 3
+
+
 def test_cv_selects_a_planted_edge_in_every_fold() -> None:
     x = _matrix(2000, 20, seed=0)
     x[11] += 0.002
