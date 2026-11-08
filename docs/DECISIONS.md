@@ -80,3 +80,24 @@
 - Date: 2026-11-08
 - A standard deviation or downside deviation below 1e-12 counts as zero, and a ratio with a zero denominator is NaN; CAGR is NaN when final wealth is not positive (METHODS.md, Conventions and Section 1)
 - empyrical-reloaded returns `inf`, or a large value from float noise in the standard deviation, for constant or all-positive series. An infinite Sharpe would rank first in parameter search and PBO, so the project uses NaN and treats it as Sharpe 0 in rankings. Cross-checks against empyrical (D008) cover non-degenerate series only
+
+## D021 Pre-registered demo
+- Date: 2026-11-08
+- Fixed before any strategy was run on real data. Instrument SPY, sample 1993-01-29 to 2026-10-30, default costs (D014)
+- Moving-average crossover: `fast` in {5, 10, 15, 20, 25, 30, 40, 50}, `slow` in {60, 80, 100, 120, 150, 180, 200, 250}, `allow_short` in {false, true}: 128 trials
+- Robust comparison: time-series momentum, `lookback` in {42, 63, ..., 378} (step 21, 17 values), `allow_short` in {false, true}: 34 trials
+- Random-signal control: random direction on SPY, `seed` 0 to 99, `hold` 5 days: 100 trials
+- Settings: holdout f = 0.7; walk-forward rolling, IS 1260 and OOS 252 days; purged K-fold K = 10, h = ceil(0.01 T); CSCV S = 16; sensitivity radius 1, heatmap over (`fast`, `slow`) and over `lookback` for momentum
+- Benchmark: SPY buy and hold on the same dates, a constant weight of 1 through the engine with default costs. The report gives its Sharpe, CAGR, maximum drawdown and volatility and the selected trial's differences from them. It is a reference only: it takes no part in any verdict and changes no test in METHODS.md
+- Rationale: with r_f = 0 (D015) and the equity premium, a long-biased SPY strategy can look significant by holding the market. Passing the checks says the result is unlikely to come from the parameter search alone; beating buy and hold is a separate question, and the report keeps the two apart
+- Expected in advance: both strategies may pass PSR and DSR because of the equity premium, and momentum may show a high PBO because its configurations have similar skill (METHODS.md Section 4). The configuration is not changed after the results are seen
+
+## D022 Credibility report verdicts
+- Date: 2026-11-08
+- Retention (holdout OOS/IS Sharpe, walk-forward efficiency, purged CV test/train Sharpe): green when the ratio is at least 0.5 and OOS performance is positive; yellow when the ratio is below 0.5 and OOS is positive; red when OOS is not positive or the ratio is undefined. Basis: 50% is the commonly cited acceptance level for walk-forward efficiency (Pardo, 2008; the book text was not checked, see METHODS.md Section 2.2)
+- PBO: green up to 0.10, yellow up to 0.30, red above. Green follows the paper's remark on investors sensitive to PBO below 1/10. Red is set from the null: for X = 0.01 `default_rng(seed).standard_normal((1000, 100))`, S = 16 and seeds 0 to 199, PBO had mean 0.488, standard deviation 0.153 and 5/10/25/50% quantiles 0.236/0.296/0.372/0.476; 89.5% of seeds were above 0.30, so a search with no skill is red about nine times in ten
+- DSR and PSR(0): green from 0.95, yellow from 0.5, red below. A DSR below 0.5 means the selected Sharpe is below the expected best of N̂ skill-less trials
+- MinBTL: red when the sample is shorter than MinBTL or the selected Sharpe is not positive, otherwise green. It is a necessary condition only, so there is no middle band
+- Sensitivity retention: green from 0.75, yellow from 0.5, red below 0.5 or when the best Sharpe is not positive. A project convention; there is no published threshold
+- Overall: the worst verdict among the checks
+- Rationale: fixed before any real-data run so the thresholds cannot be fitted to the demo
