@@ -27,6 +27,8 @@ The random-signal PBO of 0.299 sits just below the red line of 0.30; about one s
 
 The random-signal grid varies `seed`, a number, so the grid search treats it as an ordered axis (D023) and the sensitivity check compares adjacent seeds. Neighbouring seeds are unrelated, so that verdict carries no information about the control. A grid can now declare such an axis categorical (D019); the registered configuration is kept as it was run.
 
+**Rerun on newer data.** On 2026-11-08 the three searches were run again, with the same code and configuration, on prices fetched from Yahoo that day, into a separate directory. The overall and per-check verdicts, the selected settings, every summary sentence and the PBO values were identical to the registered files. The other numbers were not: of the 21,246 numbers in the three files, 98% differed by less than 0.00001 and all by less than 0.001, because Yahoo had revised its adjusted prices slightly, so the files are not byte-identical. The registered result is the frozen files in `results/demo/` (D042).
+
 ## Post hoc analysis
 
 Not pre-registered. These questions were chosen after seeing the results above, to explain them. Restricting a grid to the half that won is a choice made knowing the outcome, so the numbers below are exploratory and carry no confirmatory weight; they are kept out of the credibility reports (D029). `python -m backtest_lab.validation.posthoc` writes them to `results/posthoc/long_only.json`.
