@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Backtesting platform that tests whether a strategy is overfit"
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.14"
 dependencies = [
     "duckdb==2.0.0",
