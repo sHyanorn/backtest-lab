@@ -4,9 +4,17 @@ export type { Report }
 
 /** The pre-registered searches in results/demo (D021), in story order. */
 export const DEMOS = [
-  { key: 'ma_crossover', label: 'Moving average' },
-  { key: 'momentum', label: 'Momentum' },
-  { key: 'random_signal', label: 'Random control' },
+  {
+    key: 'ma_crossover',
+    label: 'Moving average',
+    title: 'Moving-average crossover',
+  },
+  { key: 'momentum', label: 'Momentum', title: 'Time-series momentum' },
+  {
+    key: 'random_signal',
+    label: 'Random control',
+    title: 'Random-signal control',
+  },
 ] as const
 
 export type DemoKey = (typeof DEMOS)[number]['key']

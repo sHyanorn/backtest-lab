@@ -1,6 +1,8 @@
 import { EquityChart, Legend, type Line } from './charts/EquityChart.tsx'
-import { loadDemo, type DemoKey, type Report } from './data.ts'
+import { DEMOS, loadDemo, type DemoKey, type Report } from './data.ts'
 import { settingText } from './format.ts'
+import { CheckCards } from './report/CheckCards.tsx'
+import { Overview } from './report/Overview.tsx'
 import { useAsync } from './useAsync.ts'
 
 export function DemoView({ demo }: { demo: DemoKey }) {
@@ -15,12 +17,21 @@ export function DemoView({ demo }: { demo: DemoKey }) {
   if (!report.value) return <div className="view" aria-busy="true" />
   return (
     <div className="view" aria-busy={report.status === 'loading'}>
-      <ReportView report={report.value} />
+      <ReportView
+        report={report.value}
+        title={`${DEMOS.find((d) => d.key === demo)?.title} on ${report.value.strategy.fixed.ticker}`}
+      />
     </div>
   )
 }
 
-export function ReportView({ report }: { report: Report }) {
+export function ReportView({
+  report,
+  title,
+}: {
+  report: Report
+  title: string
+}) {
   const lines: Line[] = [
     {
       label: settingText(report.selected.params, report.strategy.grid),
@@ -36,18 +47,22 @@ export function ReportView({ report }: { report: Report }) {
     },
   ]
   return (
-    <section className="panel" aria-labelledby="equity-title">
-      <div className="panel-head">
-        <h2 className="panel-title" id="equity-title">
-          Equity and drawdown
-        </h2>
-        <Legend lines={lines} />
-      </div>
-      <EquityChart
-        dates={report.series.dates}
-        lines={lines}
-        label="Weekly equity on a log scale and drawdown of the selected setting and buy and hold"
-      />
-    </section>
+    <>
+      <Overview report={report} title={title} />
+      <section className="panel" aria-labelledby="equity-title">
+        <div className="panel-head">
+          <h2 className="panel-title" id="equity-title">
+            Equity and drawdown
+          </h2>
+          <Legend lines={lines} />
+        </div>
+        <EquityChart
+          dates={report.series.dates}
+          lines={lines}
+          label="Weekly equity on a log scale and drawdown of the selected setting and buy and hold"
+        />
+      </section>
+      <CheckCards report={report} />
+    </>
   )
 }

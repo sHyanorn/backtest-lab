@@ -8,7 +8,7 @@ import {
   type KeyboardEvent,
   type PointerEvent,
 } from 'react'
-import { date as formatDate, minus, num, pct } from '../format.ts'
+import { date as formatDate, num, pct } from '../format.ts'
 import { useWidth } from './useWidth.ts'
 
 export interface Line {
@@ -150,7 +150,7 @@ export function EquityChart({ dates, lines, label }: Props) {
         lines
           .map(
             (l) =>
-              `${l.label} ${money(l.equity[at] ?? 0)}, drawdown ${minus(pct(l.drawdown[at]))}`,
+              `${l.label} ${money(l.equity[at] ?? 0)}, drawdown ${pct(l.drawdown[at])}`,
           )
           .join('; ')
 
@@ -203,7 +203,7 @@ export function EquityChart({ dates, lines, label }: Props) {
               >
                 <line x2={innerWidth} />
                 <text x={-8} dy="0.32em" textAnchor="end">
-                  {minus(pct(t, 0))}
+                  {pct(t, 0)}
                 </text>
               </g>
             ))}
@@ -295,7 +295,7 @@ export function EquityChart({ dates, lines, label }: Props) {
               <span className="key-line" style={{ background: l.color }} />
               <span className="muted">{l.label}</span>
               <strong>{money(l.equity[at] ?? 0)}</strong>
-              <span>{minus(pct(l.drawdown[at]))}</span>
+              <span>{pct(l.drawdown[at])}</span>
             </div>
           ))}
         </div>
@@ -355,7 +355,7 @@ function YearTable({ dates, lines }: { dates: string[]; lines: Line[] }) {
                   <td key={k}>{money(v)}</td>
                 ))}
                 {r.drawdown.map((v, k) => (
-                  <td key={k}>{minus(pct(v))}</td>
+                  <td key={k}>{pct(v)}</td>
                 ))}
               </tr>
             ))}
