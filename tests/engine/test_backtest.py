@@ -161,3 +161,46 @@ def test_weights_may_cover_a_subset_of_tickers() -> None:
     result = run(weights, PRICES, ZERO)
     assert result.start == DATES[2]
     assert list(result.weights.columns) == ["A", "B"]
+
+
+def test_row_with_any_nan_is_flat() -> None:
+    weights = pd.DataFrame(
+        {"A": [0.5, 0.5, 0.5, 0.5], "B": [np.nan, np.nan, 0.5, 0.5]}, index=DATES
+    )
+    result = run(weights, PRICES, ZERO)
+    assert result.start == DATES[3]
+    assert (result.returns.loc[: DATES[2]] == 0.0).all()
+    assert (result.weights.loc[: DATES[2]] == 0.0).all().all()
+
+
+def test_weights_must_cover_every_price_date() -> None:
+    with pytest.raises(ValueError, match="one row per price date"):
+        run(WEIGHTS.iloc[::2], PRICES)
+
+
+def test_negative_costs_are_rejected() -> None:
+    with pytest.raises(ValueError):
+        Costs(fee_bps=-1.0)
+
+
+@pytest.mark.parametrize(
+    ("open_a", "close_a", "weight", "leverage"),
+    [
+        (250.0, 625.0, -1.0, 1.0),  # short: overnight and intraday factors both negative
+        (100.0, 40.0, 2.0, 2.0),  # 2x long: -60% intraday
+        (200.0, 200.0, -1.0, 1.0),  # short wiped out exactly at the open, with costs
+    ],
+)
+def test_ruin_is_detected_in_any_leg(
+    open_a: float, close_a: float, weight: float, leverage: float
+) -> None:
+    prices = _prices(
+        open_=[[100, 50], [100, 50], [open_a, 50], [open_a, 50]],
+        close=[[100, 50], [100, 50], [close_a, 50], [close_a, 50]],
+    )
+    weights = pd.DataFrame([[weight, 0.0]] * 4, index=DATES, columns=["A", "B"])
+    result = run(weights, prices, max_leverage=leverage)
+    assert list(result.returns) == [pytest.approx(-6e-4 * abs(weight)), -1.0, 0.0]
+    assert np.isfinite(result.turnover).all()
+    assert result.turnover.iloc[-1] == 0.0
+    assert (result.weights.iloc[-1] == 0.0).all()

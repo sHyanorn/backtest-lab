@@ -15,6 +15,10 @@ class Costs:
     fee_bps: float = 1.0
     slippage_bps: float = 5.0
 
+    def __post_init__(self) -> None:
+        if self.fee_bps < 0 or self.slippage_bps < 0:
+            raise ValueError("costs must be non-negative")
+
     @property
     def rate(self) -> float:
         return (self.fee_bps + self.slippage_bps) / 1e4
@@ -44,6 +48,11 @@ class Prices:
 
 @dataclass(frozen=True)
 class Result:
+    """Daily series from the second price date on.
+
+    Returns before `start` are warm-up zeros: slice from `start` before computing metrics.
+    """
+
     returns: pd.Series  # net daily returns
     gross_returns: pd.Series
     turnover: pd.Series  # sum of |weight change| traded at each open
@@ -65,10 +74,9 @@ def _targets(weights: pd.DataFrame, prices: Prices) -> pd.DataFrame:
     unknown = weights.columns.difference(prices.close.columns)
     if len(unknown):
         raise ValueError(f"no prices for {list(unknown)}")
-    extra = weights.index.difference(prices.close.index)
-    if len(extra):
-        raise ValueError(f"weights on dates without prices, first {extra[0]}")
-    return weights.reindex(index=prices.close.index)
+    if not weights.index.equals(prices.close.index):
+        raise ValueError("weights must have one row per price date")
+    return weights
 
 
 def run(
@@ -80,50 +88,66 @@ def run(
 ) -> Result:
     """Backtest target weights decided at each close and filled at the next open.
 
-    The return of day t is (1 + overnight)(1 + intraday) - 1: the positions held
-    from the previous open earn the gap from the previous close to today's open,
-    then the portfolio is rebalanced to the previous close's target and earns
-    the move to today's close. Costs are paid on the traded notional at the
-    open, between the two legs. Uninvested capital earns zero. Rows with any NaN
-    (warm-up) and tickers without a column count as zero weight.
+    The return of day t is (1 + overnight)(1 - cost)(1 + intraday) - 1: the
+    positions held from the previous open earn the gap from the previous close
+    to today's open, costs are paid on the notional traded to reach the previous
+    close's target, and the new positions earn the move to today's close.
+    Uninvested capital earns zero. A row with any NaN (warm-up) is flat, and
+    tickers without a column have zero weight.
     """
     targets = _targets(weights, prices)
     valid = targets.notna().all(axis=1).to_numpy()
-    w = targets.reindex(columns=prices.close.columns).fillna(0.0).to_numpy(dtype=np.float64)
-    if (np.abs(w).sum(axis=1) > max_leverage + LEVERAGE_TOL).any():
+    tickers = prices.close.columns
+    w_all = targets.reindex(columns=tickers).fillna(0.0).to_numpy(dtype=np.float64, copy=True)
+    w_all[~valid] = 0.0
+    if (np.abs(w_all).sum(axis=1) > max_leverage + LEVERAGE_TOL).any():
         raise ValueError(f"gross exposure above {max_leverage}")
 
-    o = prices.open.to_numpy(dtype=np.float64)
-    c = prices.close.to_numpy(dtype=np.float64)
+    # Only tickers that are ever held affect the result.
+    active = np.flatnonzero((w_all != 0).any(axis=0))
+    w = w_all[:, active]
+    o = prices.open.to_numpy(dtype=np.float64)[:, active]
+    c = prices.close.to_numpy(dtype=np.float64)[:, active]
     n, k = c.shape
     # held[t]: weights traded at the open of day t (the target from close t-1)
     held = np.zeros((n, k))
     held[1:] = w[:-1]
+    prev = np.zeros((n, k))
+    prev[1:] = held[:-1]
     with np.errstate(invalid="ignore", divide="ignore"):
         r_on = np.zeros((n, k))
         r_on[1:] = o[1:] / c[:-1] - 1
         r_id = c / o - 1
-    prev = np.zeros((n, k))
-    prev[1:] = held[:-1]
-    _require_prices(r_on, prev != 0, prices, "overnight")
-    _require_prices(r_id, held != 0, prices, "intraday")
+    _require_prices(r_on, prev != 0, prices, active, "overnight")
+    _require_prices(r_id, held != 0, prices, active, "intraday")
     r_on = np.where(prev != 0, r_on, 0.0)
     r_id = np.where(held != 0, r_id, 0.0)
 
-    g_id = (held * r_id).sum(axis=1)
-    # Weights at the previous close, after drifting with the previous day's intraday move.
-    drifted = np.zeros((n, k))
     with np.errstate(invalid="ignore", divide="ignore"):
-        drifted[1:] = prev[1:] * (1 + r_id[:-1]) / (1 + g_id[:-1, None])
-    g_on = (drifted * r_on).sum(axis=1)
-    with np.errstate(invalid="ignore", divide="ignore"):
-        at_open = drifted * (1 + r_on) / (1 + g_on[:, None])
-    turnover = np.abs(held - np.nan_to_num(at_open)).sum(axis=1)
+        f_id = 1 + (held * r_id).sum(axis=1)
+        # Weights at the previous close, after drifting with the previous day's intraday move.
+        drifted = np.zeros((n, k))
+        drifted[1:] = prev[1:] * (1 + r_id[:-1]) / f_id[:-1, None]
+        f_on = 1 + (drifted * r_on).sum(axis=1)
+        at_open = drifted * (1 + r_on) / f_on[:, None]
+    turnover = np.where(f_on > 0, np.abs(held - at_open).sum(axis=1), 0.0)
     cost = costs.rate * turnover
 
-    gross = _stop_at_ruin((1 + g_on) * (1 + g_id) - 1)
-    net = _stop_at_ruin((1 + g_on) * (1 - cost) * (1 + g_id) - 1)
+    # A day whose wealth reaches zero or below ends the backtest: -1, then flat.
+    ruin = (f_on <= 0) | (1 - cost <= 0) | (f_id <= 0)
+    ruin[0] = False
+    with np.errstate(invalid="ignore"):
+        net = f_on * (1 - cost) * f_id - 1
+        gross = f_on * f_id - 1
+    if ruin.any():
+        day = int(np.argmax(ruin))
+        net[day], gross[day] = -1.0, max(min(gross[day], 0.0), -1.0)
+        net[day + 1 :] = gross[day + 1 :] = 0.0
+        turnover[day + 1 :] = cost[day + 1 :] = 0.0
+        held[day + 1 :] = 0.0
 
+    held_all = np.zeros((n, len(tickers)))
+    held_all[:, active] = held
     index = prices.close.index
     valid_from = np.flatnonzero(valid[:-1])
     start = pd.Timestamp(index[valid_from[0] + 1]) if len(valid_from) else None
@@ -132,27 +156,18 @@ def run(
         gross_returns=pd.Series(gross[1:], index=index[1:], name="gross_returns"),
         turnover=pd.Series(turnover[1:], index=index[1:], name="turnover"),
         costs=pd.Series(cost[1:], index=index[1:], name="costs"),
-        weights=pd.DataFrame(held[1:], index=index[1:], columns=prices.close.columns),
+        weights=pd.DataFrame(held_all[1:], index=index[1:], columns=tickers),
         start=start,
     )
 
 
-def _require_prices(r: np.ndarray, needed: np.ndarray, prices: Prices, leg: str) -> None:
+def _require_prices(
+    r: np.ndarray, needed: np.ndarray, prices: Prices, active: np.ndarray, leg: str
+) -> None:
     bad = needed & ~np.isfinite(r)
     if bad.any():
         t, j = np.argwhere(bad)[0]
         raise ValueError(
-            f"position in {prices.close.columns[j]} on {prices.close.index[t]:%Y-%m-%d} "
-            f"without {leg} prices"
+            f"position in {prices.close.columns[active[j]]} on "
+            f"{prices.close.index[t]:%Y-%m-%d} without {leg} prices"
         )
-
-
-def _stop_at_ruin(returns: np.ndarray) -> np.ndarray:
-    """A loss of 100% or more ends the backtest: -1 that day, flat afterwards."""
-    ruined = np.flatnonzero(returns <= -1)
-    if len(ruined):
-        out = returns.copy()
-        out[ruined[0]] = -1.0
-        out[ruined[0] + 1 :] = 0.0
-        return out
-    return returns
