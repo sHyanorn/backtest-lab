@@ -79,6 +79,16 @@ def test_degenerate_columns_rank_as_zero_without_warnings() -> None:
     assert (np.abs(result.is_sharpe) < 10).all()
 
 
+def test_a_flat_trial_ranks_below_positive_sharpe_ratios() -> None:
+    # D020: a flat trial has no Sharpe ratio and ranks as 0, so it never wins in sample
+    # while another trial's Sharpe ratio is positive.
+    x = np.random.default_rng(2).normal(0.004, 0.01, (64, 4))
+    x[:, 0] = 0.0
+    result = cscv(x, blocks=4)
+    assert (result.is_sharpe > 0).all()
+    assert (result.winners != 0).all()
+
+
 def test_random_control() -> None:
     # Expected PBO is 0.5 for even N; one seed is noisy, so average seeds 0-99.
     mean = np.mean([cscv(_noise(seed)).pbo for seed in range(100)])
