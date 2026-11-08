@@ -228,3 +228,9 @@
 - Date: 2026-11-08
 - D022 makes the sensitivity check red when the best Sharpe ratio is not positive, and D028 makes it yellow when the grid has no neighbourhood. When both hold, the check is yellow: the code tests for neighbours first
 - The overall verdict is red in that case anyway: the selected trial is the best one, and MinBTL is red whenever its Sharpe ratio is not positive. All registered grids have neighbours
+
+## D038 Stale-open warning
+- Date: 2026-11-08
+- A bar whose open equals the previous bar's close and also the day's high or low, each within the 1e-6 relative tolerance of D011, probably has a stale open: a fill there is a fill at the close that formed the signal (D013). The check changes no data and gives one warning per ticker with the number of such bars, the first and last of them and their count by decade
+- Measured on Yahoo data on 2026-11-08 (bars to 2026-11-06): XOM 1,340, JNJ 1,255, JPM 674, AAPL 461, SHY 249, MSFT 201, SPY 24, EEM 17, IWM 13, AMZN 10, IEF 9, EFA 8, TLT 5, GLD 4, QQQ 3. Before 1990 the stocks' opens repeat the previous close wholesale (XOM and JNJ about 900 each from 1962 to 1979), a property of Yahoo's early data. SHY's 207 since 2010 are mostly genuine: its price often does not move from one day to the next
+- Rationale: one warning per bar would bury the other warnings in thousands of entries. The registered demo is not rerun; how its verdicts respond to SPY's stale opens is in DEMO.md (post hoc)

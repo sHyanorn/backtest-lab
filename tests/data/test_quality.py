@@ -50,6 +50,25 @@ def test_wrong_dividend_adjustment_is_an_error() -> None:
     assert ("adjustment", "SPY", _day(df, div_day)) in _checks({"SPY": df})
 
 
+def test_open_repeating_the_previous_close_at_a_range_edge_is_a_warning() -> None:
+    df = price_frame()
+    for i, edge in ((10, "low"), (20, "high"), (40, None)):
+        d, prev = df.index[i], df["close"].iloc[i - 1]
+        df.loc[d, "open"] = prev
+        df.loc[d, "low"] = min(df.loc[d, "low"], 0.99 * prev)
+        df.loc[d, "high"] = max(df.loc[d, "high"], 1.01 * prev)
+        if edge is not None:
+            df.loc[d, edge] = prev  # the open is also the day's low or high
+    df.loc[df.index[30], "open"] = df.loc[df.index[30], "low"]  # at the low, not the close
+    (issue,) = [i for i in check_prices({"SPY": df}) if i.check == "stale_open"]
+    assert (issue.severity, issue.date) == (Severity.WARNING, None)  # one summary per ticker
+    first, last = _day(df, 10), _day(df, 20)
+    assert issue.detail == (
+        "2 opens equal the previous close and the day's high or low, "
+        f"{first} to {last}; by decade: 2020s 2"
+    )
+
+
 def test_jump_is_a_warning() -> None:
     df = price_frame(n=200)
     df.loc[df.index[150:], ["open", "high", "low", "close", "adj_close"]] *= 1.3

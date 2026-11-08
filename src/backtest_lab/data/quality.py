@@ -1,5 +1,6 @@
 """Data quality checks. Thresholds and their basis are in D011."""
 
+from collections import Counter
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from enum import StrEnum
@@ -46,6 +47,11 @@ def _issues(
     ]
 
 
+def _same(a: pd.Series, b: pd.Series) -> pd.Series:
+    """Equal within the OHLC rounding tolerance; False where either is NaN."""
+    return (a - b).abs() <= OHLC_TOL * b.abs()
+
+
 def _check_ticker(ticker: str, df: pd.DataFrame, trading: pd.DatetimeIndex) -> list[Issue]:
     issues: list[Issue] = []
     err = Severity.ERROR
@@ -72,6 +78,27 @@ def _check_ticker(ticker: str, df: pd.DataFrame, trading: pd.DatetimeIndex) -> l
     bad = deviation > ADJ_TOL
     issues += _issues("adjustment", err, ticker, bad & ~after_gap, detail)
     issues += _issues("adjustment", Severity.WARNING, ticker, bad & after_gap, detail)
+
+    # An open that repeats the previous close and sits at the day's high or low is likely
+    # stale; a fill there is a fill at the close that formed the signal. Old histories have
+    # thousands, so they are summarized in one warning per ticker (D038).
+    stale = _same(df["open"], df["close"].shift(1)) & (
+        _same(df["open"], df["high"]) | _same(df["open"], df["low"])
+    )
+    if stale.any():
+        days = pd.DatetimeIndex(df.index[stale.to_numpy()])
+        decades = Counter(f"{year // 10 * 10}s" for year in days.year)
+        by_decade = ", ".join(f"{d} {n}" for d, n in sorted(decades.items()))
+        issues.append(
+            Issue(
+                "stale_open",
+                Severity.WARNING,
+                ticker,
+                None,
+                f"{len(days)} opens equal the previous close and the day's high or low, "
+                f"{days[0]:%Y-%m-%d} to {days[-1]:%Y-%m-%d}; by decade: {by_decade}",
+            )
+        )
 
     log_ret = pd.Series(np.log(df["adj_close"]), index=df.index).diff()
     centered = log_ret - log_ret.median()
