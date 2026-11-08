@@ -17,7 +17,7 @@
 - [x] Transaction costs and slippage
 - [x] Performance metrics, cross-checked against existing libraries
 - [x] Look-ahead bias detection test
-- [ ] Four example strategies
+- [x] Four example strategies
 
 ## M3 Anti-overfitting methods
 - [x] Complete METHODS.md
