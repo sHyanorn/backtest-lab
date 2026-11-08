@@ -27,7 +27,7 @@
 - [x] Combinatorially symmetric cross-validation (CSCV) and PBO
 - [x] Deflated Sharpe ratio, probabilistic Sharpe ratio, minimum backtest length
 - [x] Parameter sensitivity analysis
-- [ ] Control test with a random-signal strategy
+- [x] Control test with a random-signal strategy
 - [ ] Credibility report generation (JSON)
 
 ## M4 API

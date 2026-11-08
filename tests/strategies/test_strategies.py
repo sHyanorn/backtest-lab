@@ -8,6 +8,7 @@ from backtest_lab.strategies import (
     MarketData,
     MeanReversion,
     MovingAverageCrossover,
+    RandomSignal,
     RateRotation,
     Strategy,
     TimeSeriesMomentum,
@@ -63,6 +64,7 @@ STRATEGIES: list[Strategy] = [
     MeanReversion(lookback=10, entry_z=0.5, allow_short=False),
     RateRotation(),
     RateRotation(threshold=0.2, smoothing=5),
+    RandomSignal(seed=3, hold=5),
 ]
 
 
@@ -186,6 +188,8 @@ def test_rotation_uses_a_rate_only_once_published() -> None:
         lambda: TimeSeriesMomentum(lookback=0),
         lambda: MeanReversion(lookback=1),
         lambda: RateRotation(smoothing=0),
+        lambda: RandomSignal(hold=0),
+        lambda: RandomSignal(seed=-1),
     ],
 )
 def test_invalid_parameters_are_rejected(make: object) -> None:
@@ -203,3 +207,14 @@ def test_rotation_waits_until_both_assets_trade() -> None:
     w = RateRotation().weights(late)
     assert w.loc[DATES[:100]].isna().all().all()
     assert run(w, late.prices).start == DATES[101]
+
+
+def test_random_signal_does_not_depend_on_the_sample_length() -> None:
+    data = _market()
+    short = MarketData(prices=Prices(open=data.prices.open[:123], close=data.prices.close[:123]))
+    strategy = RandomSignal(seed=7, hold=4)
+    full = strategy.weights(data)
+    pd.testing.assert_frame_equal(strategy.weights(short), full.iloc[:123])
+    w = full["SPY"].to_numpy()
+    assert set(np.unique(w)) == {-1.0, 1.0}
+    assert (w.reshape(-1, 4) == w.reshape(-1, 4)[:, :1]).all()  # one direction per block

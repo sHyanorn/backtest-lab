@@ -7,6 +7,7 @@ from backtest_lab.strategies.base import MarketData, Strategy
 from backtest_lab.strategies.ma_crossover import MovingAverageCrossover
 from backtest_lab.strategies.mean_reversion import MeanReversion
 from backtest_lab.strategies.momentum import TimeSeriesMomentum
+from backtest_lab.strategies.random_signal import RandomSignal
 from backtest_lab.strategies.rate_rotation import RateRotation
 
 # Registry by name, used to serialize trials and to list strategies.
@@ -15,6 +16,7 @@ STRATEGIES: Mapping[str, Callable[..., Strategy]] = MappingProxyType(
         "ma_crossover": MovingAverageCrossover,
         "mean_reversion": MeanReversion,
         "momentum": TimeSeriesMomentum,
+        "random_signal": RandomSignal,
         "rate_rotation": RateRotation,
     }
 )
@@ -24,6 +26,7 @@ __all__ = [
     "MarketData",
     "MeanReversion",
     "MovingAverageCrossover",
+    "RandomSignal",
     "RateRotation",
     "Strategy",
     "TimeSeriesMomentum",

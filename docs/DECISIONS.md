@@ -127,3 +127,9 @@
 - PSR, DSR, MinTRL and MinBTL need only the standard normal CDF and its inverse, taken from `statistics.NormalDist` (the inverse is Wichura's AS241 algorithm, accurate to double precision). Skewness and raw kurtosis are population moments computed with numpy, the definitions `scipy.stats.skew` and `scipy.stats.kurtosis(fisher=False)` use (METHODS.md, Conventions); a test checks them against pandas' bias-corrected estimates after converting those back
 - Rationale: scipy would be a large dependency for two functions. The paper examples reproduce to the stated precision without it
 - The average pairwise correlation skips degenerate trials and is 0 when fewer than two trials remain, so N-hat falls back to N, the conservative side
+
+## D027 Random-signal control
+- Date: 2026-11-08
+- The control strategy is fully long or short one instrument, with the direction drawn at random every `hold` days from `default_rng(seed)`; a grid over seeds is a search with no skill by construction. Directions are drawn in date order, so a shorter sample gives a prefix of the same signal and there is no look-ahead
+- Besides the matrix controls in METHODS.md, a test runs 50 seeds with `hold` 5 through the grid search and the engine on synthetic random-walk prices. Calibrated over 40 price paths, PBO had mean 0.487 and standard deviation 0.165, and the deflated Sharpe ratio of the best trial never exceeded 0.62. The test requires the mean PBO over 10 paths to lie in [0.33, 0.67], about three standard errors around 0.5, and every DSR to stay below 0.95
+- Rationale: checks the whole pipeline, including costs and the engine's fills, against the property SPEC Section 8 states
