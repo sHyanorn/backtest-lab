@@ -43,6 +43,6 @@
 - [x] Deploy to GitHub Pages
 
 ## M6 Presentation
-- [ ] Demo notebook tells the core story
-- [ ] English README and screenshots
-- [ ] Tidy up DECISIONS.md
+- [x] Demo notebook tells the core story
+- [x] English README and screenshots
+- [x] Tidy up DECISIONS.md
