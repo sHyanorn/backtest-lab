@@ -1,10 +1,10 @@
 # Demo Results
 
-SPY, 1993-01-29 to 2026-10-30, default costs (1 bp fees and 5 bps slippage per side). Sharpe ratios are annualized and net of costs.
+SPY data from 1993-01-29 to 2026-10-30; each report's sample starts once every setting in its grid has a signal. Default costs (1 bp fees and 5 bps slippage per side). Sharpe ratios are annualized and net of costs. Buy and hold is a reference only and takes no part in any verdict.
 
 ## Pre-registered results
 
-The configuration (D021) and the verdict thresholds (D022) were fixed before any strategy was run on real data. `python -m backtest_lab.validation.demo` writes one credibility report per search to `results/demo/`.
+The configuration (D021) and the verdict thresholds (D022) were fixed before any strategy was run on real data. The reports in `results/demo/` come from a single run of `python -m backtest_lab.validation.demo` and are not regenerated (D032); to run the searches again, pass `--out` with another directory.
 
 | Search | Trials | Selected setting | Sharpe, selected / buy and hold | Overall |
 |---|---|---|---|---|
@@ -17,17 +17,17 @@ The configuration (D021) and the verdict thresholds (D022) were fixed before any
 | Holdout split | green | green | red |
 | Walk-forward analysis | green | green | red |
 | Purged cross-validation | green | green | red |
-| PBO | green (0.05) | yellow (0.12) | yellow (0.30) |
+| PBO | green (0.05) | yellow (0.12) | yellow (0.299) |
 | Deflated Sharpe ratio | yellow (0.945) | green (0.988) | red (0.15) |
 | Probabilistic Sharpe ratio | green | green | yellow |
 | Minimum backtest length | green | green | red |
 | Parameter sensitivity | green | green | red |
 
-The random-signal PBO of 0.299 sits just below the red line of 0.30; about one search in ten with no skill lands there (D022).
+The random-signal PBO of 0.299 sits just below the red line of 0.30; about one search in ten with no skill scores 0.30 or less (D022).
 
 The random-signal grid varies `seed`, a number, so the grid search treats it as an ordered axis (D023) and the sensitivity check compares adjacent seeds. Neighbouring seeds are unrelated, so that verdict carries no information about the control. A grid can now declare such an axis categorical (D019); the registered configuration is kept as it was run.
 
-**Rerun on newer data.** On 2026-11-08 the three searches were run again, with the same code and configuration, on prices fetched from Yahoo that day, into a separate directory. The overall and per-check verdicts, the selected settings, every summary sentence and the PBO values were identical to the registered files. The other numbers were not: of the 21,246 numbers in the three files, 98% differed by less than 0.00001 and all by less than 0.001, because Yahoo had revised its adjusted prices slightly, so the files are not byte-identical. The registered result is the frozen files in `results/demo/` (D032).
+**Rerun with re-fetched prices.** On 2026-11-08 the three searches were run again into a separate directory, with the registered configuration and dates, the code at commit a8bbfc3, and prices fetched from Yahoo that day. The overall and per-check verdicts, the selected settings, every summary sentence and the PBO values were identical to the registered files. The other numbers were not: of the 21,246 non-integer values in the three files, 98% differed by less than 0.00001 and all by less than 0.001, because Yahoo had revised its adjusted prices slightly, so the files are not byte-identical. The registered result is the frozen files in `results/demo/` (D032).
 
 ## Post hoc analysis
 
@@ -43,7 +43,7 @@ Not pre-registered. These questions were chosen after seeing the results above, 
 | PBO, whole grid (registered) | 0.05 | 0.12 |
 | PBO, long-only half | 0.42 (64 settings) | 0.72 (17 settings) |
 
-An in-sample winner that is always long-only ranks in the top half out of sample because the long/short half is worse, so the whole-grid PBO is low. Within the long-only half, which setting wins is close to chance. The best long-only setting still has a significant deflated Sharpe ratio within that half (about 1.00 for both, with 10.5 and 3.8 effectively independent settings).
+An in-sample winner that is always long-only ranks in the top half out of sample because the long/short half is worse, so the whole-grid PBO is low. Within the long-only half, which setting wins is no better than chance. The best long-only setting still has a significant deflated Sharpe ratio within that half (about 1.00 for both, with 10.5 and 3.8 effectively independent settings).
 
 **Selected setting against buy and hold.**
 

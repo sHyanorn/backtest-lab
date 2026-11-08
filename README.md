@@ -6,21 +6,21 @@ A backtesting platform that tests whether a strategy is probably overfit: it run
 
 ## Pre-registered results
 
-Three searches on SPY from 1993 to October 2026, fixed before any strategy was run on real data ([D021](docs/DECISIONS.md#d021-pre-registered-demo)) and run once. Returns are net of 1 bp fees and 5 bps slippage per side; Sharpe ratios are annualized.
+Three searches on SPY from 1993 to October 2026, fixed before any strategy was run on real data ([D021](docs/DECISIONS.md#d021-pre-registered-demo)); the reports come from a single run. Returns are net of 1 bp fees and 5 bps slippage per side; Sharpe ratios are annualized.
 
 | Search | Trials | Selected setting | Sharpe, selected / buy and hold | Overfitting checks |
 |---|---|---|---|---|
 | Moving-average crossover | 128 | fast 10, slow 200, long only | 0.80 / 0.64 | Borderline: DSR 0.945, just below 0.95 |
 | Time-series momentum | 34 | lookback 273, long only | 0.79 / 0.65 | Borderline: PBO 0.12, above 0.10 |
-| Random-signal control | 100 | seed 55 | 0.23 / 0.64 | Fail on 6 of 8 checks |
+| Random-signal control | 100 | seed 55 | 0.23 / 0.64 | Fail on 6 of 8 checks, one of them sensitivity, which is uninformative for seeds |
 
 ![The dashboard for the moving-average search: a borderline verdict with one borderline check out of eight, a separate table against SPY buy and hold, and equity on a log scale with drawdown below it from 1994 to 2026.](docs/images/dashboard.png)
 
 - A search with no skill still finds a winner with a positive Sharpe ratio; the checks fail it.
-- For both real strategies, the main finding of the search is that long only beats long/short on SPY, which keeps their PBO low. Within the long-only settings, picking the best is close to a coin flip (PBO 0.42 and 0.72, post hoc).
-- The moving average has a higher Sharpe ratio than buy and hold because its drawdowns are smaller (−21% against −55%); its CAGR is lower (9.7% against 10.8%).
+- Post hoc: for both real strategies, the main finding of the search is that long only beats long/short on SPY, which keeps their registered PBO well below 0.5. Within the long-only settings, picking the best is no better than a coin flip (PBO 0.42 and 0.72).
+- The moving average has a higher Sharpe ratio than buy and hold because its volatility is lower (12.5% against 18.7%). Its maximum drawdown is smaller (−21% against −55%) and its CAGR is lower (9.7% against 10.8%).
 
-Passing the overfitting checks says a result is unlikely to come from the search alone. Whether it beats the market is a separate question, and each report answers the two apart. [DEMO.md](docs/DEMO.md) has every check and the post hoc analysis, labelled as such; [the notebook](notebooks/demo.ipynb) recomputes the figures from the frozen reports.
+Passing the overfitting checks says a result is unlikely to come from the search alone. Whether it beats the market is a separate question, and each report answers the two apart. [DEMO.md](docs/DEMO.md) has every check and the post hoc analysis, labelled as such; [the notebook](notebooks/demo.ipynb) re-derives each report's statistics from the inputs stored in it and applies the thresholds again.
 
 ## Methods
 
@@ -35,11 +35,11 @@ Passing the overfitting checks says a result is unlikely to come from the search
 | [Minimum backtest length](docs/METHODS.md#6-probabilistic-sharpe-ratio-psr-minimum-track-record-length-mintrl-and-minimum-backtest-length-minbtl) | Is the history long enough for that many trials? | Bailey, Borwein, López de Prado & Zhu (2014) |
 | [Parameter sensitivity](docs/METHODS.md#7-parameter-sensitivity) | Do neighbouring settings keep the Sharpe ratio? | |
 
-Verdict thresholds were fixed in advance ([D022](docs/DECISIONS.md#d022-credibility-report-verdicts)); the report format is in [REPORT.md](docs/REPORT.md).
+Verdict thresholds were fixed in advance ([D022](docs/DECISIONS.md#d022-credibility-report-verdicts)). Pass, borderline and fail are the green, yellow and red verdicts of the reports, whose format is in [REPORT.md](docs/REPORT.md).
 
 ## Run it locally
 
-Needs [uv](https://docs.astral.sh/uv/) and Node 22.
+Needs [uv](https://docs.astral.sh/uv/) and Node 22.12 or later. The API and the dev server each keep a terminal busy.
 
 ```bash
 uv sync

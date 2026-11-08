@@ -196,7 +196,7 @@
 - Date: 2026-11-08
 - `results/demo` holds the reports produced once with the configuration of D021. They are not regenerated, by the weekly workflow or by hand; CI checks them against `results/demo/SHA256SUMS`. The weekly `data` workflow (D012) fetches and checks data only
 - Rationale: rerunning on newer data changes the sample, and so the numbers, after the conclusions were drawn from them. A pre-registered result has to stay the one that was registered; an analysis of newer data would be a new, separately labelled result
-- Not done: a weekly rerun over the registered dates to detect revisions in Yahoo's history. It would need the raw data that is not committed (D003), and a difference would only say that the data changed, which the quality checks already watch
+- Not done: a weekly rerun over the registered dates to detect revisions in Yahoo's history. It would need the raw data that is not committed (D003), and a difference would only say that the data changed
 
 ## D033 Dashboard types generated from the report schema
 - Date: 2026-11-08
@@ -206,6 +206,6 @@
 
 ## D034 Dashboard deployed to GitHub Pages by Actions
 - Date: 2026-11-08
-- The `pages` workflow builds `web/` with the base path `/<repository>/` and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages` after the `ci` workflow succeeds on a push to `main`, and on demand. A commit that fails the tests, the browser checks or the frozen-results check (D032) is not deployed. The repository's Pages source must be set to GitHub Actions
+- The `pages` workflow builds `web/` with the base path `/<repository>/` and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages` after the `ci` workflow succeeds on a push to `main`, so a pushed commit that fails the tests, the browser checks or the frozen-results check (D032) is not deployed. A manual run deploys the branch it is started on without waiting for CI. The repository's Pages source must be set to GitHub Actions
 - Views are addressed by the URL hash (`#/momentum`), so a static host needs no rewrite rules for links into the dashboard
 - Rationale: GitHub Pages is free and serves the static build directly (D002); deploying from Actions keeps build output out of the repository

@@ -4,23 +4,23 @@
 
 A backtesting platform that tells you "this strategy is probably overfit": beyond standard backtests, it uses walk-forward analysis, purged cross-validation, the probability of backtest overfitting and the deflated Sharpe ratio to assess whether a strategy can be trusted.
 
-## 2. Capabilities demonstrated
+## 2. Components
 
-| Capability | Where it shows |
+| Area | Where |
 |---|---|
 | Algorithm development | Backtest engine, combinatorially symmetric cross-validation, parameter search |
 | Finance and statistics | Multiple testing problem, deflated Sharpe ratio, probability of backtest overfitting |
 | Data engineering | Scheduled fetching, cleaning, Parquet and DuckDB storage, data quality checks |
 | Backend and frontend | FastAPI endpoints, React dashboard |
 
-## 3. Core story (how to tell it in a demo)
+## 3. Core story
 
 Three searches on SPY from 1993 to 2026, fixed in advance (D021): a moving-average crossover (128 settings), time-series momentum (34) and a random-signal control (100). The registered results are in `results/demo/`; analyses chosen after seeing them are marked post hoc ([DEMO.md](DEMO.md)).
 
-1. A search with no skill still finds a winner: the best random-signal setting has a positive Sharpe ratio, and the platform rates it red on six of eight checks.
-2. For both real strategies, the main finding of the search is that long-only beats long/short, because shorting SPY works against the equity premium. The in-sample winner is long-only in all but one of the 12,870 CSCV splits (post hoc), which keeps their PBO low (0.05 and 0.12). Both are rated yellow overall: the moving average narrowly misses a significant deflated Sharpe ratio (0.945 against 0.95), and the momentum PBO is above the green band.
-3. Among the long-only settings, picking the best is close to a coin flip (post hoc: PBO 0.42 for the moving average and 0.72 for momentum).
-4. The selected moving-average setting has a higher Sharpe ratio than buy and hold (0.80 against 0.64) because its drawdowns are smaller: its maximum drawdown is -21% against -55%, while its CAGR is lower, 9.7% against 10.8%.
+1. A search with no skill still finds a winner: the best random-signal setting has a positive Sharpe ratio, and the platform rates it red on six of eight checks (one of them parameter sensitivity, which is uninformative for random seeds).
+2. Post hoc analysis shows that, for both real strategies, the main finding of the search is that long-only beats long/short, because shorting SPY works against the equity premium: the in-sample winner is long-only in all 12,870 CSCV splits for the moving average and in all but one for momentum, which keeps their registered PBO well below 0.5 (0.05 and 0.12). Both are rated yellow overall: the moving average narrowly misses a significant deflated Sharpe ratio (0.945 against 0.95), and the momentum PBO is above the green band.
+3. Among the long-only settings, picking the best is no better than a coin flip (post hoc: PBO 0.42 for the moving average and 0.72 for momentum).
+4. The selected moving-average setting has a higher Sharpe ratio than buy and hold (0.80 against 0.64) because its volatility is lower, 12.5% against 18.7%. Its maximum drawdown is -21% against -55%, while its CAGR is lower, 9.7% against 10.8%.
 5. Takeaway: passing the overfitting checks says a result is unlikely to come from the search alone. Whether it beats the market is a separate question, and the report answers the two separately.
 
 ## 4. Scope
@@ -94,7 +94,7 @@ Deployment:
 | GET | `/api/sweeps/{id}` | Progress and results |
 | GET | `/api/sweeps/{id}/report` | Credibility report |
 
-Parameter searches run in parallel across multiple processes; job state is kept in memory or SQLite.
+Parameter searches run in parallel across multiple processes; job state is kept in SQLite (D018).
 
 ## 8. Testing strategy
 
