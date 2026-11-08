@@ -32,7 +32,7 @@ Three searches on SPY from 1993 to 2026, fixed in advance (D021): a moving-avera
   - Macro data: FRED (interest rates, inflation, unemployment) via the keyless fredgraph CSV download
   - Stored as Parquet, queried with DuckDB
   - Data quality checks: missing values, abnormal jumps, price adjustment consistency
-  - GitHub Actions updates the data weekly and regenerates the demo results
+  - GitHub Actions updates the data weekly and runs the quality checks; the pre-registered demo results are not regenerated (D042)
 - Backtest engine
   - Daily frequency, multi-asset, long and short
   - Transaction costs (proportional to traded value) and slippage
@@ -71,10 +71,9 @@ All formulas go in `docs/METHODS.md`, written before implementation.
 ## 6. Architecture
 
 ```
-GitHub Actions (weekly)
-   │
-   ▼
-data/update ──▶ Parquet + DuckDB ──▶ engine ──▶ validation ──▶ precomputed results JSON
+GitHub Actions (weekly) ──▶ data/update ──▶ quality checks
+
+data/update ──▶ Parquet + DuckDB ──▶ engine ──▶ validation ──▶ results JSON (once, frozen)
                                         ▲                          │
                                         │                          ▼
                                FastAPI (on-demand)  ◀──────  React dashboard
