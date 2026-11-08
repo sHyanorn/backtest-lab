@@ -6,7 +6,7 @@ import {
   type DemoKey,
   type Report,
 } from './data.ts'
-import { settingText } from './format.ts'
+import { settingText, strategyTitle } from './format.ts'
 import { CheckCards } from './report/CheckCards.tsx'
 import { Overview } from './report/Overview.tsx'
 import { PostHoc } from './report/PostHoc.tsx'
@@ -29,7 +29,10 @@ export function DemoView({ demo }: { demo: DemoKey }) {
   const ticker = String(shown.strategy.fixed.ticker ?? '')
   return (
     <div className="view" aria-busy={report.status === 'loading'}>
-      <ReportView report={shown} title={`${meta?.title} on ${ticker}`} />
+      <ReportView
+        report={shown}
+        title={`${strategyTitle(shown.strategy.name)} on ${ticker}`}
+      />
       {meta && <PostHocFor demo={meta.key} benchmark={ticker} />}
     </div>
   )

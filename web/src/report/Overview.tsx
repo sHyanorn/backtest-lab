@@ -39,6 +39,11 @@ export function Overview({ report, title }: { report: Report; title: string }) {
           <p className="overall">
             <Verdict verdict={overall.verdict} size={22} />
           </p>
+          {zeroCost && (
+            <p className="zero-note cost zero">
+              Costs are off: read this as a reference only.
+            </p>
+          )}
           <p className="overall-summary">{overall.summary}</p>
           <ul className="strip" aria-label="Verdict of each check">
             {checkViews(report.checks).map((c) => (

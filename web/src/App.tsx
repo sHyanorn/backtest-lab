@@ -1,11 +1,22 @@
+import { lazy, Suspense } from 'react'
 import { DEMOS, type DemoKey } from './data.ts'
 import { DemoView } from './DemoView.tsx'
+import { InfoTip } from './InfoTip.tsx'
 import { useHashRoute } from './route.ts'
+import { useApi, type ApiState } from './sweep/api.ts'
 import { useTheme } from './theme.ts'
+
+// Only the dev server can reach the API, so a static build leaves this out.
+const SweepView = import.meta.env.DEV
+  ? lazy(() => import('./sweep/SweepView.tsx'))
+  : null
 
 export default function App() {
   const route = useHashRoute()
   const [theme, toggleTheme] = useTheme()
+  const api = useApi()
+  const live = api.status === 'online' && SweepView !== null
+  const sweep = live && route === 'sweep'
   const demo: DemoKey =
     DEMOS.find((d) => d.key === route)?.key ?? 'ma_crossover'
 
@@ -13,10 +24,7 @@ export default function App() {
     <div className="shell">
       <header className="top">
         <span className="brand">backtest-lab</span>
-        <span className="chip">
-          <span className="chip-dot" />
-          Static · precomputed
-        </span>
+        <ModeChip api={api} />
         <button
           type="button"
           className="icon-button"
@@ -32,16 +40,53 @@ export default function App() {
             key={d.key}
             className="tab"
             href={`#/${d.key}`}
-            aria-current={d.key === demo ? 'page' : undefined}
+            aria-current={!sweep && d.key === demo ? 'page' : undefined}
           >
             {d.label}
           </a>
         ))}
+        {live && (
+          <a
+            className="tab"
+            href="#/sweep"
+            aria-current={sweep ? 'page' : undefined}
+          >
+            Custom sweep
+          </a>
+        )}
       </nav>
       <main>
-        <DemoView demo={demo} />
+        {sweep && api.status === 'online' && SweepView ? (
+          <Suspense fallback={<div className="view" aria-busy="true" />}>
+            <SweepView strategies={api.strategies} />
+          </Suspense>
+        ) : (
+          <DemoView demo={demo} />
+        )}
       </main>
     </div>
+  )
+}
+
+function ModeChip({ api }: { api: ApiState }) {
+  if (api.status === 'online') {
+    return (
+      <span className="chip">
+        <span className="chip-dot live" />
+        Local API
+      </span>
+    )
+  }
+  return (
+    <span className="chip">
+      <span className="chip-dot" />
+      {api.status === 'offline' ? 'API offline' : 'Static · precomputed'}
+      <InfoTip label="About this mode" align="end">
+        {api.status === 'offline'
+          ? 'Showing the committed results. Start the API on 127.0.0.1:8000 and reload to run new sweeps.'
+          : 'Pre-registered results committed to the repository. Run the dashboard locally with the API to start new sweeps.'}
+      </InfoTip>
+    </span>
   )
 }
 
