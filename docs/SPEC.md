@@ -8,7 +8,7 @@ A backtesting platform that tells you "this strategy is probably overfit": beyon
 
 | Capability | Where it shows |
 |---|---|
-| Algorithm development | Backtest engine, combinatorial purged cross-validation, parameter search |
+| Algorithm development | Backtest engine, combinatorially symmetric cross-validation, parameter search |
 | Finance and statistics | Multiple testing problem, deflated Sharpe ratio, probability of backtest overfitting |
 | Data engineering | Scheduled fetching, cleaning, Parquet and DuckDB storage, data quality checks |
 | Backend and frontend | FastAPI endpoints, React dashboard |
@@ -58,10 +58,10 @@ A backtesting platform that tells you "this strategy is probably overfit": beyon
 | In-sample/out-of-sample split | Does out-of-sample performance get markedly worse? | Basic method |
 | Walk-forward analysis | With parameters re-optimized periodically, how does rolling out-of-sample performance look? | Pardo (2008) |
 | Purged and embargoed K-fold cross-validation | Removes information leakage between the training and test sets | López de Prado (2018) |
-| Combinatorial purged cross-validation and probability of backtest overfitting (PBO) | Probability that the in-sample optimal parameters rank in the bottom half out of sample | Bailey, Borwein, López de Prado, Zhu (2017) |
+| Combinatorially symmetric cross-validation (CSCV) and probability of backtest overfitting (PBO); combinatorial purged cross-validation (CPCV) is out of scope | Probability that the in-sample optimal parameters rank in the bottom half out of sample | Bailey, Borwein, López de Prado, Zhu (2017) |
 | Deflated Sharpe ratio (DSR) | After accounting for the number of trials, skewness and kurtosis, is the Sharpe ratio still significant? | Bailey & López de Prado (2014) |
 | Parameter sensitivity | Do the optimal parameters sit on a plateau or an isolated peak? | Heatmap |
-| Minimum backtest length | How much data is needed to support this Sharpe ratio? | Bailey & López de Prado (2012) |
+| Minimum backtest length | How much data is needed to support this Sharpe ratio? | Bailey, Borwein, López de Prado, Zhu (2014) |
 
 All formulas go in `docs/METHODS.md`, written before implementation.
 
