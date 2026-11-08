@@ -22,7 +22,7 @@
 ## M3 Anti-overfitting methods
 - [x] Complete METHODS.md
 - [x] Parameter grid search (multiprocess), recording all trials
-- [ ] In-sample/out-of-sample split and walk-forward analysis
+- [x] In-sample/out-of-sample split and walk-forward analysis
 - [ ] Purged and embargoed K-fold
 - [ ] Combinatorially symmetric cross-validation (CSCV) and PBO
 - [ ] Deflated Sharpe ratio, probabilistic Sharpe ratio, minimum backtest length

@@ -41,9 +41,12 @@ def price_frame(
 
 
 def synthetic_market(
-    n: int = 300, tickers: tuple[str, ...] = ("SPY",), seed: int = 0, drift: float = 0.0
+    n: int = 300,
+    tickers: tuple[str, ...] = ("SPY",),
+    seed: int = 0,
+    drift: float | tuple[float, ...] = 0.0,
 ) -> MarketData:
-    """Random-walk opens and closes for `tickers`, with no macro data."""
+    """Random-walk opens and closes for `tickers` (daily log drift each), no macro data."""
     rng = np.random.default_rng(seed)
     dates = pd.bdate_range("2000-01-03", periods=n).as_unit("us")
     k = len(tickers)

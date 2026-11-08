@@ -108,3 +108,9 @@
 - Trials run in a process pool. Each trial is a deterministic backtest of its parameters, and results are collected in grid order, so the output is identical for any number of processes. Market data and costs reach each worker once through the pool initializer, which works under the spawn start method used on Windows
 - Storage is one directory per search: `returns.parquet` (T x N net daily returns from the first date all trials are live, one column per trial) and `trials.json` (strategy, grid, costs, sample dates and each trial's parameters and first live date). The API can keep one directory per job; the dashboard reads the report instead of the matrix
 - Strategies are looked up by name in a registry, so stored trials and worker jobs carry a name, not a class
+
+## D024 Holdout and walk-forward defaults
+- Date: 2026-11-08
+- Holdout: the first 70% of the aligned rows are IS. Walk-forward: rolling windows of 1260 IS days (five years) and 252 OOS days (one year), which gives about 27 OOS windows on the demo sample
+- The selected trials' target weights are stitched by OOS day, each taken from the close before that day, and run through the engine once. The first OOS window enters from cash, so it pays the entry cost; later windows pay only for parameter switches
+- Rationale: no published default exists. Five years spans more than one market regime and yearly re-optimization is a common schedule; both were fixed before any real-data run (D021)
