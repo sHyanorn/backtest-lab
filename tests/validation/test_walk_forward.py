@@ -39,6 +39,12 @@ def test_holdout_boundaries() -> None:
     assert holdout(x).split == x.index[7]
 
 
+@pytest.mark.parametrize(("t", "first_oos"), [(90, 63), (170, 119), (8247, 5772)])
+def test_holdout_split_is_exact(t: int, first_oos: int) -> None:
+    x = _matrix(t, 3, seed=0)
+    assert holdout(x).split == x.index[first_oos]  # floor(0.7 t) in exact arithmetic
+
+
 def test_holdout_selection_ignores_even_the_first_oos_row() -> None:
     x = pd.DataFrame(_tied_except(row=350, trial=3, t=500, n=5))
     assert holdout(x).trial == 0  # IS rows [0, 350) tie

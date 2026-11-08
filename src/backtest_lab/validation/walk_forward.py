@@ -2,6 +2,7 @@
 
 import math
 from dataclasses import dataclass
+from fractions import Fraction
 
 import numpy as np
 import pandas as pd
@@ -35,7 +36,8 @@ class Holdout:
 def holdout(returns: pd.DataFrame, fraction: float = 0.7) -> Holdout:
     """Select on the first `fraction` of the rows and evaluate on the rest."""
     n = len(returns)
-    split = math.floor(fraction * n)
+    # floor(f T) for f as written in decimal: 0.7 * 90 is 62.99999... in binary floating point
+    split = math.floor(Fraction(repr(fraction)) * n)
     if not (0 < fraction < 1 and 2 <= split <= n - 2):
         raise ValueError("need 0 < fraction < 1 and at least two rows on each side")
     x = returns.to_numpy(dtype=np.float64)
