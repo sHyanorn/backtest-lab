@@ -204,6 +204,6 @@
 
 ## D044 Dashboard deployed to GitHub Pages by Actions
 - Date: 2026-11-08
-- The `pages` workflow builds `web/` with the base path `/<repository>/` and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages` on every push to `main` that touches the dashboard, the results or the report schema, and on demand. The repository's Pages source must be set to GitHub Actions
+- The `pages` workflow builds `web/` with the base path `/<repository>/` and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages` after the `ci` workflow succeeds on a push to `main`, and on demand. A commit that fails the tests, the browser checks or the frozen-results check (D042) is not deployed. The repository's Pages source must be set to GitHub Actions
 - Views are addressed by the URL hash (`#/momentum`), so a static host needs no rewrite rules for links into the dashboard
 - Rationale: GitHub Pages is free and serves the static build directly (D002); deploying from Actions keeps build output out of the repository
