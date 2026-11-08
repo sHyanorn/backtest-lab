@@ -10,12 +10,14 @@ from fastapi.testclient import TestClient
 from backtest_lab.api import jobs, main
 from backtest_lab.api.jobs import STOPPED, JobStore
 from backtest_lab.api.main import create_app
+from backtest_lab.data.storage import write_parquet_atomic
 from backtest_lab.data.store import connect, macro_series, price_panel
 from backtest_lab.engine.backtest import Prices
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation.report import Settings, build_report
 from backtest_lab.validation.search import Grid, run_grid
-from tests.api.conftest import write_cache
+from tests.api.conftest import N_DAYS, write_cache
+from tests.factories import price_frame
 
 SWEEP = {
     "strategy": "ma_crossover",
@@ -88,6 +90,29 @@ def test_benchmark_does_not_limit_the_length_check(client: TestClient) -> None:
     r = client.post("/api/sweeps", json=SWEEP | {"benchmark": "IEF"})
     assert r.status_code == 202, r.text
     assert wait(client, r.json()["id"])["status"] == "done"
+
+
+def test_a_gap_in_the_traded_ticker_keeps_the_traded_dates(tmp_path: Path) -> None:
+    # QQQ misses a bar on which the benchmark trades. The sweep runs on QQQ's own dates,
+    # as /api/backtests does, instead of a NaN row that blanks the averages (D039).
+    spy = price_frame(n=N_DAYS, start="2010-01-04", seed=0)
+    for ticker, df in (("SPY", spy), ("QQQ", spy.drop(spy.index[900]))):
+        frame = df.reset_index().assign(ticker=ticker)
+        write_parquet_atomic(frame, tmp_path / "raw" / "prices" / f"{ticker}.parquet")
+    sweep = SWEEP | {"fixed": {"ticker": "QQQ"}, "benchmark": "SPY"}
+    with TestClient(create_app(tmp_path, processes=1)) as client:
+        status = wait(client, client.post("/api/sweeps", json=sweep).json()["id"])
+        assert status["status"] == "done", status
+        report = client.get(f"/api/sweeps/{status['id']}/report")
+
+    con = connect(tmp_path / "raw")
+    raw = {f: price_panel(con, ["QQQ", "SPY"], f) for f in ("open", "close", "adj_close")}
+    prices = Prices.from_raw(raw["open"], raw["close"], raw["adj_close"])
+    traded = prices.close["QQQ"].notna()
+    data = MarketData(prices=Prices(open=prices.open[traded], close=prices.close[traded]))
+    grid = Grid.of(SWEEP["axes"], {"ticker": "QQQ", "allow_short": False})  # type: ignore[arg-type]
+    expected = build_report(run_grid("ma_crossover", grid, data, processes=1), data, "SPY")
+    assert report.content == (expected.model_dump_json(indent=2) + "\n").encode()
 
 
 def test_categorical_axis_reaches_the_report(client: TestClient) -> None:

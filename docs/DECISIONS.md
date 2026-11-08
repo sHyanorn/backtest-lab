@@ -83,6 +83,7 @@
 - At startup it loads every ticker and macro series in the local cache (a few MB). A request uses only the tickers it trades, plus the benchmark for a sweep, on the dates where at least one of them has a price, as if only those had been loaded; a date range then slices them. Macro series stay whole because strategies read them by publication date (D010). Without a cache, data endpoints return 503 and name the update command
 - Requests reject unknown fields. Parameters are checked against the strategy's dataclass fields before any work: a value must have the field's type (an integer is accepted for a float), numbers must lie within +/-1,000,000, the strategy's own range checks apply, and each string parameter must name a ticker or a macro series in the cache, as its field declares. Failures return 422. Responses and reports state every parameter, defaults included. Costs default to D014 and must be non-negative
 - Dependencies: fastapi and uvicorn at run time, httpx2 for the test client, which Starlette now requires in place of httpx
+- See also D039
 
 ## D017 Parameter sweeps through the API
 - Date: 2026-11-08
@@ -234,3 +235,8 @@
 - A bar whose open equals the previous bar's close and also the day's high or low, each within the 1e-6 relative tolerance of D011, probably has a stale open: a fill there is a fill at the close that formed the signal (D013). The check changes no data and gives one warning per ticker with the number of such bars, the first and last of them and their count by decade
 - Measured on Yahoo data on 2026-11-08 (bars to 2026-11-06): XOM 1,340, JNJ 1,255, JPM 674, AAPL 461, SHY 249, MSFT 201, SPY 24, EEM 17, IWM 13, AMZN 10, IEF 9, EFA 8, TLT 5, GLD 4, QQQ 3. Before 1990 the stocks' opens repeat the previous close wholesale (XOM and JNJ about 900 each from 1962 to 1979), a property of Yahoo's early data. SHY's 207 since 2010 are mostly genuine: its price often does not move from one day to the next
 - Rationale: one warning per bar would bury the other warnings in thousands of entries. The registered demo is not rerun; how its verdicts respond to SPY's stale opens is in DEMO.md (post hoc)
+
+## D039 Sweep dates come from the traded tickers
+- Date: 2026-11-08
+- A sweep runs on the dates where at least one traded ticker has a price, the dates `/api/backtests` uses for the same parameters. The benchmark is a column on those dates and adds none of its own. This replaces D016's rule that a sweep also keeps the benchmark's dates
+- Rationale: with the benchmark's dates kept, a bar missing from the traded ticker became a NaN row, and each rolling indicator stayed NaN for a full window after it, so the strategy sat flat for up to `slow` or `lookback` days without an error and the sweep disagreed with `/api/backtests`. A benchmark missing a bar on a traded date now fails the sweep with the engine's message. The registered demo trades and benchmarks SPY only and is unaffected

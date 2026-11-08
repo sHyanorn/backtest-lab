@@ -23,13 +23,23 @@ class Market:
     def series(self) -> list[str]:
         return list(self.data.macro)
 
-    def between(self, start: date | None, end: date | None, tickers: list[str]) -> MarketData:
+    def between(
+        self,
+        start: date | None,
+        end: date | None,
+        tickers: list[str],
+        also: tuple[str, ...] = (),
+    ) -> MarketData:
         """Prices of `tickers` from `start` to `end` inclusive, on the dates at least one of
         them trades, as if only they had been loaded; macro series are kept whole, since
-        strategies read them by publication date."""
-        close = self.data.prices.close[tickers]
+        strategies read them by publication date.
+
+        Tickers in `also`, such as a sweep's benchmark, are added as columns on those dates
+        without adding dates of their own (D039)."""
+        columns = list(dict.fromkeys([*tickers, *also]))
+        close = self.data.prices.close[columns]
         dates = close.index
-        keep = close.notna().any(axis=1).to_numpy(copy=True)
+        keep = close[tickers].notna().any(axis=1).to_numpy(copy=True)
         if start is not None:
             keep &= dates >= pd.Timestamp(start)
         if end is not None:
@@ -37,7 +47,7 @@ class Market:
         if keep.sum() < 2:
             raise ValueError("the date range holds fewer than two trading days")
         return MarketData(
-            prices=Prices(open=self.data.prices.open[tickers][keep], close=close[keep]),
+            prices=Prices(open=self.data.prices.open[columns][keep], close=close[keep]),
             macro=self.data.macro,
         )
 

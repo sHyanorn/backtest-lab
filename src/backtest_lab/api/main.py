@@ -102,7 +102,7 @@ def _prepare(body: SweepRequest, market: Market) -> SweepJob:
         _check_symbols(market, body.strategy, params)
         benchmark = _benchmark(body, market)
         traded = sorted(P.symbols(body.strategy, params, "ticker"))
-        data = market.between(body.start, body.end, sorted({*traded, benchmark}))
+        data = market.between(body.start, body.end, traded, also=(benchmark,))
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     # Upper bound on the aligned days: dates where every traded ticker has a price,
