@@ -16,7 +16,8 @@ export default function App() {
   const [theme, toggleTheme] = useTheme()
   const api = useApi()
   const live = api.status === 'online' && SweepView !== null
-  const sweep = live && route === 'sweep'
+  const sweep = live && (route === 'sweep' || route.startsWith('sweep/'))
+  const sweepId = /^sweep\/([0-9a-f]{32})$/.exec(route)?.[1] ?? null
   const demo: DemoKey =
     DEMOS.find((d) => d.key === route)?.key ?? 'ma_crossover'
 
@@ -58,7 +59,7 @@ export default function App() {
       <main>
         {sweep && api.status === 'online' && SweepView ? (
           <Suspense fallback={<div className="view" aria-busy="true" />}>
-            <SweepView strategies={api.strategies} />
+            <SweepView strategies={api.strategies} sweepId={sweepId} />
           </Suspense>
         ) : (
           <DemoView demo={demo} />

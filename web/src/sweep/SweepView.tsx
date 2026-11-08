@@ -3,17 +3,17 @@ import { ReportView } from '../DemoView.tsx'
 import type { Report } from '../data.ts'
 import { InfoTip } from '../InfoTip.tsx'
 import { count, paramLabel, strategyTitle } from '../format.ts'
-import { api, type StrategyInfo, type SweepStatus } from './api.ts'
+import { api, ApiError, type StrategyInfo, type SweepStatus } from './api.ts'
 import { buildRequest, defaultText, type FormState } from './form.ts'
 
 const POLL_MS = 1000
+// Polling gives up after this many network errors in a row.
+const MAX_FAILURES = 5
 
 type Run =
-  | { status: 'idle' }
-  | { status: 'sending' }
-  | { status: 'running'; sweep: SweepStatus }
-  | { status: 'done'; report: Report }
-  | { status: 'error'; message: string }
+  | { id: string; status: 'running'; sweep?: SweepStatus }
+  | { id: string; status: 'done'; report: Report }
+  | { id: string; status: 'error'; message: string }
 
 function initial(strategy: StrategyInfo): FormState {
   return {
@@ -28,51 +28,79 @@ function initial(strategy: StrategyInfo): FormState {
   }
 }
 
+/** The sweep in the URL (#/sweep/<id>) survives a tab switch or a reload. */
 export default function SweepView({
   strategies,
+  sweepId,
 }: {
   strategies: StrategyInfo[]
+  sweepId: string | null
 }) {
   const [form, setForm] = useState<FormState>(() =>
     initial(strategies[0] as StrategyInfo),
   )
-  const [run, setRun] = useState<Run>({ status: 'idle' })
+  const [sending, setSending] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [polled, setPolled] = useState<Run | null>(null)
   const [touched, setTouched] = useState(false)
   const built = buildRequest(form)
   const errors = built.ok ? {} : built.errors
   const shownErrors = touched ? errors : {}
   const zeroCost = Number(form.fee) === 0 && Number(form.slippage) === 0
-  const busy = run.status === 'sending' || run.status === 'running'
+  const run: Run | null =
+    sweepId === null
+      ? null
+      : polled?.id === sweepId
+        ? polled
+        : { id: sweepId, status: 'running' }
+  const busy = sending || run?.status === 'running'
   const id = useId()
 
-  // Poll the running sweep until it finishes, then fetch its report.
-  const sweepId = run.status === 'running' ? run.sweep.id : null
+  // Poll the sweep until it finishes, then fetch its report.
   useEffect(() => {
     if (sweepId === null) return
     let live = true
-    const timer = setInterval(async () => {
+    let failures = 0
+    let timer: ReturnType<typeof setTimeout> | undefined
+    async function tick(job: string) {
       try {
-        const sweep = await api.sweep(sweepId)
+        const sweep = await api.sweep(job)
+        failures = 0
         if (!live) return
         if (sweep.status === 'failed') {
-          setRun({
+          setPolled({
+            id: job,
             status: 'error',
             message: sweep.error ?? 'The sweep failed',
           })
-        } else if (sweep.status === 'done') {
-          const report = await api.report(sweepId)
-          if (live) setRun({ status: 'done', report })
-        } else {
-          setRun({ status: 'running', sweep })
+          return
         }
+        if (sweep.status === 'done') {
+          const report = await api.report(job)
+          if (live) setPolled({ id: job, status: 'done', report })
+          return
+        }
+        setPolled({ id: job, status: 'running', sweep })
       } catch (error) {
-        if (live)
-          setRun({ status: 'error', message: String((error as Error).message) })
+        if (!live) return
+        failures += 1
+        // A client error, such as an unknown id, will not go away on its own.
+        const permanent = error instanceof ApiError && error.status < 500
+        if (permanent || failures >= MAX_FAILURES) {
+          setPolled({
+            id: job,
+            status: 'error',
+            message: (error as Error).message,
+          })
+          return
+        }
       }
-    }, POLL_MS)
+      if (live) timer = setTimeout(() => void tick(job), POLL_MS)
+    }
+    void tick(sweepId)
     return () => {
       live = false
-      clearInterval(timer)
+      clearTimeout(timer)
     }
   }, [sweepId])
 
@@ -80,21 +108,15 @@ export default function SweepView({
     event.preventDefault()
     setTouched(true)
     if (!built.ok) return
-    setRun({ status: 'sending' })
+    setSending(true)
+    setSubmitError(null)
     try {
       const { id: created } = await api.createSweep(built.request)
-      setRun({
-        status: 'running',
-        sweep: {
-          id: created,
-          status: 'queued',
-          n_trials: built.trials,
-          done: 0,
-          error: null,
-        },
-      })
+      window.location.assign(`#/sweep/${created}`)
     } catch (error) {
-      setRun({ status: 'error', message: (error as Error).message })
+      setSubmitError((error as Error).message)
+    } finally {
+      setSending(false)
     }
   }
 
@@ -224,6 +246,8 @@ export default function SweepView({
               <span className={touched ? 'field-error' : 'muted'}>
                 {errors.grid}
               </span>
+            ) : !built.ok ? (
+              <span className="muted">Fix the marked fields</span>
             ) : (
               <>
                 {count(built.trials)}{' '}
@@ -237,11 +261,17 @@ export default function SweepView({
           </button>
         </div>
       </form>
-      <Progress run={run} />
-      {run.status === 'done' && (
+      {submitError && (
+        <p className="error" role="alert">
+          {submitError}
+        </p>
+      )}
+      {run && <Progress run={run} />}
+      {run?.status === 'done' && (
         <ReportView
           report={run.report}
           title={`${strategyTitle(run.report.strategy.name)} sweep`}
+          kind="Exploratory"
         />
       )}
     </div>
@@ -256,12 +286,12 @@ function Progress({ run }: { run: Run }) {
       </p>
     )
   }
-  if (run.status !== 'running' && run.status !== 'sending') return null
-  const sweep = run.status === 'running' ? run.sweep : null
+  if (run.status !== 'running') return null
+  const sweep = run.sweep
   const total = sweep?.n_trials ?? 1
   const done = sweep?.done ?? 0
   const label =
-    sweep === null || sweep.status === 'queued'
+    sweep === undefined || sweep.status === 'queued'
       ? 'Queued'
       : done < total
         ? `${count(done)} of ${count(total)} settings`

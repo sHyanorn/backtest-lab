@@ -36,7 +36,14 @@ export interface SweepStatus {
   error: string | null
 }
 
-export class ApiError extends Error {}
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.status = status
+  }
+}
 
 /** FastAPI puts a message, or a list of validation errors, in `detail`. */
 function detailText(detail: unknown): string | null {
@@ -62,7 +69,10 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
       body && typeof body === 'object' && 'detail' in body
         ? detailText(body.detail)
         : null
-    throw new ApiError(detail ?? `${response.status} ${response.statusText}`)
+    throw new ApiError(
+      detail ?? `${response.status} ${response.statusText}`,
+      response.status,
+    )
   }
   return body as T
 }
