@@ -33,8 +33,10 @@ def test_sweep_under_uvicorn_with_worker_processes(tmp_path: Path, launcher: lis
     port = _free_port()
     env = os.environ | {"BACKTEST_LAB_DATA_DIR": str(tmp_path), "BACKTEST_LAB_PROCESSES": "2"}
     cmd = [*launcher, "backtest_lab.api.main:app", "--host", "127.0.0.1", "--port", str(port)]
+    log = tmp_path / "server.log"  # a file, not a pipe, so the server never blocks on output
+    out = log.open("w", encoding="utf-8")
     server = subprocess.Popen(
-        cmd, env=env, cwd=tmp_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+        [*cmd, "--no-access-log"], env=env, cwd=tmp_path, stdout=out, stderr=subprocess.STDOUT
     )
     base = f"http://127.0.0.1:{port}"
     try:
@@ -64,5 +66,7 @@ def test_sweep_under_uvicorn_with_worker_processes(tmp_path: Path, launcher: lis
             report = client.get(f"/api/sweeps/{job}/report").content
     finally:
         server.terminate()
-        output, _ = server.communicate(timeout=30)
+        server.wait(timeout=30)
+        out.close()
+    output = log.read_text(encoding="utf-8")
     assert report == direct_report(tmp_path, GRID, "ma_crossover", "SPY"), output

@@ -130,10 +130,20 @@ def test_invalid_sweeps_are_rejected_before_queueing(
     assert message in r.text
 
 
-@pytest.mark.parametrize("job_id", ["nope", "0" * 32, "..%2F..%2Fjobs.sqlite3", "A" * 32])
-def test_unknown_or_malformed_ids_are_404(client: TestClient, job_id: str) -> None:
+@pytest.mark.parametrize("job_id", ["nope", "..%2F..%2Fjobs.sqlite3", "A" * 32, "0" * 33])
+def test_malformed_ids_are_404_without_a_lookup(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, job_id: str
+) -> None:
+    looked_up: list[str] = []
+    monkeypatch.setattr(JobStore, "get", lambda self, i: looked_up.append(i))
     assert client.get(f"/api/sweeps/{job_id}").status_code == 404
     assert client.get(f"/api/sweeps/{job_id}/report").status_code == 404
+    assert looked_up == []
+
+
+def test_unknown_id_is_404(client: TestClient) -> None:
+    assert client.get(f"/api/sweeps/{'0' * 32}").status_code == 404
+    assert client.get(f"/api/sweeps/{'0' * 32}/report").status_code == 404
 
 
 def test_queue_limit_is_429(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
