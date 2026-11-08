@@ -16,7 +16,7 @@
 - [x] Vectorized engine: signals fill with a one-day delay
 - [x] Transaction costs and slippage
 - [x] Performance metrics, cross-checked against existing libraries
-- [ ] Look-ahead bias detection test
+- [x] Look-ahead bias detection test
 - [ ] Four example strategies
 
 ## M3 Anti-overfitting methods
