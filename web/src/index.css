@@ -763,13 +763,6 @@ tbody th {
   font-size: 13px;
 }
 
-.figure-context {
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-}
-
 .card-summary {
   margin-top: 12px;
   padding-top: 12px;
