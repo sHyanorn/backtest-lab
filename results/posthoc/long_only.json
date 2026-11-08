@@ -1,0 +1,149 @@
+{
+  "post_hoc": true,
+  "note": "Chosen after seeing the pre-registered demo results (D021) to explain them; exploratory, with no confirmatory weight (D029).",
+  "searches": {
+    "ma_crossover": {
+      "n_trials": 128,
+      "annual_sharpe_range": {
+        "long_only": [
+          0.49289499350797067,
+          0.8004975991355384
+        ],
+        "long_short": [
+          0.01635263122797502,
+          0.5111047767073943
+        ]
+      },
+      "cscv": {
+        "combinations": 12870,
+        "long_only_winner_share": 1.0,
+        "distinct_winners": 36
+      },
+      "pbo": {
+        "full_grid": 0.047163947163947166,
+        "long_only_half": 0.4181041181041181
+      },
+      "long_only_half_dsr": {
+        "n_trials": 64,
+        "n_effective": 10.499190243892569,
+        "dsr": 0.9999139890601827
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "SPY",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        }
+      },
+      "selected_profile": {
+        "annual_mean_return": 0.10028230721879737,
+        "annual_volatility": 0.12527496313179798,
+        "sharpe": 0.8004975991355384,
+        "cagr": 0.09679722105161259,
+        "max_drawdown": -0.2064084854760756,
+        "time_in_market": 0.7721595731781253
+      },
+      "benchmark_profile": {
+        "annual_mean_return": 0.11996503859749623,
+        "annual_volatility": 0.1872666175748695,
+        "sharpe": 0.64061091160326,
+        "cagr": 0.10782852289851097,
+        "max_drawdown": -0.5518944892696118,
+        "time_in_market": 1.0
+      },
+      "benchmark_drawdowns": [
+        {
+          "peak": "2007-10-09",
+          "trough": "2009-03-09",
+          "benchmark_return": -0.5518944892696118,
+          "selected_return": -0.09753728089512659
+        },
+        {
+          "peak": "2000-03-24",
+          "trough": "2002-10-09",
+          "benchmark_return": -0.47515873103336115,
+          "selected_return": -0.10032252217443494
+        },
+        {
+          "peak": "2020-02-19",
+          "trough": "2020-03-23",
+          "benchmark_return": -0.33717275321149753,
+          "selected_return": -0.1592210885306412
+        }
+      ]
+    },
+    "momentum": {
+      "n_trials": 34,
+      "annual_sharpe_range": {
+        "long_only": [
+          0.5382243006053746,
+          0.7908642502804377
+        ],
+        "long_short": [
+          0.009259347930381173,
+          0.530201502318746
+        ]
+      },
+      "cscv": {
+        "combinations": 12870,
+        "long_only_winner_share": 0.9999222999223,
+        "distinct_winners": 17
+      },
+      "pbo": {
+        "full_grid": 0.12354312354312354,
+        "long_only_half": 0.7198912198912198
+      },
+      "long_only_half_dsr": {
+        "n_trials": 17,
+        "n_effective": 3.7867542352892,
+        "dsr": 0.9999612867669112
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "SPY",
+          "lookback": 273,
+          "allow_short": false
+        }
+      },
+      "selected_profile": {
+        "annual_mean_return": 0.11097808499745634,
+        "annual_volatility": 0.14032507469910785,
+        "sharpe": 0.7908642502804377,
+        "cagr": 0.10636351164380975,
+        "max_drawdown": -0.26668452581771573,
+        "time_in_market": 0.8167036215816703
+      },
+      "benchmark_profile": {
+        "annual_mean_return": 0.12225107359109767,
+        "annual_volatility": 0.18826005658128026,
+        "sharpe": 0.6493734029996768,
+        "cagr": 0.11015587692834328,
+        "max_drawdown": -0.5518944892696123,
+        "time_in_market": 1.0
+      },
+      "benchmark_drawdowns": [
+        {
+          "peak": "2007-10-09",
+          "trough": "2009-03-09",
+          "benchmark_return": -0.5518944892696123,
+          "selected_return": -0.1516832337640861
+        },
+        {
+          "peak": "2000-03-24",
+          "trough": "2002-10-09",
+          "benchmark_return": -0.4751587310333615,
+          "selected_return": -0.1352130587404624
+        },
+        {
+          "peak": "2020-02-19",
+          "trough": "2020-03-23",
+          "benchmark_return": -0.3371727532114974,
+          "selected_return": -0.2113856311371003
+        }
+      ]
+    }
+  }
+}
