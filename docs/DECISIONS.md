@@ -61,3 +61,16 @@
 - Date: 2026-11-08
 - A standard deviation or downside deviation below 1e-12 counts as zero, and a ratio with a zero denominator is NaN; CAGR is NaN when final wealth is not positive (METHODS.md, Conventions and Section 1)
 - empyrical-reloaded returns `inf`, or a large value from float noise in the standard deviation, for constant or all-positive series. An infinite Sharpe would rank first in parameter search and PBO, so the project uses NaN and treats it as Sharpe 0 in rankings. Cross-checks against empyrical (D008) cover non-degenerate series only
+
+## D013 Fills at the next open
+- Date: 2026-11-08
+- Target weights are decided at the close of day t and traded at the open of t+1. The return of t+1 is `(1 + overnight)(1 + intraday) - 1`: the previous positions, drifted with prices, earn the gap from close t to open t+1; the portfolio is then rebalanced to the target and earns open to close. Trading costs (D014) are taken at the open, between the two legs
+- The portfolio is rebalanced to its targets every day, so a multi-asset portfolio trades a little every day as prices drift. A single fully invested asset does not drift and trades only when its target changes
+- Opens are adjusted with the same day's `Adj Close / Close` factor. Back-adjustment rescales all prices before a later dividend by one constant, so signals must be scale-invariant functions of prices (returns, ratios, crossovers, z-scores) to stay free of look-ahead
+- Rationale: matches the hard rule that a signal fills no earlier than t+1, and the one-day information interval assumed in METHODS.md Section 3. Filling at the next close would add a day of delay for no extra realism
+
+## D015 Cash, shorting and leverage
+- Date: 2026-11-08
+- Uninvested capital and short proceeds earn zero, consistent with `r_f = 0` in METHODS.md. Shorts pay no borrow fee. Gross exposure is capped at 1 by default
+- A day that loses 100% or more ends the backtest: its return is -1 and later returns are 0
+- Limitation: ignoring interest on cash understates the returns of strategies that are often flat when rates are high

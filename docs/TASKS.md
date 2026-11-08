@@ -13,7 +13,7 @@
 - [x] Weekly update via GitHub Actions
 
 ## M2 Backtest engine
-- [ ] Vectorized engine: signals fill with a one-day delay
+- [x] Vectorized engine: signals fill with a one-day delay
 - [ ] Transaction costs and slippage
 - [ ] Performance metrics, cross-checked against existing libraries
 - [ ] Look-ahead bias detection test
