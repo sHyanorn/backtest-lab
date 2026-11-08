@@ -68,7 +68,7 @@ def _targets(weights: pd.DataFrame, prices: Prices) -> pd.DataFrame:
     extra = weights.index.difference(prices.close.index)
     if len(extra):
         raise ValueError(f"weights on dates without prices, first {extra[0]}")
-    return weights.reindex(index=prices.close.index, columns=prices.close.columns)
+    return weights.reindex(index=prices.close.index)
 
 
 def run(
@@ -84,12 +84,12 @@ def run(
     from the previous open earn the gap from the previous close to today's open,
     then the portfolio is rebalanced to the previous close's target and earns
     the move to today's close. Costs are paid on the traded notional at the
-    open, between the two legs. Uninvested capital earns zero. Rows that are all
-    NaN (warm-up) and missing tickers count as zero weight.
+    open, between the two legs. Uninvested capital earns zero. Rows with any NaN
+    (warm-up) and tickers without a column count as zero weight.
     """
     targets = _targets(weights, prices)
     valid = targets.notna().all(axis=1).to_numpy()
-    w = targets.fillna(0.0).to_numpy(dtype=np.float64)
+    w = targets.reindex(columns=prices.close.columns).fillna(0.0).to_numpy(dtype=np.float64)
     if (np.abs(w).sum(axis=1) > max_leverage + LEVERAGE_TOL).any():
         raise ValueError(f"gross exposure above {max_leverage}")
 

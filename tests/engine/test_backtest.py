@@ -154,3 +154,10 @@ def test_single_asset_has_no_drift_trading() -> None:
 def test_default_costs_are_on() -> None:
     assert Costs().rate > 0
     assert (run(WEIGHTS, PRICES).returns < run(WEIGHTS, PRICES, ZERO).returns).all()
+
+
+def test_weights_may_cover_a_subset_of_tickers() -> None:
+    weights = pd.DataFrame({"A": [np.nan, 1.0, 1.0, 1.0]}, index=DATES)
+    result = run(weights, PRICES, ZERO)
+    assert result.start == DATES[2]
+    assert list(result.weights.columns) == ["A", "B"]
