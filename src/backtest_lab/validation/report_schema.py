@@ -5,11 +5,11 @@ Print the schema with `python -m backtest_lab.validation.report_schema`.
 
 import json
 from datetime import date
-from typing import Literal
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION: Final = "1.0"
 
 type Verdict = Literal["green", "yellow", "red"]
 type Param = bool | int | float | str

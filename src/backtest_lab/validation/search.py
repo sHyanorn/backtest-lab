@@ -264,8 +264,8 @@ def run_grid(
             pool.shutdown(wait=True, cancel_futures=True)
 
     starts = [start for _, start in outputs]
-    if any(start is None for start in starts):
-        never = [i for i, start in enumerate(starts) if start is None]
+    never = [i for i, start in enumerate(starts) if start is None]
+    if never:
         raise ValueError(f"trials {never} never have a valid signal")
     live = [s for s in starts if s is not None]
     dates = data.prices.close.index[1:]

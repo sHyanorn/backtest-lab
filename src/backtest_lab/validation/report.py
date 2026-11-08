@@ -205,7 +205,7 @@ def build_report(
     _, bench_curve = weekly_curve(dates, bench)
     name = f"{benchmark} buy and hold"
     return rs.Report(
-        schema_version="1.0",
+        schema_version=rs.SCHEMA_VERSION,
         strategy=rs.StrategyInfo(
             name=trials.strategy,
             fixed=dict(trials.grid.fixed),

@@ -126,7 +126,9 @@ def walk_forward(
         frame = weights[i].reindex(columns=columns, fill_value=0.0)
         targets.iloc[rows] = frame.iloc[rows].to_numpy()
     result = run(targets, data.prices, trials.costs)
-    oos = result.returns.loc[dates[bounds[0][1] : bounds[-1][2]]]
+    # Rows of the stitched OOS series, half-open
+    oos_start, oos_stop = bounds[0][1], bounds[-1][2]
+    oos = result.returns.loc[dates[oos_start:oos_stop]]
 
     windows = []
     for (s, e, end), i in zip(bounds, picks, strict=True):
@@ -138,7 +140,7 @@ def walk_forward(
                 trial=i,
                 is_sharpe=sharpe(x[s:e, i]),
                 is_return=float(ANNUALIZATION * x[s:e, i].mean()),
-                oos_sharpe=sharpe(oos.iloc[e - bounds[0][1] : end - bounds[0][1]]),
+                oos_sharpe=sharpe(oos.iloc[e - oos_start : end - oos_start]),
             )
         )
     return WalkForward(windows=tuple(windows), returns=oos)
