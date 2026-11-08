@@ -85,7 +85,7 @@ def main(argv: list[str] | None = None) -> None:
         trials = run_grid(search.strategy, search.grid, data, processes=args.processes)
         report = build_report(trials, data, TICKER, SETTINGS)
         path = args.out / f"{search.name}.json"
-        path.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
+        path.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
         print(f"{search.name}: {report.overall.verdict} -> {path}")
 
 

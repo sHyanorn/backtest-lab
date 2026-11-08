@@ -154,7 +154,7 @@ class Trials:
             ],
         }
         text = json.dumps(meta, indent=2) + "\n"
-        (directory / META_FILE).write_text(text, encoding="utf-8")
+        (directory / META_FILE).write_text(text, encoding="utf-8", newline="\n")
 
     @classmethod
     def load(cls, directory: Path) -> Trials:

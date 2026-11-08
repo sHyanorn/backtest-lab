@@ -166,7 +166,7 @@ def main(argv: list[str] | None = None) -> None:
     }
     args.out.mkdir(parents=True, exist_ok=True)
     path = args.out / "long_only.json"
-    path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {path}")
 
 

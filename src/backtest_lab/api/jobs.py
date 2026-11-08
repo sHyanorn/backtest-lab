@@ -185,7 +185,7 @@ class Runner:
             directory = store.directory(job.id)
             trials.save(directory / TRIALS_DIR)
             tmp = directory / (REPORT_FILE + ".tmp")
-            tmp.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
+            tmp.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8", newline="\n")
             os.replace(tmp, directory / REPORT_FILE)
             store.finished(
                 job.id, report.selected.trial, dict(report.selected.params), report.overall.verdict

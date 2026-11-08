@@ -94,7 +94,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     report = run(args.data_dir, full=args.full)
     path = args.data_dir / "reports" / "quality.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     print(f"errors: {report['errors']}, warnings: {report['warnings']}, report: {path}")
     for issue in report["issues"]:
