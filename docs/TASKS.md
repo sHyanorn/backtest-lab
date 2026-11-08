@@ -20,7 +20,7 @@
 - [ ] Four example strategies
 
 ## M3 Anti-overfitting methods
-- [ ] Complete METHODS.md
+- [x] Complete METHODS.md
 - [ ] Parameter grid search (multiprocess), recording all trials
 - [ ] In-sample/out-of-sample split and walk-forward analysis
 - [ ] Purged and embargoed K-fold
