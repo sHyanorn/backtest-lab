@@ -15,13 +15,14 @@ from typing import Any, Literal
 from backtest_lab.engine.backtest import Costs
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation.report import Settings, build_report
-from backtest_lab.validation.search import Grid, run_grid
+from backtest_lab.validation.search import Grid, GridCancelled, run_grid
 
 log = logging.getLogger(__name__)
 
 type Status = Literal["queued", "running", "done", "failed"]
 REPORT_FILE = "report.json"
 TRIALS_DIR = "trials"
+STOPPED = "the server stopped before this sweep finished"
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS jobs (
@@ -147,6 +148,7 @@ class Runner:
         self.store = store
         self.processes = processes
         self._queue: queue.Queue[SweepJob | None] = queue.Queue()
+        self._stop = threading.Event()
         self._thread = threading.Thread(target=self._loop, name="sweep-runner", daemon=True)
 
     def start(self) -> None:
@@ -155,23 +157,28 @@ class Runner:
     def submit(self, job: SweepJob) -> None:
         self._queue.put(job)
 
-    def stop(self, timeout: float = 1.0) -> bool:
-        """Ask the thread to stop after the current sweep; True if it has stopped.
-
-        A sweep still running is abandoned with the process and marked failed by the
-        next server start.
-        """
+    def stop(self, timeout: float = 30.0) -> bool:
+        """Cancel the running sweep, terminating its workers, and leave queued ones
+        unstarted. True once the thread has stopped."""
+        self._stop.set()
         self._queue.put(None)
         self._thread.join(timeout)
         return not self._thread.is_alive()
 
     def _loop(self) -> None:
-        while (job := self._queue.get()) is not None:
+        while (job := self._queue.get()) is not None and not self._stop.is_set():
             self._run(job)
 
     def _run(self, job: SweepJob) -> None:
         store = self.store
         store.started(job.id)
+        total = len(job.grid)
+        step = max(1, total // 100)  # about 100 progress writes per sweep
+
+        def progress(done: int, _total: int) -> None:
+            if done % step == 0 or done == total:
+                store.progress(job.id, done)
+
         try:
             trials = run_grid(
                 job.strategy,
@@ -179,7 +186,8 @@ class Runner:
                 job.data,
                 job.costs,
                 processes=self.processes,
-                progress=lambda done, _total: store.progress(job.id, done),
+                progress=progress,
+                cancel=self._stop.is_set,
             )
             report = build_report(trials, job.data, job.benchmark, Settings())
             directory = store.directory(job.id)
@@ -190,6 +198,8 @@ class Runner:
             store.finished(
                 job.id, report.selected.trial, dict(report.selected.params), report.overall.verdict
             )
+        except GridCancelled:
+            store.failed(job.id, STOPPED)
         except ValueError as exc:  # an expected limit, such as too few aligned days
             log.warning("sweep %s failed: %s", job.id, exc)
             store.failed(job.id, str(exc))

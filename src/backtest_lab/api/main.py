@@ -1,8 +1,8 @@
 """FastAPI service for local use (D016). It has no authentication: bind it to 127.0.0.1.
 
 Run: uvicorn backtest_lab.api.main:app --host 127.0.0.1 --reload
-The data directory is `data`, or BACKTEST_LAB_DATA_DIR if set; sweeps use all CPUs, or
-BACKTEST_LAB_PROCESSES if set.
+The data directory is `data`, or BACKTEST_LAB_DATA_DIR if set; sweeps use up to four
+worker processes, or BACKTEST_LAB_PROCESSES if set.
 """
 
 import os
@@ -19,7 +19,7 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from backtest_lab.api import params as P
-from backtest_lab.api.jobs import REPORT_FILE, JobStore, Runner, SweepJob
+from backtest_lab.api.jobs import REPORT_FILE, STOPPED, JobStore, Runner, SweepJob
 from backtest_lab.api.market import Market, load_market
 from backtest_lab.api.schemas import (
     BacktestRequest,
@@ -40,6 +40,7 @@ from backtest_lab.validation.search import Grid, ParamValue
 DEV_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]  # Vite dev server
 MAX_TRIALS = 500  # CSCV peaks near 0.7 MB per trial (D017)
 MAX_QUEUED = 10
+DEFAULT_PROCESSES = 4
 _JOB_ID = re.compile(r"[0-9a-f]{32}")
 
 
@@ -123,8 +124,12 @@ def _job(request: Request, job_id: str) -> dict[str, object]:
 
 def create_app(data_dir: Path | None = None, processes: int | None = None) -> FastAPI:
     root = data_dir or Path(os.environ.get("BACKTEST_LAB_DATA_DIR", "data"))
-    if processes is None and "BACKTEST_LAB_PROCESSES" in os.environ:
-        processes = int(os.environ["BACKTEST_LAB_PROCESSES"])
+    if processes is None:
+        env = os.environ.get("BACKTEST_LAB_PROCESSES")
+        # Each worker holds a copy of the market data and the engine's buffers (D017).
+        processes = int(env) if env else min(os.process_cpu_count() or 1, DEFAULT_PROCESSES)
+    if processes < 1:
+        raise ValueError("BACKTEST_LAB_PROCESSES must be at least 1")
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -136,6 +141,7 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
         app.state.store, app.state.runner = store, runner
         yield
         if runner.stop():
+            store.fail_unfinished(STOPPED)
             store.close()
 
     app = FastAPI(title="backtest-lab", lifespan=lifespan)

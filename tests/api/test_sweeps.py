@@ -1,3 +1,4 @@
+import multiprocessing
 import time
 from pathlib import Path
 from typing import Any
@@ -7,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backtest_lab.api import jobs, main
-from backtest_lab.api.jobs import JobStore
+from backtest_lab.api.jobs import STOPPED, JobStore
 from backtest_lab.api.main import create_app
 from backtest_lab.data.store import connect, macro_series, price_panel
 from backtest_lab.engine.backtest import Prices
@@ -163,4 +164,30 @@ def test_store_enqueue_respects_the_limit(tmp_path: Path) -> None:
     assert store.enqueue("a" * 32, "momentum", "{}", 2, max_queued=1)
     assert not store.enqueue("b" * 32, "momentum", "{}", 2, max_queued=1)
     assert store.get("b" * 32) is None
+    store.close()
+
+
+def test_stopping_the_server_cancels_the_sweep_and_its_workers(tmp_path: Path) -> None:
+    write_cache(tmp_path)
+    sweep = {
+        "strategy": "random_signal",
+        "axes": {"seed": list(range(500))},
+        "fixed": {"ticker": "SPY"},
+        "categorical": ["seed"],
+    }
+    with TestClient(create_app(tmp_path, processes=2)) as client:
+        job = client.post("/api/sweeps", json=sweep).json()["id"]
+        queued = client.post("/api/sweeps", json=sweep).json()["id"]
+        deadline = time.monotonic() + 60
+        while client.get(f"/api/sweeps/{job}").json()["done"] == 0:
+            assert time.monotonic() < deadline, "sweep did not start"
+            time.sleep(0.02)
+        runner = client.app.state.runner  # type: ignore[attr-defined]
+    assert not runner._thread.is_alive()
+    assert multiprocessing.active_children() == []
+    store = JobStore(tmp_path / "jobs")
+    for job_id in (job, queued):
+        row = store.get(job_id)
+        assert row is not None
+        assert (row["status"], row["error"]) == ("failed", STOPPED)
     store.close()
