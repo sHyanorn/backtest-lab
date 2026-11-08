@@ -33,7 +33,7 @@
 ## M4 API
 - [x] FastAPI endpoints
 - [x] Background jobs for parameter search, with progress queries
-- [ ] API tests
+- [x] API tests
 
 ## M5 Dashboard
 - [ ] Vite + React + TypeScript setup
