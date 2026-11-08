@@ -57,6 +57,12 @@ class Settings:
     heatmap_axes: tuple[str, ...] | None = None  # default: the first two ordered axes
     alpha: float = 0.05
 
+    @property
+    def min_days(self) -> int:
+        """Aligned days needed for one walk-forward window, two rows per CSCV block and
+        one row per fold."""
+        return max(self.is_days + self.oos_days, 2 * self.blocks, self.folds)
+
 
 def retention_verdict(oos: float, ratio: float | None) -> rs.Verdict:
     if not oos > 0 or ratio is None:
@@ -165,6 +171,10 @@ def build_report(
     n_days, n_trials = x.shape
     if n_trials < 2:
         raise ValueError("a report needs at least two trials")
+    if n_days < settings.min_days:
+        raise ValueError(
+            f"the trials share {n_days} days; these settings need at least {settings.min_days}"
+        )
     dates = pd.DatetimeIndex(frame.index)
     years = n_days / ANNUALIZATION
     params = trials.params

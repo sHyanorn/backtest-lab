@@ -170,6 +170,14 @@ def test_sensitivity_without_neighbours_cannot_be_assessed() -> None:
     assert check.summary.startswith("No ordered parameter takes more than one value")
 
 
+def test_report_states_the_minimum_sample() -> None:
+    data = synthetic_market(n=1400)
+    trials = run_grid("ma_crossover", Grid.of({"fast": [5, 10], "slow": [40]}), data, processes=1)
+    assert Settings().min_days == 1260 + 252
+    with pytest.raises(ValueError, match="share 1360 days; these settings need at least 1512"):
+        build_report(trials, data, "SPY")
+
+
 def test_report_needs_two_trials() -> None:
     data = synthetic_market(n=300)
     trials = run_grid("ma_crossover", Grid.of({"fast": [5], "slow": [20]}), data, processes=1)

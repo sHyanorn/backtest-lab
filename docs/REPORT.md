@@ -4,7 +4,7 @@ The credibility report is one JSON document per parameter search. It runs every 
 
 - Models: `src/backtest_lab/validation/report_schema.py` (pydantic)
 - JSON Schema: [`report.schema.json`](report.schema.json), generated from the models; a test fails if the two differ. Regenerate with `uv run python -m backtest_lab.validation.report_schema > docs/report.schema.json`
-- Builder: `backtest_lab.validation.report.build_report(trials, data, benchmark, settings)`
+- Builder: `backtest_lab.validation.report.build_report(trials, data, benchmark, settings)`. It raises when the trials share fewer days than `Settings.min_days`, 1,512 with the defaults (one walk-forward window)
 
 ## Conventions
 
