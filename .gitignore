@@ -15,5 +15,6 @@ node_modules/
 web/dist/
 data/raw/
 data/cache/
+data/jobs/
 *.duckdb
 data/reports/

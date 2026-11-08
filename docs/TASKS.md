@@ -31,8 +31,8 @@
 - [x] Credibility report generation (JSON)
 
 ## M4 API
-- [ ] FastAPI endpoints
-- [ ] Background jobs for parameter search, with progress queries
+- [x] FastAPI endpoints
+- [x] Background jobs for parameter search, with progress queries
 - [ ] API tests
 
 ## M5 Dashboard

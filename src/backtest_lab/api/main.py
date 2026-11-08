@@ -1,10 +1,13 @@
 """FastAPI service for local use (D016). It has no authentication: bind it to 127.0.0.1.
 
 Run: uvicorn backtest_lab.api.main:app --host 127.0.0.1 --reload
-The data directory is `data`, or BACKTEST_LAB_DATA_DIR if set.
+The data directory is `data`, or BACKTEST_LAB_DATA_DIR if set; sweeps use all CPUs, or
+BACKTEST_LAB_PROCESSES if set.
 """
 
 import os
+import re
+import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import date
@@ -12,10 +15,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from backtest_lab.api import params as P
+from backtest_lab.api.jobs import REPORT_FILE, JobStore, Runner, SweepJob
 from backtest_lab.api.market import Market, load_market
 from backtest_lab.api.schemas import (
     BacktestRequest,
@@ -23,12 +27,20 @@ from backtest_lab.api.schemas import (
     Curve,
     ParamInfo,
     StrategyInfo,
+    SweepCreated,
+    SweepRequest,
+    SweepStatus,
 )
 from backtest_lab.engine.backtest import Costs, run
 from backtest_lab.strategies import STRATEGIES
-from backtest_lab.validation.report import metrics_model, weekly_curve
+from backtest_lab.validation import report_schema as rs
+from backtest_lab.validation.report import Settings, metrics_model, weekly_curve
+from backtest_lab.validation.search import Grid, ParamValue
 
 DEV_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]  # Vite dev server
+MAX_TRIALS = 500  # CSCV peaks near 0.7 MB per trial (D017)
+MAX_QUEUED = 10
+_JOB_ID = re.compile(r"[0-9a-f]{32}")
 
 
 def _market(request: Request) -> Market:
@@ -44,13 +56,87 @@ def _check_symbols(market: Market, names: set[str]) -> None:
         raise HTTPException(422, f"no data for {missing}")
 
 
-def create_app(data_dir: Path | None = None) -> FastAPI:
+def _benchmark(body: SweepRequest, market: Market) -> str:
+    """The requested benchmark, else the strategy's first string parameter when it is a
+    fixed ticker."""
+    if body.benchmark is not None:
+        name = body.benchmark
+    else:
+        first = next((s for s in P.specs(body.strategy) if s.type == "str"), None)
+        if first is None or first.name in body.axes:
+            raise HTTPException(422, "set a benchmark ticker")
+        name = str(body.fixed.get(first.name, first.default))
+    if name not in market.tickers:
+        raise HTTPException(422, f"benchmark {name!r} is not a ticker in the cache")
+    return name
+
+
+def _prepare(body: SweepRequest, market: Market) -> SweepJob:
+    """Check a sweep request completely before it is queued."""
+    try:
+        specs = {s.name: s for s in P.specs(body.strategy)}
+        unknown = (set(body.axes) | set(body.fixed)) - set(specs)
+        if unknown:
+            raise P.ParamError(f"{body.strategy} has no parameter {sorted(unknown)}")
+        axes: dict[str, list[ParamValue]] = {
+            name: [P.check_value(specs[name], v) for v in values]
+            for name, values in body.axes.items()
+        }
+        grid = Grid.of(axes, P.check_params(body.strategy, body.fixed), body.categorical)
+        if len(grid) > MAX_TRIALS:
+            raise P.ParamError(f"the grid has {len(grid)} trials; the limit is {MAX_TRIALS}")
+        params = grid.params()
+        warmup = max(P.build(body.strategy, p).warmup for p in params)
+        _check_symbols(market, P.symbols(body.strategy, params))
+        benchmark = _benchmark(body, market)
+        data = market.between(body.start, body.end)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    # Upper bound on the aligned days: dates where every ticker used has a price,
+    # less the first date and the longest warm-up (D017).
+    used = [s for s in P.symbols(body.strategy, params) | {benchmark} if s in market.tickers]
+    estimate = int(data.prices.close[used].notna().all(axis=1).sum()) - 1 - warmup
+    needed = Settings().min_days
+    if estimate < needed:
+        raise HTTPException(
+            422,
+            f"about {max(estimate, 0)} aligned trading days in this range; a report needs at "
+            f"least {needed}",
+        )
+    return SweepJob(
+        id=uuid.uuid4().hex,
+        strategy=body.strategy,
+        grid=grid,
+        data=data,
+        costs=Costs(body.costs.fee_bps, body.costs.slippage_bps),
+        benchmark=benchmark,
+    )
+
+
+def _job(request: Request, job_id: str) -> dict[str, object]:
+    store: JobStore = request.app.state.store
+    row = store.get(job_id) if _JOB_ID.fullmatch(job_id) else None
+    if row is None:
+        raise HTTPException(404, "no such sweep")
+    return row
+
+
+def create_app(data_dir: Path | None = None, processes: int | None = None) -> FastAPI:
     root = data_dir or Path(os.environ.get("BACKTEST_LAB_DATA_DIR", "data"))
+    if processes is None and "BACKTEST_LAB_PROCESSES" in os.environ:
+        processes = int(os.environ["BACKTEST_LAB_PROCESSES"])
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.market = load_market(root / "raw")
+        store = JobStore(root / "jobs")
+        store.fail_unfinished("the server restarted before this sweep finished")
+        runner = Runner(store, processes)
+        runner.start()
+        app.state.store, app.state.runner = store, runner
         yield
+        if runner.stop():
+            store.close()
 
     app = FastAPI(title="backtest-lab", lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["GET", "POST"])
@@ -104,6 +190,36 @@ def create_app(data_dir: Path | None = None) -> FastAPI:
                 drawdown=curve.drawdown,
             ),
         )
+
+    @app.post("/api/sweeps", status_code=202)
+    def create_sweep(body: SweepRequest, request: Request) -> SweepCreated:
+        job = _prepare(body, _market(request))
+        store: JobStore = request.app.state.store
+        if not store.enqueue(
+            job.id, job.strategy, body.model_dump_json(), len(job.grid), MAX_QUEUED
+        ):
+            raise HTTPException(429, f"{MAX_QUEUED} sweeps are already waiting; try again later")
+        request.app.state.runner.submit(job)
+        return SweepCreated(id=job.id)
+
+    @app.get("/api/sweeps/{job_id}")
+    def sweep_status(job_id: str, request: Request) -> SweepStatus:
+        row = _job(request, job_id)
+        return SweepStatus.model_validate({k: row[k] for k in SweepStatus.model_fields})
+
+    @app.get(
+        "/api/sweeps/{job_id}/report",
+        response_class=Response,
+        responses={200: {"model": rs.Report, "content": {"application/json": {}}}},
+    )
+    def sweep_report(job_id: str, request: Request) -> Response:
+        row = _job(request, job_id)
+        if row["status"] != "done":
+            raise HTTPException(409, f"the sweep is {row['status']}")
+        store: JobStore = request.app.state.store
+        path = store.directory(job_id) / REPORT_FILE
+        # The stored bytes, so the response is identical to the file (REPORT.md).
+        return Response(path.read_bytes(), media_type="application/json")
 
     return app
 

@@ -1,7 +1,7 @@
 """Request and response models; requests reject unknown fields."""
 
-from datetime import date
-from typing import Annotated
+from datetime import date, datetime
+from typing import Annotated, Literal
 
 from pydantic import (
     BaseModel,
@@ -68,3 +68,33 @@ class BacktestResponse(_Response):
     metrics: rs.Metrics
     annual_turnover: float
     series: Curve
+
+
+class SweepRequest(_Request):
+    strategy: str
+    axes: dict[str, list[Value]] = Field(min_length=1)
+    fixed: dict[str, Value] = {}
+    categorical: list[str] = []
+    start: date | None = None
+    end: date | None = None
+    costs: CostsIn = CostsIn()
+    benchmark: str | None = None  # default: the strategy's ticker (D017)
+
+
+class SweepCreated(_Response):
+    id: str
+
+
+class SweepStatus(_Response):
+    id: str
+    status: Literal["queued", "running", "done", "failed"]
+    strategy: str
+    n_trials: int
+    done: int  # trials backtested so far
+    error: str | None
+    created_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+    selected_trial: int | None  # set when done
+    selected_params: dict[str, Value] | None
+    verdict: rs.Verdict | None
