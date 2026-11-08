@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from backtest_lab.engine.metrics import max_drawdown, summarize
+from backtest_lab.engine.metrics import ANNUALIZATION, max_drawdown, summarize
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation.pbo import cscv
 from backtest_lab.validation.report import (
@@ -24,7 +24,16 @@ from backtest_lab.validation.report import (
 )
 from backtest_lab.validation.report_schema import Report, json_schema
 from backtest_lab.validation.search import Grid, Trials, run_grid
-from backtest_lab.validation.selection import best_trial
+from backtest_lab.validation.selection import best_trial, ranking_sharpe
+from backtest_lab.validation.sharpe_stats import (
+    average_correlation,
+    deflated_sharpe_ratio,
+    effective_trials,
+    min_backtest_length,
+    min_track_record_length,
+    probabilistic_sharpe_ratio,
+    sharpe_moments,
+)
 from tests.factories import synthetic_market
 
 SCHEMA = Path(__file__).parents[2] / "docs" / "report.schema.json"
@@ -134,6 +143,41 @@ def test_report_contents() -> None:
     heat = report.checks.sensitivity.details.heatmap
     assert heat is not None and (heat.x.name, heat.y and heat.y.name) == ("fast", "slow")
     assert heat.trials[heat.best.y][heat.best.x] == best
+
+
+def test_statistics_receive_the_documented_inputs() -> None:
+    # METHODS Sections 5-7: the selected trial's daily Sharpe ratio, skewness and raw
+    # kurtosis over all T rows, the variance of all N daily Sharpe ratios, N-hat in DSR and
+    # MinBTL, and an annualized MinBTL target compared with T / 252 years.
+    trials, _, report = _ma_case()
+    x = trials.returns.to_numpy()
+    n_days, n_trials = x.shape
+    sr = ranking_sharpe(x)
+    m = sharpe_moments(x[:, best_trial(x)])
+    variance = float(np.var(sr, ddof=1))
+    n_eff = effective_trials(average_correlation(x), n_trials)
+    target = float(np.sqrt(ANNUALIZATION) * m.sharpe)
+
+    dsr = report.checks.deflated_sharpe.metrics
+    assert (dsr.n_trials, dsr.n_effective, dsr.sharpe_variance) == (n_trials, n_eff, variance)
+    assert (dsr.skewness, dsr.kurtosis) == (m.skewness, m.kurtosis)
+    assert dsr.dsr == deflated_sharpe_ratio(
+        m.sharpe, variance, n_eff, n_days, m.skewness, m.kurtosis
+    )
+    assert dsr.dsr is not None and 0.05 < dsr.dsr < 0.95  # not saturated, so N vs N-hat shows
+
+    track = report.checks.track_record.metrics
+    assert track.psr == probabilistic_sharpe_ratio(m.sharpe, 0.0, n_days, m.skewness, m.kurtosis)
+    trl = min_track_record_length(m.sharpe, 0.0, m.skewness, m.kurtosis, 0.05)
+    assert track.min_track_record_years == trl / ANNUALIZATION
+
+    btl = report.checks.min_backtest_length.metrics
+    assert btl.years == n_days / ANNUALIZATION
+    assert btl.n_effective == n_eff
+    assert btl.target_sharpe == target
+    assert btl.min_backtest_years == min_backtest_length(n_eff, target)
+
+    assert report.checks.sensitivity.metrics.best_sharpe == np.sqrt(ANNUALIZATION) * sr.max()
 
 
 def test_weekly_series() -> None:
