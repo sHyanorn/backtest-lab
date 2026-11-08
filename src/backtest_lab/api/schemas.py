@@ -13,7 +13,7 @@ from pydantic import (
     StringConstraints,
 )
 
-from backtest_lab.api.params import TypeName
+from backtest_lab.api.params import SymbolKind, TypeName
 from backtest_lab.validation import report_schema as rs
 
 type Value = StrictBool | StrictInt | StrictFloat | Annotated[str, StringConstraints(max_length=32)]
@@ -44,6 +44,7 @@ class ParamInfo(_Response):
     name: str
     type: TypeName
     default: Value
+    symbol: SymbolKind | None  # for a string parameter: names a ticker or a macro series
 
 
 class StrategyInfo(_Response):

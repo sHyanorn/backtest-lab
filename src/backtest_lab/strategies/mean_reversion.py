@@ -5,14 +5,14 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from backtest_lab.strategies.base import MarketData
+from backtest_lab.strategies.base import MarketData, ticker_field
 
 
 @dataclass(frozen=True)
 class MeanReversion:
     """Short when price is `entry_z` deviations above its rolling mean, long when below."""
 
-    ticker: str = "SPY"
+    ticker: str = ticker_field("SPY")
     lookback: int = 20
     entry_z: float = 1.0
     allow_short: bool = True

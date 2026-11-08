@@ -8,6 +8,20 @@ import pandas as pd
 
 from backtest_lab.engine.backtest import Prices
 
+SYMBOL = "symbol"  # dataclass field metadata key: what a string parameter names
+
+
+def ticker_field(default: str) -> str:
+    """A strategy field that names a ticker."""
+    value: str = field(default=default, metadata={SYMBOL: "ticker"})
+    return value
+
+
+def series_field(default: str) -> str:
+    """A strategy field that names a macro series."""
+    value: str = field(default=default, metadata={SYMBOL: "series"})
+    return value
+
 
 @dataclass(frozen=True)
 class MarketData:

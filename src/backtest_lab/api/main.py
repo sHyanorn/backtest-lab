@@ -35,7 +35,7 @@ from backtest_lab.engine.backtest import Costs, run
 from backtest_lab.strategies import STRATEGIES
 from backtest_lab.validation import report_schema as rs
 from backtest_lab.validation.report import Settings, metrics_model, weekly_curve
-from backtest_lab.validation.search import Grid, ParamValue
+from backtest_lab.validation.search import Grid, Params, ParamValue
 
 DEV_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]  # Vite dev server
 MAX_TRIALS = 500  # CSCV peaks near 0.7 MB per trial (D017)
@@ -51,19 +51,25 @@ def _market(request: Request) -> Market:
     return market
 
 
-def _check_symbols(market: Market, names: set[str]) -> None:
-    missing = sorted(names - set(market.tickers) - set(market.series))
-    if missing:
-        raise HTTPException(422, f"no data for {missing}")
+def _check_symbols(market: Market, strategy: str, params: list[Params]) -> None:
+    """Every ticker parameter names a ticker and every series parameter a macro series."""
+    kinds: list[tuple[P.SymbolKind, list[str]]] = [
+        ("ticker", market.tickers),
+        ("series", market.series),
+    ]
+    for kind, known in kinds:
+        missing = sorted(P.symbols(strategy, params, kind) - set(known))
+        if missing:
+            raise HTTPException(422, f"no {kind} data for {missing}")
 
 
 def _benchmark(body: SweepRequest, market: Market) -> str:
-    """The requested benchmark, else the strategy's first string parameter when it is a
-    fixed ticker."""
+    """The requested benchmark, else the strategy's first ticker parameter when it is
+    not an axis."""
     if body.benchmark is not None:
         name = body.benchmark
     else:
-        first = next((s for s in P.specs(body.strategy) if s.type == "str"), None)
+        first = next((s for s in P.specs(body.strategy) if s.symbol == "ticker"), None)
         if first is None or first.name in body.axes:
             raise HTTPException(422, "set a benchmark ticker")
         name = str(body.fixed.get(first.name, first.default))
@@ -88,14 +94,14 @@ def _prepare(body: SweepRequest, market: Market) -> SweepJob:
             raise P.ParamError(f"the grid has {len(grid)} trials; the limit is {MAX_TRIALS}")
         params = grid.params()
         warmup = max(P.build(body.strategy, p).warmup for p in params)
-        _check_symbols(market, P.symbols(body.strategy, params))
+        _check_symbols(market, body.strategy, params)
         benchmark = _benchmark(body, market)
         data = market.between(body.start, body.end)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     # Upper bound on the aligned days: dates where every ticker used has a price,
     # less the first date and the longest warm-up (D017).
-    used = [s for s in P.symbols(body.strategy, params) | {benchmark} if s in market.tickers]
+    used = sorted(P.symbols(body.strategy, params, "ticker") | {benchmark})
     estimate = int(data.prices.close[used].notna().all(axis=1).sum()) - 1 - warmup
     needed = Settings().min_days
     if estimate < needed:
@@ -154,7 +160,8 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
                 name=name,
                 description=(cls.__doc__ or "").strip().split("\n\n")[0].replace("\n", " "),
                 params=[
-                    ParamInfo(name=s.name, type=s.type, default=s.default) for s in P.specs(name)
+                    ParamInfo(name=s.name, type=s.type, default=s.default, symbol=s.symbol)
+                    for s in P.specs(name)
                 ],
             )
             for name, cls in STRATEGIES.items()
@@ -166,7 +173,7 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
         try:
             params = P.check_params(body.strategy, body.params)
             strategy = P.build(body.strategy, params)
-            _check_symbols(market, P.symbols(body.strategy, [params]))
+            _check_symbols(market, body.strategy, [params])
             data = market.between(body.start, body.end)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc

@@ -5,14 +5,14 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from backtest_lab.strategies.base import MarketData
+from backtest_lab.strategies.base import MarketData, ticker_field
 
 
 @dataclass(frozen=True)
 class MovingAverageCrossover:
     """Long when the fast average is above the slow one; flat or short otherwise."""
 
-    ticker: str = "SPY"
+    ticker: str = ticker_field("SPY")
     fast: int = 50
     slow: int = 200
     allow_short: bool = False

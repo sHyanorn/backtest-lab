@@ -22,7 +22,10 @@ def test_lists_every_strategy_with_typed_parameters(client: TestClient) -> None:
         "rate_rotation",
     }
     ma = {p["name"]: p for p in by_name["ma_crossover"]["params"]}
-    assert ma["fast"] == {"name": "fast", "type": "int", "default": 50}
+    assert ma["fast"] == {"name": "fast", "type": "int", "default": 50, "symbol": None}
+    assert ma["ticker"]["symbol"] == "ticker"
+    rotation = {p["name"]: p["symbol"] for p in by_name["rate_rotation"]["params"]}
+    assert rotation["risk_off"] == "ticker" and rotation["long_rate"] == "series"
     assert ma["allow_short"]["type"] == "bool"
     assert by_name["ma_crossover"]["description"].startswith("Long when")
 
@@ -73,6 +76,15 @@ def test_backtest_date_range_and_costs(client: TestClient) -> None:
         {"strategy": "ma_crossover", "costs": {"fee_bps": -1}},
         {"strategy": "ma_crossover", "start": "2030-01-01"},
         {"strategy": "rate_rotation", "params": {"long_rate": "DGS30"}},
+        # a string parameter must name the right kind of symbol
+        {"strategy": "ma_crossover", "params": {"ticker": "DGS10"}},
+        {"strategy": "rate_rotation", "params": {"long_rate": "SPY"}},
+        {"strategy": "rate_rotation", "params": {"risk_off": "DGS3MO"}},
+        # numbers outside +/-1e6
+        {"strategy": "mean_reversion", "params": {"entry_z": 10**400}},
+        {"strategy": "ma_crossover", "params": {"slow": 10**30}},
+        {"strategy": "rate_rotation", "params": {"smoothing": 2**63}},
+        {"strategy": "mean_reversion", "params": {"entry_z": -1e7}},
     ],
 )
 def test_invalid_requests_are_422(client: TestClient, body: dict[str, object]) -> None:

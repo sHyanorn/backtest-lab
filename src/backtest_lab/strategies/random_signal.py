@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from backtest_lab.strategies.base import MarketData
+from backtest_lab.strategies.base import MarketData, ticker_field
 
 
 @dataclass(frozen=True)
@@ -16,7 +16,7 @@ class RandomSignal:
     `hold` dates from the first price date, so a signal never depends on later data.
     """
 
-    ticker: str = "SPY"
+    ticker: str = ticker_field("SPY")
     seed: int = 0
     hold: int = 5
 

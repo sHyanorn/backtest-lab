@@ -5,14 +5,14 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from backtest_lab.strategies.base import MarketData
+from backtest_lab.strategies.base import MarketData, ticker_field
 
 
 @dataclass(frozen=True)
 class TimeSeriesMomentum:
     """Long after a positive trailing return; short (or flat) after a negative one."""
 
-    ticker: str = "SPY"
+    ticker: str = ticker_field("SPY")
     lookback: int = 252
     allow_short: bool = True
 

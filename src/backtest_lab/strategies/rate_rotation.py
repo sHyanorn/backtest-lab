@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from backtest_lab.strategies.base import MarketData
+from backtest_lab.strategies.base import MarketData, series_field, ticker_field
 
 
 @dataclass(frozen=True)
@@ -15,10 +15,10 @@ class RateRotation:
     Uses only rates published by each close (D010).
     """
 
-    risk_on: str = "SPY"
-    risk_off: str = "IEF"
-    long_rate: str = "DGS10"
-    short_rate: str = "DGS3MO"
+    risk_on: str = ticker_field("SPY")
+    risk_off: str = ticker_field("IEF")
+    long_rate: str = series_field("DGS10")
+    short_rate: str = series_field("DGS3MO")
     threshold: float = 0.0
     smoothing: int = 1
 

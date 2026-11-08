@@ -6,10 +6,15 @@ from collections.abc import Iterable, Mapping
 from typing import Literal
 
 from backtest_lab.strategies import STRATEGIES, Strategy
+from backtest_lab.strategies.base import SYMBOL
 from backtest_lab.validation.search import Params, ParamValue
 
 type TypeName = Literal["str", "int", "float", "bool"]
+type SymbolKind = Literal["ticker", "series"]
 _TYPE_NAMES: dict[type, TypeName] = {str: "str", int: "int", float: "float", bool: "bool"}
+# Numbers outside this range are rejected: no strategy needs them, and huge values
+# overflow in pandas or in float conversion (D016).
+NUMBER_LIMIT = 1_000_000
 
 
 class ParamError(ValueError):
@@ -21,6 +26,7 @@ class ParamSpec:
     name: str
     type: TypeName
     default: ParamValue
+    symbol: SymbolKind | None  # what a string parameter names
 
 
 def specs(strategy: str) -> list[ParamSpec]:
@@ -28,7 +34,10 @@ def specs(strategy: str) -> list[ParamSpec]:
         raise ParamError(f"unknown strategy {strategy!r}; choose from {sorted(STRATEGIES)}")
     cls = STRATEGIES[strategy]
     assert dataclasses.is_dataclass(cls)
-    return [ParamSpec(f.name, _TYPE_NAMES[f.type], f.default) for f in dataclasses.fields(cls)]
+    return [
+        ParamSpec(f.name, _TYPE_NAMES[f.type], f.default, f.metadata.get(SYMBOL))
+        for f in dataclasses.fields(cls)
+    ]
 
 
 def check_value(spec: ParamSpec, value: ParamValue) -> ParamValue:
@@ -41,6 +50,8 @@ def check_value(spec: ParamSpec, value: ParamValue) -> ParamValue:
     }[spec.type]
     if not ok or (isinstance(value, float) and not math.isfinite(value)):
         raise ParamError(f"parameter {spec.name!r} must be {spec.type}, got {value!r}")
+    if spec.type in ("int", "float") and abs(value) > NUMBER_LIMIT:  # type: ignore[arg-type]
+        raise ParamError(f"parameter {spec.name!r} must be within +/-{NUMBER_LIMIT}")
     return float(value) if spec.type == "float" else value
 
 
@@ -60,10 +71,7 @@ def build(strategy: str, params: Params) -> Strategy:
         raise ParamError(f"{strategy} {params}: {exc}") from exc
 
 
-def symbols(strategy: str, params: Iterable[Params]) -> set[str]:
-    """Tickers and macro series named by the string parameters, defaults included."""
-    names = [s for s in specs(strategy) if s.type == "str"]
-    out: set[str] = set()
-    for p in params:
-        out.update(str(p.get(s.name, s.default)) for s in names)
-    return out
+def symbols(strategy: str, params: Iterable[Params], kind: SymbolKind) -> set[str]:
+    """Tickers or macro series named by the parameters of that kind, defaults included."""
+    named = [s for s in specs(strategy) if s.symbol == kind]
+    return {str(p.get(s.name, s.default)) for p in params for s in named}
