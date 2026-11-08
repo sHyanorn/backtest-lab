@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "e2e": "playwright test",
+    "e2e": "playwright test --trace off",
     "gen:types": "json2ts -i ../docs/report.schema.json -o src/report.gen.ts --unknownAny --additionalProperties=false && prettier --write src/report.gen.ts"
   },
   "dependencies": {
@@ -26,6 +26,8 @@
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.63.0",
     "@testing-library/react": "16.3.3",
     "@types/d3-array": "3.2.2",
     "@types/d3-scale": "4.0.9",
@@ -41,5 +43,8 @@
     "typescript": "7.0.2",
     "vite": "8.3.6",
     "vitest": "5.1.0"
+  },
+  "overrides": {
+    "playwright-core": "1.63.0"
   }
 }
