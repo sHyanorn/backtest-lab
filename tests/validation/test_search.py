@@ -1,3 +1,4 @@
+import multiprocessing
 from pathlib import Path
 
 import numpy as np
@@ -6,7 +7,7 @@ import pytest
 
 from backtest_lab.engine.backtest import Costs, run
 from backtest_lab.strategies import MovingAverageCrossover
-from backtest_lab.validation.search import Grid, Trials, run_grid
+from backtest_lab.validation.search import Grid, GridCancelled, Trials, run_grid
 from backtest_lab.validation.sensitivity import neighbours
 from tests.factories import synthetic_market
 
@@ -132,3 +133,20 @@ def test_save_and_load_round_trip(tmp_path: Path) -> None:
     assert loaded.costs == trials.costs
     assert loaded.strategy == trials.strategy
     assert loaded.starts == trials.starts
+
+
+@pytest.mark.parametrize("processes", [1, 2])
+def test_cancel_stops_the_search_and_its_workers(processes: int) -> None:
+    grid = Grid.of({"seed": list(range(200))}, {"ticker": "SPY"}, categorical=["seed"])
+    seen: list[int] = []
+    with pytest.raises(GridCancelled):
+        run_grid(
+            "random_signal",
+            grid,
+            synthetic_market(n=300),
+            processes=processes,
+            progress=lambda done, total: seen.append(done),
+            cancel=lambda: len(seen) >= 3,
+        )
+    assert len(seen) < len(grid)
+    assert multiprocessing.active_children() == []

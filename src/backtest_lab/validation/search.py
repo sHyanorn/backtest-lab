@@ -5,7 +5,9 @@ Trials are aligned on the dates where all of them are live (METHODS.md, Conventi
 
 import itertools
 import json
+import multiprocessing
 import os
+import signal
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
@@ -196,6 +198,12 @@ _worker_state: tuple[MarketData, Costs] | None = None
 def _init_worker(data: MarketData, costs: Costs) -> None:
     global _worker_state
     _worker_state = (data, costs)
+    # Ctrl+C reaches every process in the console; the parent decides what to stop.
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+class GridCancelled(Exception):
+    """`cancel()` returned True before every trial had run."""
 
 
 def _worker_backtest(job: tuple[str, Params]) -> TrialOutput:
@@ -211,18 +219,22 @@ def run_grid(
     *,
     processes: int | None = None,
     progress: Callable[[int, int], None] | None = None,
+    cancel: Callable[[], bool] | None = None,
 ) -> Trials:
     """Backtest every grid point; results do not depend on `processes`.
 
     Each trial is a deterministic function of its parameters, and results are
     collected in grid order. `progress(done, total)` is called after each trial.
+    `cancel()` is checked after each trial; when it returns True the worker processes
+    are terminated and GridCancelled is raised. Workers are also terminated when
+    collecting fails for any other reason, so none outlive the call.
     """
     if strategy not in STRATEGIES:
         raise ValueError(f"unknown strategy {strategy!r}")
     params = grid.params()
     for p in params:  # fail on an invalid combination before any work
         STRATEGIES[strategy](**p)
-    workers = min(processes or os.cpu_count() or 1, len(params))
+    workers = min(processes or os.process_cpu_count() or 1, len(params))
     jobs = [(strategy, p) for p in params]
 
     outputs: list[TrialOutput] = []
@@ -232,13 +244,24 @@ def run_grid(
             outputs.append(out)
             if progress is not None:
                 progress(len(outputs), len(jobs))
+            if cancel is not None and cancel() and len(outputs) < len(jobs):
+                raise GridCancelled(f"cancelled after {len(outputs)} of {len(jobs)} trials")
 
     if workers == 1:
         collect(backtest(s, p, data, costs) for s, p in jobs)
     else:
         chunksize = max(1, len(jobs) // (4 * workers))
-        with ProcessPoolExecutor(workers, initializer=_init_worker, initargs=(data, costs)) as pool:
+        before = set(multiprocessing.active_children())
+        pool = ProcessPoolExecutor(workers, initializer=_init_worker, initargs=(data, costs))
+        try:
             collect(pool.map(_worker_backtest, jobs, chunksize=chunksize))
+        except BaseException:
+            pool.terminate_workers()  # do not wait for trials already handed out
+            for proc in set(multiprocessing.active_children()) - before:
+                proc.join(timeout=10)
+            raise
+        finally:
+            pool.shutdown(wait=True, cancel_futures=True)
 
     starts = [start for _, start in outputs]
     if any(start is None for start in starts):
