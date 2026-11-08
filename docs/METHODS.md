@@ -57,7 +57,38 @@ Details that are easy to get wrong:
 
 ---
 
-## 2. Walk-forward analysis
+## 2. Holdout split and walk-forward analysis
+
+### 2.1 Holdout split
+
+**Problem.** The most basic check: choose parameters on the earlier part of the sample and see whether they keep working on the later part, which the choice never saw.
+
+**Procedure.** Split the aligned rows of $X$ at $T_{IS} = \lfloor f T \rfloor$, default $f = 0.7$: $IS = [0, T_{IS})$, $OOS = [T_{IS}, T)$.
+
+1. On $IS$, select $\theta^* = \arg\max_\theta \widehat{SR}_{IS}(\theta)$ (ties: first in grid order).
+2. The OOS returns are rows $OOS$ of $\theta^*$'s full-sample backtest. The parameters do not change at the split, so no extra trading cost arises there.
+3. Report the annualized IS and OOS Sharpe ratios of $\theta^*$ and the retention $\widehat{SR}_{OOS} / \widehat{SR}_{IS}$, given only when $\widehat{SR}_{IS} > 0$.
+
+**Intuition.** A setting that captured real structure keeps a good part of its Sharpe ratio after the split; one that fit noise in the IS period falls toward zero.
+
+**Pitfalls.**
+
+- One cut gives one OOS path: the result depends on where the cut falls, and with $f = 0.7$ the OOS period is short relative to the sample.
+- The OOS period can be used once. Revising the grid after looking at it turns it into IS data.
+- The split ignores how many configurations were searched; Sections 4 and 5 address that.
+
+**References.** A basic method with no single source; walk-forward analysis (Section 2.2) generalizes it to many cuts.
+
+**Code.** `src/backtest_lab/validation/walk_forward.py`
+
+**Tests.** `tests/validation/test_walk_forward.py`
+
+- Boundaries: $T = 10$, $f = 0.7$ gives $IS = [0, 7)$ and $OOS = [7, 10)$.
+- No look-ahead: changing OOS rows of $X$ leaves $\theta^*$ unchanged.
+- Synthetic planted edge (fixed seed): $\theta^*$ is the configuration with the drift and its OOS Sharpe is positive.
+- Random signals (fixed seed): the OOS annualized Sharpe of $\theta^*$ is within two standard errors of zero, $SE \approx \sqrt{A/n}$ for $n$ OOS days.
+
+### 2.2 Walk-forward analysis
 
 **Problem.** A single in-sample/out-of-sample split uses one arbitrary cut. Walk-forward analysis re-optimizes on a moving window and trades the chosen parameters on the next, unseen window, which is how the strategy would actually be run.
 
