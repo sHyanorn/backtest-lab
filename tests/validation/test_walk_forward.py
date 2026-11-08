@@ -6,7 +6,7 @@ import numpy.typing as npt
 import pandas as pd
 import pytest
 
-from backtest_lab.engine.backtest import Prices
+from backtest_lab.engine.backtest import Costs, Prices
 from backtest_lab.engine.metrics import ANNUALIZATION, sharpe
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation.search import Grid, run_grid
@@ -108,6 +108,25 @@ def test_fixed_parameters_reproduce_the_trial_after_entry() -> None:
     expected = trials.returns[0].loc[result.returns.index]
     # The first OOS day enters from cash; afterwards no parameter ever changes.
     np.testing.assert_allclose(result.returns.iloc[1:], expected.iloc[1:], rtol=0, atol=1e-15)
+
+
+def test_stitched_series_pays_the_trials_costs() -> None:
+    data = synthetic_market(n=600, seed=5)
+    costs = Costs(fee_bps=20.0, slippage_bps=30.0)
+    grid = Grid.of({"fast": [5], "slow": [20]})
+    trials = run_grid("ma_crossover", grid, data, costs, processes=1)
+    result = walk_forward(trials, data, is_len=200, oos_len=100)
+    expected = trials.returns[0].loc[result.returns.index]
+    np.testing.assert_allclose(result.returns.iloc[1:], expected.iloc[1:], rtol=0, atol=1e-15)
+
+
+def test_anchored_windows_start_at_the_first_row() -> None:
+    data = synthetic_market(n=900, tickers=("A", "B"), seed=6)
+    grid = Grid.of({"ticker": ["A", "B"], "fast": [5, 10], "slow": [20, 40]})
+    trials = run_grid("ma_crossover", grid, data, processes=1)
+    result = walk_forward(trials, data, is_len=200, oos_len=100, anchored=True)
+    assert len(result.windows) > 1
+    assert all(w.is_start == trials.returns.index[0] for w in result.windows)
 
 
 def _shift_prices_after(data: MarketData, row: int, seed: int) -> MarketData:
