@@ -1,0 +1,1486 @@
+{
+  "$defs": {
+    "Axis": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "$ref": "#/$defs/Param"
+          },
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "values"
+      ],
+      "title": "Axis",
+      "type": "object"
+    },
+    "Benchmark": {
+      "additionalProperties": false,
+      "description": "Buy and hold over the same dates; a reference that takes no part in any verdict.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/Metrics"
+        },
+        "difference": {
+          "$ref": "#/$defs/Difference"
+        }
+      },
+      "required": [
+        "name",
+        "metrics",
+        "difference"
+      ],
+      "title": "Benchmark",
+      "type": "object"
+    },
+    "Cell": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "title": "Y",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "Cell",
+      "type": "object"
+    },
+    "Checks": {
+      "additionalProperties": false,
+      "properties": {
+        "holdout": {
+          "$ref": "#/$defs/HoldoutCheck"
+        },
+        "walk_forward": {
+          "$ref": "#/$defs/WalkForwardCheck"
+        },
+        "purged_cv": {
+          "$ref": "#/$defs/PurgedCVCheck"
+        },
+        "pbo": {
+          "$ref": "#/$defs/PBOCheck"
+        },
+        "deflated_sharpe": {
+          "$ref": "#/$defs/DeflatedSharpeCheck"
+        },
+        "track_record": {
+          "$ref": "#/$defs/TrackRecordCheck"
+        },
+        "min_backtest_length": {
+          "$ref": "#/$defs/MinBacktestCheck"
+        },
+        "sensitivity": {
+          "$ref": "#/$defs/SensitivityCheck"
+        }
+      },
+      "required": [
+        "holdout",
+        "walk_forward",
+        "purged_cv",
+        "pbo",
+        "deflated_sharpe",
+        "track_record",
+        "min_backtest_length",
+        "sensitivity"
+      ],
+      "title": "Checks",
+      "type": "object"
+    },
+    "CostInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "fee_bps": {
+          "title": "Fee Bps",
+          "type": "number"
+        },
+        "slippage_bps": {
+          "title": "Slippage Bps",
+          "type": "number"
+        }
+      },
+      "required": [
+        "fee_bps",
+        "slippage_bps"
+      ],
+      "title": "CostInfo",
+      "type": "object"
+    },
+    "Curve": {
+      "additionalProperties": false,
+      "properties": {
+        "equity": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Equity",
+          "type": "array"
+        },
+        "drawdown": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Drawdown",
+          "type": "array"
+        }
+      },
+      "required": [
+        "equity",
+        "drawdown"
+      ],
+      "title": "Curve",
+      "type": "object"
+    },
+    "DeflatedSharpeCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/DeflatedSharpeMetrics"
+        }
+      },
+      "required": [
+        "title",
+        "verdict",
+        "summary",
+        "metrics"
+      ],
+      "title": "DeflatedSharpeCheck",
+      "type": "object"
+    },
+    "DeflatedSharpeMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "dsr": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Dsr"
+        },
+        "sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sharpe"
+        },
+        "expected_max_sharpe": {
+          "title": "Expected Max Sharpe",
+          "type": "number"
+        },
+        "n_trials": {
+          "title": "N Trials",
+          "type": "integer"
+        },
+        "n_effective": {
+          "title": "N Effective",
+          "type": "number"
+        },
+        "average_correlation": {
+          "title": "Average Correlation",
+          "type": "number"
+        },
+        "sharpe_variance": {
+          "title": "Sharpe Variance",
+          "type": "number"
+        },
+        "skewness": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Skewness"
+        },
+        "kurtosis": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Kurtosis"
+        }
+      },
+      "required": [
+        "dsr",
+        "sharpe",
+        "expected_max_sharpe",
+        "n_trials",
+        "n_effective",
+        "average_correlation",
+        "sharpe_variance",
+        "skewness",
+        "kurtosis"
+      ],
+      "title": "DeflatedSharpeMetrics",
+      "type": "object"
+    },
+    "Difference": {
+      "additionalProperties": false,
+      "description": "Selected trial minus benchmark.",
+      "properties": {
+        "sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sharpe"
+        },
+        "cagr": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cagr"
+        },
+        "max_drawdown": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Drawdown"
+        },
+        "annual_volatility": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Annual Volatility"
+        }
+      },
+      "required": [
+        "sharpe",
+        "cagr",
+        "max_drawdown",
+        "annual_volatility"
+      ],
+      "title": "Difference",
+      "type": "object"
+    },
+    "Heatmap": {
+      "additionalProperties": false,
+      "description": "Annualized Sharpe over one or two axes, other parameters fixed at the best trial.",
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/Axis"
+        },
+        "y": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Axis"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sharpe": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Sharpe",
+          "type": "array"
+        },
+        "trials": {
+          "items": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "title": "Trials",
+          "type": "array"
+        },
+        "best": {
+          "$ref": "#/$defs/Cell"
+        },
+        "neighbours": {
+          "items": {
+            "$ref": "#/$defs/Cell"
+          },
+          "title": "Neighbours",
+          "type": "array"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "sharpe",
+        "trials",
+        "best",
+        "neighbours"
+      ],
+      "title": "Heatmap",
+      "type": "object"
+    },
+    "Histogram": {
+      "additionalProperties": false,
+      "properties": {
+        "edges": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Edges",
+          "type": "array"
+        },
+        "counts": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Counts",
+          "type": "array"
+        }
+      },
+      "required": [
+        "edges",
+        "counts"
+      ],
+      "title": "Histogram",
+      "type": "object"
+    },
+    "HoldoutCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/HoldoutMetrics"
+        },
+        "details": {
+          "$ref": "#/$defs/HoldoutDetails"
+        }
+      },
+      "required": [
+        "title",
+        "verdict",
+        "summary",
+        "metrics",
+        "details"
+      ],
+      "title": "HoldoutCheck",
+      "type": "object"
+    },
+    "HoldoutDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "fraction": {
+          "title": "Fraction",
+          "type": "number"
+        },
+        "trial": {
+          "title": "Trial",
+          "type": "integer"
+        },
+        "params": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Param"
+          },
+          "title": "Params",
+          "type": "object"
+        }
+      },
+      "required": [
+        "fraction",
+        "trial",
+        "params"
+      ],
+      "title": "HoldoutDetails",
+      "type": "object"
+    },
+    "HoldoutMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "split_date": {
+          "format": "date",
+          "title": "Split Date",
+          "type": "string"
+        },
+        "is_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Is Sharpe"
+        },
+        "oos_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Oos Sharpe"
+        },
+        "retention": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Retention"
+        }
+      },
+      "required": [
+        "split_date",
+        "is_sharpe",
+        "oos_sharpe",
+        "retention"
+      ],
+      "title": "HoldoutMetrics",
+      "type": "object"
+    },
+    "Metrics": {
+      "additionalProperties": false,
+      "description": "METHODS.md Section 1 metrics of net daily returns; null when undefined.",
+      "properties": {
+        "cagr": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cagr"
+        },
+        "annual_volatility": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Annual Volatility"
+        },
+        "sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sharpe"
+        },
+        "sortino": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sortino"
+        },
+        "max_drawdown": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Max Drawdown"
+        },
+        "calmar": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Calmar"
+        }
+      },
+      "required": [
+        "cagr",
+        "annual_volatility",
+        "sharpe",
+        "sortino",
+        "max_drawdown",
+        "calmar"
+      ],
+      "title": "Metrics",
+      "type": "object"
+    },
+    "MinBacktestCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/MinBacktestMetrics"
+        }
+      },
+      "required": [
+        "title",
+        "verdict",
+        "summary",
+        "metrics"
+      ],
+      "title": "MinBacktestCheck",
+      "type": "object"
+    },
+    "MinBacktestMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "min_backtest_years": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Min Backtest Years"
+        },
+        "upper_bound_years": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Upper Bound Years"
+        },
+        "years": {
+          "title": "Years",
+          "type": "number"
+        },
+        "target_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Target Sharpe"
+        },
+        "n_effective": {
+          "title": "N Effective",
+          "type": "number"
+        }
+      },
+      "required": [
+        "min_backtest_years",
+        "upper_bound_years",
+        "years",
+        "target_sharpe",
+        "n_effective"
+      ],
+      "title": "MinBacktestMetrics",
+      "type": "object"
+    },
+    "Overall": {
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "benchmark_summary": {
+          "title": "Benchmark Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "verdict",
+        "summary",
+        "benchmark_summary"
+      ],
+      "title": "Overall",
+      "type": "object"
+    },
+    "PBOCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/PBOMetrics"
+        },
+        "details": {
+          "$ref": "#/$defs/PBODetails"
+        }
+      },
+      "required": [
+        "title",
+        "verdict",
+        "summary",
+        "metrics",
+        "details"
+      ],
+      "title": "PBOCheck",
+      "type": "object"
+    },
+    "PBODetails": {
+      "additionalProperties": false,
+      "properties": {
+        "logits": {
+          "$ref": "#/$defs/Histogram"
+        }
+      },
+      "required": [
+        "logits"
+      ],
+      "title": "PBODetails",
+      "type": "object"
+    },
+    "PBOMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "pbo": {
+          "title": "Pbo",
+          "type": "number"
+        },
+        "n_combinations": {
+          "title": "N Combinations",
+          "type": "integer"
+        },
+        "n_blocks": {
+          "title": "N Blocks",
+          "type": "integer"
+        },
+        "degradation_slope": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Degradation Slope"
+        },
+        "prob_oos_loss": {
+          "title": "Prob Oos Loss",
+          "type": "number"
+        }
+      },
+      "required": [
+        "pbo",
+        "n_combinations",
+        "n_blocks",
+        "degradation_slope",
+        "prob_oos_loss"
+      ],
+      "title": "PBOMetrics",
+      "type": "object"
+    },
+    "Param": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "PurgedCVCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/PurgedCVMetrics"
+        },
+        "details": {
+          "$ref": "#/$defs/PurgedCVDetails"
+        }
+      },
+      "required": [
+        "title",
+        "verdict",
+        "summary",
+        "metrics",
+        "details"
+      ],
+      "title": "PurgedCVCheck",
+      "type": "object"
+    },
+    "PurgedCVDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "folds": {
+          "items": {
+            "$ref": "#/$defs/PurgedCVFold"
+          },
+          "title": "Folds",
+          "type": "array"
+        }
+      },
+      "required": [
+        "folds"
+      ],
+      "title": "PurgedCVDetails",
+      "type": "object"
+    },
+    "PurgedCVFold": {
+      "additionalProperties": false,
+      "properties": {
+        "test_start": {
+          "format": "date",
+          "title": "Test Start",
+          "type": "string"
+        },
+        "test_end": {
+          "format": "date",
+          "title": "Test End",
+          "type": "string"
+        },
+        "n_train": {
+          "title": "N Train",
+          "type": "integer"
+        },
+        "trial": {
+          "title": "Trial",
+          "type": "integer"
+        },
+        "train_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Train Sharpe"
+        },
+        "test_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Test Sharpe"
+        }
+      },
+      "required": [
+        "test_start",
+        "test_end",
+        "n_train",
+        "trial",
+        "train_sharpe",
+        "test_sharpe"
+      ],
+      "title": "PurgedCVFold",
+      "type": "object"
+    },
+    "PurgedCVMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "folds": {
+          "title": "Folds",
+          "type": "integer"
+        },
+        "embargo_days": {
+          "title": "Embargo Days",
+          "type": "integer"
+        },
+        "cv_sharpe": {
+          "title": "Cv Sharpe",
+          "type": "number"
+        },
+        "train_sharpe": {
+          "title": "Train Sharpe",
+          "type": "number"
+        },
+        "retention": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Retention"
+        }
+      },
+      "required": [
+        "folds",
+        "embargo_days",
+        "cv_sharpe",
+        "train_sharpe",
+        "retention"
+      ],
+      "title": "PurgedCVMetrics",
+      "type": "object"
+    },
+    "Sample": {
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        },
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "n_days": {
+          "title": "N Days",
+          "type": "integer"
+        },
+        "years": {
+          "title": "Years",
+          "type": "number"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "n_days",
+        "years"
+      ],
+      "title": "Sample",
+      "type": "object"
+    },
+    "Selected": {
+      "additionalProperties": false,
+      "description": "The trial with the highest Sharpe ratio over the whole sample.",
+      "properties": {
+        "trial": {
+          "title": "Trial",
+          "type": "integer"
+        },
+        "params": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Param"
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "metrics": {
+          "$ref": "#/$defs/Metrics"
+        }
+      },
+      "required": [
+        "trial",
+        "params",
+        "metrics"
+      ],
+      "title": "Selected",
+      "type": "object"
+    },
+    "SensitivityCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/SensitivityMetrics"
+        },
+        "details": {
+          "$ref": "#/$defs/SensitivityDetails"
+        }
+      },
+      "required": [
+        "title",
+        "verdict",
+        "summary",
+        "metrics",
+        "details"
+      ],
+      "title": "SensitivityCheck",
+      "type": "object"
+    },
+    "SensitivityDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "heatmap": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Heatmap"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "heatmap"
+      ],
+      "title": "SensitivityDetails",
+      "type": "object"
+    },
+    "SensitivityMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "best_sharpe": {
+          "title": "Best Sharpe",
+          "type": "number"
+        },
+        "neighbour_mean": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Neighbour Mean"
+        },
+        "neighbour_std": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Neighbour Std"
+        },
+        "retention": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Retention"
+        },
+        "n_neighbours": {
+          "title": "N Neighbours",
+          "type": "integer"
+        },
+        "radius": {
+          "title": "Radius",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "best_sharpe",
+        "neighbour_mean",
+        "neighbour_std",
+        "retention",
+        "n_neighbours",
+        "radius"
+      ],
+      "title": "SensitivityMetrics",
+      "type": "object"
+    },
+    "Series": {
+      "additionalProperties": false,
+      "properties": {
+        "frequency": {
+          "const": "weekly",
+          "title": "Frequency",
+          "type": "string"
+        },
+        "dates": {
+          "items": {
+            "format": "date",
+            "type": "string"
+          },
+          "title": "Dates",
+          "type": "array"
+        },
+        "selected": {
+          "$ref": "#/$defs/Curve"
+        },
+        "benchmark": {
+          "$ref": "#/$defs/Curve"
+        }
+      },
+      "required": [
+        "frequency",
+        "dates",
+        "selected",
+        "benchmark"
+      ],
+      "title": "Series",
+      "type": "object"
+    },
+    "StrategyInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "fixed": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Param"
+          },
+          "title": "Fixed",
+          "type": "object"
+        },
+        "grid": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/Param"
+            },
+            "type": "array"
+          },
+          "title": "Grid",
+          "type": "object"
+        },
+        "n_trials": {
+          "title": "N Trials",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "fixed",
+        "grid",
+        "n_trials"
+      ],
+      "title": "StrategyInfo",
+      "type": "object"
+    },
+    "TrackRecordCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/TrackRecordMetrics"
+        }
+      },
+      "required": [
+        "title",
+        "verdict",
+        "summary",
+        "metrics"
+      ],
+      "title": "TrackRecordCheck",
+      "type": "object"
+    },
+    "TrackRecordMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "psr": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Psr"
+        },
+        "sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sharpe"
+        },
+        "min_track_record_years": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Min Track Record Years"
+        },
+        "years": {
+          "title": "Years",
+          "type": "number"
+        },
+        "alpha": {
+          "title": "Alpha",
+          "type": "number"
+        }
+      },
+      "required": [
+        "psr",
+        "sharpe",
+        "min_track_record_years",
+        "years",
+        "alpha"
+      ],
+      "title": "TrackRecordMetrics",
+      "type": "object"
+    },
+    "Verdict": {
+      "enum": [
+        "green",
+        "yellow",
+        "red"
+      ],
+      "type": "string"
+    },
+    "WalkForwardCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/WalkForwardMetrics"
+        },
+        "details": {
+          "$ref": "#/$defs/WalkForwardDetails"
+        }
+      },
+      "required": [
+        "title",
+        "verdict",
+        "summary",
+        "metrics",
+        "details"
+      ],
+      "title": "WalkForwardCheck",
+      "type": "object"
+    },
+    "WalkForwardDetails": {
+      "additionalProperties": false,
+      "properties": {
+        "is_days": {
+          "title": "Is Days",
+          "type": "integer"
+        },
+        "oos_days": {
+          "title": "Oos Days",
+          "type": "integer"
+        },
+        "anchored": {
+          "title": "Anchored",
+          "type": "boolean"
+        },
+        "windows": {
+          "items": {
+            "$ref": "#/$defs/WalkForwardWindow"
+          },
+          "title": "Windows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "is_days",
+        "oos_days",
+        "anchored",
+        "windows"
+      ],
+      "title": "WalkForwardDetails",
+      "type": "object"
+    },
+    "WalkForwardMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "n_windows": {
+          "title": "N Windows",
+          "type": "integer"
+        },
+        "is_return": {
+          "title": "Is Return",
+          "type": "number"
+        },
+        "oos_return": {
+          "title": "Oos Return",
+          "type": "number"
+        },
+        "efficiency": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Efficiency"
+        },
+        "oos_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Oos Sharpe"
+        }
+      },
+      "required": [
+        "n_windows",
+        "is_return",
+        "oos_return",
+        "efficiency",
+        "oos_sharpe"
+      ],
+      "title": "WalkForwardMetrics",
+      "type": "object"
+    },
+    "WalkForwardWindow": {
+      "additionalProperties": false,
+      "properties": {
+        "is_start": {
+          "format": "date",
+          "title": "Is Start",
+          "type": "string"
+        },
+        "oos_start": {
+          "format": "date",
+          "title": "Oos Start",
+          "type": "string"
+        },
+        "oos_end": {
+          "format": "date",
+          "title": "Oos End",
+          "type": "string"
+        },
+        "trial": {
+          "title": "Trial",
+          "type": "integer"
+        },
+        "is_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Is Sharpe"
+        },
+        "oos_sharpe": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Oos Sharpe"
+        }
+      },
+      "required": [
+        "is_start",
+        "oos_start",
+        "oos_end",
+        "trial",
+        "is_sharpe",
+        "oos_sharpe"
+      ],
+      "title": "WalkForwardWindow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "strategy": {
+      "$ref": "#/$defs/StrategyInfo"
+    },
+    "sample": {
+      "$ref": "#/$defs/Sample"
+    },
+    "costs": {
+      "$ref": "#/$defs/CostInfo"
+    },
+    "selected": {
+      "$ref": "#/$defs/Selected"
+    },
+    "benchmark": {
+      "$ref": "#/$defs/Benchmark"
+    },
+    "overall": {
+      "$ref": "#/$defs/Overall"
+    },
+    "checks": {
+      "$ref": "#/$defs/Checks"
+    },
+    "series": {
+      "$ref": "#/$defs/Series"
+    }
+  },
+  "required": [
+    "schema_version",
+    "strategy",
+    "sample",
+    "costs",
+    "selected",
+    "benchmark",
+    "overall",
+    "checks",
+    "series"
+  ],
+  "title": "Report",
+  "type": "object"
+}

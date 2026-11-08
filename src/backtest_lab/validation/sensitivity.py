@@ -68,7 +68,7 @@ class Heatmap:
     """Sharpe over one or two axes, with every other axis fixed at the best trial."""
 
     axes: tuple[str, ...]  # (x,) or (x, y)
-    values: tuple[tuple[ParamValue, ...], ...]  # grid values along each axis
+    axis_values: tuple[tuple[ParamValue, ...], ...]  # grid values along each axis
     sharpe: Matrix  # shape (len(y values), len(x values)); one row for a single axis
     trials: npt.NDArray[np.intp]  # trial number of each cell, same shape
 
@@ -90,5 +90,5 @@ def heatmap(sharpe: npt.ArrayLike, grid: Grid, best: int, axes: tuple[str, ...])
             if y is not None:
                 point[y] = r
             trials[r, c] = np.ravel_multi_index(tuple(point), grid.shape)
-    values = tuple(dict(grid.axes)[name] for name in axes)
-    return Heatmap(axes=axes, values=values, sharpe=p[trials], trials=trials)
+    axis_values = tuple(dict(grid.axes)[name] for name in axes)
+    return Heatmap(axes=axes, axis_values=axis_values, sharpe=p[trials], trials=trials)

@@ -28,7 +28,7 @@
 - [x] Deflated Sharpe ratio, probabilistic Sharpe ratio, minimum backtest length
 - [x] Parameter sensitivity analysis
 - [x] Control test with a random-signal strategy
-- [ ] Credibility report generation (JSON)
+- [x] Credibility report generation (JSON)
 
 ## M4 API
 - [ ] FastAPI endpoints

@@ -9,6 +9,7 @@ dependencies = [
     "duckdb==2.0.0",
     "pandas==3.1.1",
     "pyarrow==26.0.1",
+    "pydantic==2.14.3",
     "yfinance==1.8.0",
 ]
 
@@ -33,6 +34,7 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "NPY", "PD", "RUF"]
 
 [tool.mypy]
 strict = true
+plugins = ["pydantic.mypy"]
 files = ["src", "tests"]
 
 [tool.pytest.ini_options]
@@ -47,3 +49,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = ["empyrical"]
 ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true

@@ -74,7 +74,7 @@ def test_heatmap_fixes_other_axes_at_the_best_trial() -> None:
     p = np.arange(12, dtype=float)
     best = 9  # fast 10, slow 40, short True
     hm = heatmap(p, grid, best, ("slow", "fast"))
-    assert hm.values == ((20, 40, 60), (5, 10))
+    assert hm.axis_values == ((20, 40, 60), (5, 10))
     assert hm.sharpe.shape == (2, 3)  # rows: fast; columns: slow
     assert all(grid.params()[t]["short"] is True for t in hm.trials.ravel())
     assert hm.trials[1, 1] == best
