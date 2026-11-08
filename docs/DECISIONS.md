@@ -56,3 +56,8 @@
 - GitHub evicts caches unused for 7 days, so a weekly run may refetch everything. A full fetch is one history request per ticker for 15 tickers, 1 s apart, plus 5 FRED downloads; it takes about 25 s. Each request retries 4 times with 2 to 16 s backoff before the run fails
 - The incremental update refetches a ticker in full only when the last 10 cached rows change; a correction to an older dividend is picked up by the next full fetch (a cache miss, or `--full`)
 - GitHub disables scheduled workflows after 60 days without repository activity; it has to be re-enabled from the Actions tab
+
+## D020 Metrics return NaN in degenerate cases
+- Date: 2026-11-08
+- A standard deviation or downside deviation below 1e-12 counts as zero, and a ratio with a zero denominator is NaN; CAGR is NaN when final wealth is not positive (METHODS.md, Conventions and Section 1)
+- empyrical-reloaded returns `inf`, or a large value from float noise in the standard deviation, for constant or all-positive series. An infinite Sharpe would rank first in parameter search and PBO, so the project uses NaN and treats it as Sharpe 0 in rankings. Cross-checks against empyrical (D008) cover non-degenerate series only

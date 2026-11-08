@@ -37,6 +37,7 @@ Details that are easy to get wrong:
 - The downside deviation divides by $T$, the number of **all** observations, with non-negative excess returns contributing zero (Sortino & Price, 1994). Taking the standard deviation of only the negative returns is a different and incorrect quantity.
 - The Sortino numerator is the annualized arithmetic mean excess return, not CAGR. This matches empyrical.
 - Maximum drawdown is computed on compounded wealth of net returns, not on prices or on summed returns. $W_0 = 1$ is included as a peak, so a loss on the first day counts as a drawdown.
+- $r_f = 0$ matches the engine, which credits uninvested cash with zero return. Every Sharpe ratio in the report uses this convention, so it measures total return per unit of risk, not excess return over Treasury bills; in periods of high short rates it overstates performance relative to cash. PSR, MinTRL and DSR inherit the same convention.
 - Calmar uses the full sample, as in empyrical.
 - Annualizing short samples extrapolates heavily: CAGR over a few weeks is not meaningful. The report's headline metrics require at least one year of data; walk-forward and cross-validation internals apply the same formulas to shorter windows.
 - Degenerate cases return NaN (see Conventions), including Sortino when no return falls below the target. empyrical returns `inf` or a float-noise value in some of these cases; this is a deliberate difference.
@@ -178,7 +179,7 @@ The report also includes two by-products from Section 3.2 of the paper: the OLS 
 - A high PBO does not mean every configuration is bad: if all configurations have similar real skill, PBO is high too.
 - Sharpe ratios on unions of blocks can be computed exactly from per-block counts, sums and sums of squares, so all $\binom{16}{8}$ combinations are cheap.
 
-**Naming.** SPEC and TASKS call this step "combinatorial purged cross-validation". The PBO paper's estimator is CSCV, which is what is implemented here. Combinatorial purged cross-validation (CPCV, López de Prado 2018, Ch. 12) is a different method that builds multiple backtest paths for one model; it is not in scope. CSCV does not purge: the trial returns are computed once on the full sample with fixed parameters, so selection on $J$ sees $\bar J$ only near block edges, through serial correlation of returns and through trailing indicator windows that straddle an edge. With $S = 16$ the blocks are $T/16$ days long, at least a year whenever the sample covers 16 years or more, so this edge effect is small next to the block length; the paper's procedure is kept unchanged.
+**Naming.** The PBO paper's estimator is CSCV, which is what is implemented here. Combinatorial purged cross-validation (CPCV, López de Prado 2018, Ch. 12) is a different method that builds multiple backtest paths for one model; it is not in scope. CSCV does not purge: the trial returns are computed once on the full sample with fixed parameters, so selection on $J$ sees $\bar J$ only near block edges, through serial correlation of returns and through trailing indicator windows that straddle an edge. With $S = 16$ the blocks are $T/16$ days long, at least a year whenever the sample covers 16 years or more, so this edge effect is small next to the block length; the paper's procedure is kept unchanged.
 
 **References.** Bailey, Borwein, López de Prado & Zhu (2017).
 
