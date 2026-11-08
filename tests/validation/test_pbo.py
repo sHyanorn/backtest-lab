@@ -57,6 +57,7 @@ def test_union_sharpe_matches_direct_computation() -> None:
         is_sr = sharpe_ratios(np.concatenate(blocks[list(chosen)]))
         oos_sr = sharpe_ratios(np.concatenate(blocks[rest]))
         winner = int(np.argmax(is_sr))
+        assert result.winners[c] == winner
         assert result.is_sharpe[c] == pytest.approx(is_sr[winner], rel=1e-12)
         assert result.oos_sharpe[c] == pytest.approx(oos_sr[winner], rel=1e-12)
 

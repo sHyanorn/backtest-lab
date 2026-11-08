@@ -53,6 +53,7 @@ class CSCV:
     logits: Matrix  # one per combination
     is_sharpe: Matrix  # IS Sharpe of each combination's winner, non-annualized
     oos_sharpe: Matrix  # OOS Sharpe of the same trial
+    winners: npt.NDArray[np.intp]  # the IS winner (trial) of each combination
     n_trials: int
     n_blocks: int
 
@@ -100,6 +101,7 @@ def cscv(returns: npt.ArrayLike, blocks: int = 16) -> CSCV:
         logits=selection_logits(is_perf, oos_perf),
         is_sharpe=is_perf[rows, winner],
         oos_sharpe=oos_perf[rows, winner],
+        winners=winner,
         n_trials=n,
         n_blocks=blocks,
     )
