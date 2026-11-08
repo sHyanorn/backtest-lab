@@ -183,6 +183,7 @@ function Body({ report, check }: { report: Report; check: CheckKey }) {
               }
             })}
           />
+          <p className="axis-caption">Rank logit, centre of each bin</p>
           <Table
             label="Logit histogram"
             head={['Logit', 'Splits', 'Share']}
