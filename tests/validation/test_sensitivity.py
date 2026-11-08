@@ -43,6 +43,7 @@ def test_linear_surface() -> None:
     assert GRID_5X5.coords(result.best) == (4, 4)
     assert sorted(GRID_5X5.coords(n) for n in result.neighbours) == [(3, 3), (3, 4), (4, 3)]
     assert result.mean == pytest.approx(20 / 3)
+    assert result.std == pytest.approx(math.sqrt(2) / 3)  # population form; sample form is 0.577
     assert result.retention == pytest.approx(5 / 6)
 
 

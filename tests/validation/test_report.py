@@ -178,6 +178,18 @@ def test_report_states_the_minimum_sample() -> None:
         build_report(trials, data, "SPY")
 
 
+def test_benchmark_takes_no_part_in_the_verdicts() -> None:
+    data = synthetic_market(n=2000, tickers=("SPY", "IEF"), seed=5, drift=(0.0003, 0.0))
+    grid = Grid.of({"fast": [5, 10], "slow": [40, 60]}, {"ticker": "SPY"})
+    trials = run_grid("ma_crossover", grid, data, processes=1)
+    spy = build_report(trials, data, "SPY", SETTINGS)
+    ief = build_report(trials, data, "IEF", SETTINGS)
+    assert spy.benchmark.metrics != ief.benchmark.metrics
+    assert spy.checks == ief.checks
+    assert spy.overall.verdict == ief.overall.verdict
+    assert spy.overall.summary == ief.overall.summary
+
+
 def test_report_needs_two_trials() -> None:
     data = synthetic_market(n=300)
     trials = run_grid("ma_crossover", Grid.of({"fast": [5], "slow": [20]}), data, processes=1)
