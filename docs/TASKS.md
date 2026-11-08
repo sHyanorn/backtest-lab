@@ -15,7 +15,7 @@
 ## M2 Backtest engine
 - [x] Vectorized engine: signals fill with a one-day delay
 - [x] Transaction costs and slippage
-- [ ] Performance metrics, cross-checked against existing libraries
+- [x] Performance metrics, cross-checked against existing libraries
 - [ ] Look-ahead bias detection test
 - [ ] Four example strategies
 

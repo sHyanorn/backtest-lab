@@ -14,6 +14,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "empyrical-reloaded==0.7.2",
     "mypy==2.4.1",
     "pandas-stubs==3.1.0.261029",
     "pytest==9.2.0",
@@ -41,4 +42,8 @@ markers = ["network: needs internet access; deselected by default"]
 
 [[tool.mypy.overrides]]
 module = ["yfinance"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["empyrical"]
 ignore_missing_imports = true
