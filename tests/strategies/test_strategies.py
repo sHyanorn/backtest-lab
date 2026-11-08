@@ -101,6 +101,42 @@ def test_future_data_does_not_change_past_weights(strategy: Strategy, cut: int) 
     )
 
 
+@pytest.mark.parametrize("strategy", STRATEGIES, ids=repr)
+@pytest.mark.parametrize("cut", [80, 350])
+def test_weights_are_scale_invariant(strategy: Strategy, cut: int) -> None:
+    # Back-adjusting for a later dividend rescales all earlier prices by one factor;
+    # weights up to that point must not change. Halving is exact in floating point.
+    data = _market(seed=cut)
+    t = DATES[cut]
+    open_, close = data.prices.open.copy(), data.prices.close.copy()
+    open_.loc[:t] *= 0.5
+    close.loc[:t] *= 0.5
+    rescaled = MarketData(prices=Prices(open=open_, close=close), macro=data.macro)
+    pd.testing.assert_frame_equal(
+        strategy.weights(data).loc[:t], strategy.weights(rescaled).loc[:t]
+    )
+
+
+def test_macro_as_of_keeps_the_newest_period() -> None:
+    data = _market()
+    obs = pd.DataFrame(
+        {
+            "series": "X",
+            "date": pd.to_datetime(["2022-08-01", "2022-09-01", "2022-10-01"]).as_unit("us"),
+            "value": [1.0, 2.0, 3.0],
+            # September is published late, after October.
+            "available_date": pd.to_datetime(["2022-09-30", "2022-11-21", "2022-11-15"]).as_unit(
+                "us"
+            ),
+        }
+    )
+    with_x = MarketData(prices=data.prices, macro={"X": obs})
+    s = with_x.macro_as_of("X")
+    assert s.loc["2022-11-14"] == 1.0
+    assert s.loc["2022-11-15"] == 3.0
+    assert s.loc["2022-11-21"] == 3.0
+
+
 def test_trend_followers_are_long_in_an_uptrend_and_out_in_a_downtrend() -> None:
     for strategy in (MovingAverageCrossover(fast=10, slow=50), TimeSeriesMomentum(lookback=60)):
         up = strategy.weights(_trend(1.0))["SPY"].dropna()

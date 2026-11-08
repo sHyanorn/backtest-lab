@@ -16,9 +16,10 @@ class MarketData:
     macro: Mapping[str, pd.DataFrame] = field(default_factory=dict)
 
     def macro_as_of(self, series_id: str) -> pd.Series:
-        """Latest value whose available_date is on or before each price date."""
+        """Newest observation whose available_date is on or before each price date."""
         obs = self.macro[series_id].sort_values(["available_date", "date"])
-        obs = obs.drop_duplicates("available_date", keep="last")
+        # A release of an older period after a newer one does not replace the newer value.
+        obs = obs[obs["date"] >= obs["date"].cummax()]
         dates = pd.DataFrame({"t": self.prices.close.index})
         merged = pd.merge_asof(
             dates,
@@ -39,7 +40,11 @@ class Strategy(Protocol):
 
     @property
     def warmup(self) -> int:
-        """Number of leading rows without a signal."""
+        """Rows of history needed before the first signal.
+
+        Listings and publication lags can delay the first signal further; align
+        trials on `Result.start`, which accounts for both.
+        """
         ...
 
     def weights(self, data: MarketData) -> pd.DataFrame: ...
