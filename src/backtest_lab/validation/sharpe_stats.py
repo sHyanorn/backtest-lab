@@ -13,6 +13,7 @@ import numpy as np
 import numpy.typing as npt
 
 from backtest_lab.engine.metrics import ZERO_TOL
+from backtest_lab.validation.selection import ranking_daily_sharpe
 
 EULER_GAMMA = 0.5772156649015329
 _NORMAL = NormalDist()
@@ -122,6 +123,15 @@ def deflated_sharpe_ratio(
     """DSR: PSR at the expected best Sharpe of `n_trials` independent skill-less trials."""
     benchmark = expected_max_sharpe(n_trials, variance)
     return probabilistic_sharpe_ratio(sharpe, benchmark, n, skewness, kurtosis)
+
+
+def dsr_inputs(returns: npt.ArrayLike) -> tuple[SharpeMoments, float]:
+    """What DSR needs from a T x N matrix of trials: the moments of the best trial and the
+    variance (ddof = 1) of the daily Sharpe ratios across all of them."""
+    x = np.asarray(returns, dtype=np.float64)
+    daily_sharpe = ranking_daily_sharpe(x)
+    best = sharpe_moments(x[:, int(np.argmax(daily_sharpe))])
+    return best, float(np.var(daily_sharpe, ddof=1))
 
 
 def min_track_record_length(

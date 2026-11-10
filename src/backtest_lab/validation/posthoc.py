@@ -29,10 +29,10 @@ from backtest_lab.validation.selection import annualize, best_trial, ranking_dai
 from backtest_lab.validation.sharpe_stats import (
     average_correlation,
     deflated_sharpe_ratio,
+    dsr_inputs,
     effective_trials,
     mean_squared_correlation,
     min_backtest_length,
-    sharpe_moments,
 )
 
 type Returns = npt.NDArray[np.float64]
@@ -96,17 +96,9 @@ def analyse(
 
     full = cscv(x, SETTINGS.blocks)
     half = x[:, long_only]
-    half_daily_sharpe = ranking_daily_sharpe(half)
-    best_half = sharpe_moments(half[:, int(np.argmax(half_daily_sharpe))])
+    m, half_variance = dsr_inputs(half)
     n_eff = effective_trials(average_correlation(half), half.shape[1])
-    dsr = deflated_sharpe_ratio(
-        best_half.daily_sharpe,
-        float(np.var(half_daily_sharpe, ddof=1)),
-        n_eff,
-        best_half.n,
-        best_half.skewness,
-        best_half.kurtosis,
-    )
+    dsr = deflated_sharpe_ratio(m.daily_sharpe, half_variance, n_eff, m.n, m.skewness, m.kurtosis)
 
     best = best_trial(x)
     chosen = x[:, best]
@@ -158,8 +150,7 @@ def trial_counts(x: Returns) -> dict[str, Any]:
     """DSR and MinBTL of the selected trial under each estimate of the independent
     trials (METHODS.md Section 5, D041)."""
     n_trials = x.shape[1]
-    moments = sharpe_moments(x[:, best_trial(x)])
-    variance = float(np.var(ranking_daily_sharpe(x), ddof=1))
+    moments, variance = dsr_inputs(x)
 
     def under(n_effective: float) -> dict[str, float]:
         return {

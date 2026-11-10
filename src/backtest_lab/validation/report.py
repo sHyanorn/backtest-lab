@@ -21,6 +21,7 @@ from backtest_lab.validation.sharpe_stats import (
     SharpeMoments,
     average_correlation,
     deflated_sharpe_ratio,
+    dsr_inputs,
     effective_trials,
     expected_max_sharpe,
     mean_squared_correlation,
@@ -28,7 +29,6 @@ from backtest_lab.validation.sharpe_stats import (
     min_backtest_length_bound,
     min_track_record_length,
     probabilistic_sharpe_ratio,
-    sharpe_moments,
     varying,
 )
 from backtest_lab.validation.walk_forward import holdout, walk_forward
@@ -192,9 +192,7 @@ def build_report(
     chosen = x[:, best]
     bench = buy_and_hold(benchmark, data, trials.costs).loc[dates].to_numpy(dtype=np.float64)
 
-    daily_sharpe = ranking_daily_sharpe(x)
-    moments = sharpe_moments(chosen)
-    daily_sharpe_variance = float(np.var(daily_sharpe, ddof=1))
+    moments, daily_sharpe_variance = dsr_inputs(x)
     rho, rho_squared = average_correlation(x), mean_squared_correlation(x)
     # A trial that never trades adds no independent trial to the floor's count.
     live = varying(x).shape[1]
@@ -215,7 +213,7 @@ def build_report(
         min_backtest_length=_min_backtest_check(
             counts.used, annualize(moments.daily_sharpe), years
         ),
-        sensitivity=_sensitivity_check(trials, annualize(daily_sharpe), best, settings),
+        sensitivity=_sensitivity_check(trials, annualize(ranking_daily_sharpe(x)), best, settings),
     )
     selected = metrics_model(chosen)
     bench_metrics = metrics_model(bench)
@@ -413,18 +411,13 @@ def _pbo_check(x: npt.NDArray[np.float64], s: Settings, trials: _TrialCounts) ->
 
 
 def _dsr_check(
-    moments: SharpeMoments, daily_sharpe_variance: float, trials: _TrialCounts, rho: float
+    m: SharpeMoments, daily_sharpe_variance: float, trials: _TrialCounts, rho: float
 ) -> rs.DeflatedSharpeCheck:
     n_eff = trials.used
     low, high = sorted((trials.by_correlation, trials.by_eigenvalue))
     dsr = _num(
         deflated_sharpe_ratio(
-            moments.daily_sharpe,
-            daily_sharpe_variance,
-            n_eff,
-            moments.n,
-            moments.skewness,
-            moments.kurtosis,
+            m.daily_sharpe, daily_sharpe_variance, n_eff, m.n, m.skewness, m.kurtosis
         )
     )
     sr0 = annualize(expected_max_sharpe(n_eff, daily_sharpe_variance))
@@ -440,7 +433,7 @@ def _dsr_check(
         summary=summary,
         metrics=rs.DeflatedSharpeMetrics(
             dsr=dsr,
-            sharpe=_num(annualize(moments.daily_sharpe)),
+            sharpe=_num(annualize(m.daily_sharpe)),
             expected_max_sharpe=sr0,
             n_trials=trials.n_trials,
             n_effective=n_eff,
@@ -448,8 +441,8 @@ def _dsr_check(
             n_effective_eigenvalue=trials.by_eigenvalue,
             average_correlation=rho,
             sharpe_variance=daily_sharpe_variance,
-            skewness=_num(moments.skewness),
-            kurtosis=_num(moments.kurtosis),
+            skewness=_num(m.skewness),
+            kurtosis=_num(m.kurtosis),
         ),
     )
 
