@@ -9,12 +9,13 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from backtest_lab.validation.search import Param
+
 SCHEMA_VERSION: Final = "1.1"
 
 type Verdict = Literal["green", "yellow", "red"]
 # A check that would pass on too few independent trials has no colour (D041).
 type CheckVerdict = Verdict | Literal["not_assessable"]
-type Param = bool | int | float | str
 
 
 class _Model(BaseModel):

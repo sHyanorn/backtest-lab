@@ -7,9 +7,8 @@ from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 
-from backtest_lab.validation.search import Grid, ParamValue
-
-type Matrix = npt.NDArray[np.float64]
+from backtest_lab.validation.search import Grid, Param
+from backtest_lab.validation.selection import Matrix
 
 
 @dataclass(frozen=True)
@@ -65,7 +64,7 @@ class Heatmap:
     """Sharpe over one or two axes, with every other axis fixed at the best trial."""
 
     axes: tuple[str, ...]  # (x,) or (x, y)
-    axis_values: tuple[tuple[ParamValue, ...], ...]  # grid values along each axis
+    axis_values: tuple[tuple[Param, ...], ...]  # grid values along each axis
     sharpe: Matrix  # shape (len(y values), len(x values)); one row for a single axis
     trials: npt.NDArray[np.intp]  # trial number of each cell, same shape
 

@@ -7,7 +7,7 @@ from typing import Literal
 
 from backtest_lab.strategies import STRATEGIES, Strategy
 from backtest_lab.strategies.base import SYMBOL
-from backtest_lab.validation.search import Params, ParamValue
+from backtest_lab.validation.search import Param, Params
 
 type TypeName = Literal["str", "int", "float", "bool"]
 type SymbolKind = Literal["ticker", "series"]
@@ -25,7 +25,7 @@ class ParamError(ValueError):
 class ParamSpec:
     name: str
     type: TypeName
-    default: ParamValue
+    default: Param
     symbol: SymbolKind | None  # what a string parameter names
 
 
@@ -40,7 +40,7 @@ def specs(strategy: str) -> list[ParamSpec]:
     ]
 
 
-def check_value(spec: ParamSpec, value: ParamValue) -> ParamValue:
+def check_value(spec: ParamSpec, value: Param) -> Param:
     """Return `value` if it has the field's type; an int is accepted for a float."""
     ok = {
         "str": isinstance(value, str),
@@ -55,7 +55,7 @@ def check_value(spec: ParamSpec, value: ParamValue) -> ParamValue:
     return float(value) if spec.type == "float" else value
 
 
-def check_params(strategy: str, params: Mapping[str, ParamValue]) -> Params:
+def check_params(strategy: str, params: Mapping[str, Param]) -> Params:
     by_name = {s.name: s for s in specs(strategy)}
     unknown = set(params) - set(by_name)
     if unknown:

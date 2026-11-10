@@ -10,7 +10,6 @@ Usage: python -m backtest_lab.validation.posthoc [--data-dir data] [--out result
 
 import argparse
 import json
-import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -23,7 +22,7 @@ from backtest_lab.engine.metrics import ANNUALIZATION, drawdown_curve, summarize
 from backtest_lab.strategies import STRATEGIES, MarketData
 from backtest_lab.validation.demo import SEARCHES, SETTINGS, TICKER, Search, load_market
 from backtest_lab.validation.pbo import cscv
-from backtest_lab.validation.report import buy_and_hold
+from backtest_lab.validation.report import buy_and_hold, finite
 from backtest_lab.validation.search import Trials, run_grid
 from backtest_lab.validation.selection import annualize, best_trial, ranking_daily_sharpe
 from backtest_lab.validation.sharpe_stats import (
@@ -66,18 +65,14 @@ def drawdown_episodes(returns: Returns, top: int = 3) -> list[Episode]:
     return sorted(episodes, key=lambda e: e.depth)[:top]
 
 
-def _num(x: float) -> float | None:
-    return float(x) if math.isfinite(x) else None
-
-
 def _profile(r: Returns, in_market: float) -> dict[str, float | None]:
     m = summarize(r)
     return {
-        "annual_mean_return": _num(ANNUALIZATION * float(r.mean())),
-        "annual_volatility": _num(m["annual_volatility"]),
-        "sharpe": _num(m["sharpe"]),
-        "cagr": _num(m["cagr"]),
-        "max_drawdown": _num(m["max_drawdown"]),
+        "annual_mean_return": finite(ANNUALIZATION * float(r.mean())),
+        "annual_volatility": finite(m["annual_volatility"]),
+        "sharpe": finite(m["sharpe"]),
+        "cagr": finite(m["cagr"]),
+        "max_drawdown": finite(m["max_drawdown"]),
         "time_in_market": in_market,
     }
 
@@ -137,7 +132,7 @@ def analyse(
         "long_only_half_dsr": {
             "n_trials": half.shape[1],
             "n_effective": n_eff,
-            "dsr": _num(dsr),
+            "dsr": finite(dsr),
         },
         "selected": {"trial": best, "params": trials.params[best]},
         "selected_profile": _profile(chosen, in_market),

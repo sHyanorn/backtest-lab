@@ -22,8 +22,8 @@ import pandas as pd
 from backtest_lab.engine.backtest import Costs, run
 from backtest_lab.strategies import STRATEGIES, MarketData
 
-type ParamValue = bool | int | float | str
-type Params = dict[str, ParamValue]
+type Param = bool | int | float | str
+type Params = dict[str, Param]
 type TrialOutput = tuple[npt.NDArray[np.float64], pd.Timestamp | None]
 
 FORMAT_VERSION = 1
@@ -31,7 +31,7 @@ RETURNS_FILE = "returns.parquet"
 META_FILE = "trials.json"
 
 
-def _is_ordered(values: Sequence[ParamValue]) -> bool:
+def _is_ordered(values: Sequence[Param]) -> bool:
     return not any(isinstance(v, bool | str) for v in values)
 
 
@@ -44,8 +44,8 @@ class Grid:
     (METHODS.md Section 7, D019).
     """
 
-    axes: tuple[tuple[str, tuple[ParamValue, ...]], ...]
-    fixed: tuple[tuple[str, ParamValue], ...] = ()
+    axes: tuple[tuple[str, tuple[Param, ...]], ...]
+    fixed: tuple[tuple[str, Param], ...] = ()
     categorical: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
@@ -67,8 +67,8 @@ class Grid:
     @classmethod
     def of(
         cls,
-        axes: Mapping[str, Sequence[ParamValue]],
-        fixed: Mapping[str, ParamValue] | None = None,
+        axes: Mapping[str, Sequence[Param]],
+        fixed: Mapping[str, Param] | None = None,
         categorical: Sequence[str] = (),
     ) -> Grid:
         return cls(

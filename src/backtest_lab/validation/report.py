@@ -3,6 +3,7 @@ plain-language summary (docs/REPORT.md; thresholds in D022)."""
 
 import math
 from dataclasses import dataclass
+from datetime import date
 
 import numpy as np
 import numpy.typing as npt
@@ -123,12 +124,13 @@ def worst(verdicts: list[rs.CheckVerdict]) -> rs.Verdict:
     return _OVERALL[max(_SEVERITY[v] for v in verdicts)]
 
 
-def _num(x: float | None) -> float | None:
+def finite(x: float | None) -> float | None:
+    """`x`, or None when it is undefined: reports write NaN and infinity as null (D028)."""
     return float(x) if x is not None and math.isfinite(x) else None
 
 
 def metrics_model(returns: npt.NDArray[np.float64]) -> rs.Metrics:
-    m = {k: _num(v) for k, v in summarize(returns).items()}
+    m = {k: finite(v) for k, v in summarize(returns).items()}
     return rs.Metrics(
         cagr=m["cagr"],
         annual_volatility=m["annual_volatility"],
@@ -156,7 +158,7 @@ def buy_and_hold(ticker: str, data: MarketData, costs: Costs) -> pd.Series:
 
 def weekly_curve(
     dates: pd.DatetimeIndex, returns: npt.NDArray[np.float64]
-) -> tuple[list[str], rs.Curve]:
+) -> tuple[list[date], rs.Curve]:
     equity, drawdown = drawdown_curve(returns)
     frame = pd.DataFrame({"date": dates, "equity": equity, "drawdown": drawdown})
     weeks = frame.groupby(dates.to_period("W"))
@@ -165,7 +167,7 @@ def weekly_curve(
         equity=[round(float(v), 6) for v in last["equity"]],
         drawdown=[round(float(v), 6) for v in weeks["drawdown"].min()],
     )
-    return [d.strftime("%Y-%m-%d") for d in last["date"]], curve
+    return [d.date() for d in last["date"]], curve
 
 
 def build_report(
@@ -247,7 +249,7 @@ def build_report(
         checks=checks,
         series=rs.Series(
             frequency="weekly",
-            dates=[pd.Timestamp(d).date() for d in week_dates],
+            dates=week_dates,
             selected=selected_curve,
             benchmark=bench_curve,
         ),
@@ -257,10 +259,10 @@ def build_report(
 def _holdout_check(trials: Trials, s: Settings) -> rs.HoldoutCheck:
     h = holdout(trials.returns, s.holdout_fraction)
     oos_years = int((trials.returns.index >= h.split).sum()) / ANNUALIZATION
-    retention = _num(h.retention)
+    retention = finite(h.retention)
     summary = (
         f"Picked on the first {s.holdout_fraction:.0%} of the history, the best setting's "
-        f"Sharpe ratio went from {_fmt(_num(h.is_sharpe))} to {_fmt(_num(h.oos_sharpe))} "
+        f"Sharpe ratio went from {_fmt(finite(h.is_sharpe))} to {_fmt(finite(h.oos_sharpe))} "
         f"over the remaining {oos_years:.1f} years."
     )
     return rs.HoldoutCheck(
@@ -269,8 +271,8 @@ def _holdout_check(trials: Trials, s: Settings) -> rs.HoldoutCheck:
         summary=summary,
         metrics=rs.HoldoutMetrics(
             split_date=h.split.date(),
-            is_sharpe=_num(h.is_sharpe),
-            oos_sharpe=_num(h.oos_sharpe),
+            is_sharpe=finite(h.is_sharpe),
+            oos_sharpe=finite(h.oos_sharpe),
             retention=retention,
         ),
         details=rs.HoldoutDetails(
@@ -281,8 +283,8 @@ def _holdout_check(trials: Trials, s: Settings) -> rs.HoldoutCheck:
 
 def _walk_forward_check(trials: Trials, data: MarketData, s: Settings) -> rs.WalkForwardCheck:
     wf = walk_forward(trials, data, s.is_days, s.oos_days, anchored=s.anchored)
-    efficiency = _num(wf.efficiency)
-    oos_sharpe = _num(sharpe(wf.returns))
+    efficiency = finite(wf.efficiency)
+    oos_sharpe = finite(sharpe(wf.returns))
     window = "an expanding window" if s.anchored else f"the previous {s.is_days} days"
     if efficiency is None:
         kept = "the in-sample return was not positive, so efficiency is undefined"
@@ -313,8 +315,8 @@ def _walk_forward_check(trials: Trials, data: MarketData, s: Settings) -> rs.Wal
                     oos_start=w.oos_start.date(),
                     oos_end=w.oos_end.date(),
                     trial=w.trial,
-                    is_sharpe=_num(w.is_sharpe),
-                    oos_sharpe=_num(w.oos_sharpe),
+                    is_sharpe=finite(w.is_sharpe),
+                    oos_sharpe=finite(w.oos_sharpe),
                 )
                 for w in wf.windows
             ],
@@ -324,7 +326,7 @@ def _walk_forward_check(trials: Trials, data: MarketData, s: Settings) -> rs.Wal
 
 def _purged_cv_check(trials: Trials, s: Settings) -> rs.PurgedCVCheck:
     cv = purged_cv(trials.returns, s.folds, s.embargo)
-    retention = _num(cv.retention)
+    retention = finite(cv.retention)
     summary = (
         f"Picking the best setting on {s.folds - 1} of {s.folds} folds, with overlapping and "
         f"embargoed days removed, gave an average Sharpe ratio of {cv.score:.2f} on the "
@@ -348,8 +350,8 @@ def _purged_cv_check(trials: Trials, s: Settings) -> rs.PurgedCVCheck:
                     test_end=f.test_end.date(),
                     n_train=f.n_train,
                     trial=f.trial,
-                    train_sharpe=_num(f.train_sharpe),
-                    test_sharpe=_num(f.test_sharpe),
+                    train_sharpe=finite(f.train_sharpe),
+                    test_sharpe=finite(f.test_sharpe),
                 )
                 for f in cv.folds
             ]
@@ -401,7 +403,7 @@ def _pbo_check(x: npt.NDArray[np.float64], s: Settings, trials: _TrialCounts) ->
             pbo=result.pbo,
             n_combinations=combos,
             n_blocks=s.blocks,
-            degradation_slope=_num(result.degradation_slope),
+            degradation_slope=finite(result.degradation_slope),
             prob_oos_loss=result.prob_oos_loss,
         ),
         details=rs.PBODetails(
@@ -415,7 +417,7 @@ def _dsr_check(
 ) -> rs.DeflatedSharpeCheck:
     n_eff = trials.used
     low, high = sorted((trials.by_correlation, trials.by_eigenvalue))
-    dsr = _num(
+    dsr = finite(
         deflated_sharpe_ratio(
             m.daily_sharpe, daily_sharpe_variance, n_eff, m.n, m.skewness, m.kurtosis
         )
@@ -433,7 +435,7 @@ def _dsr_check(
         summary=summary,
         metrics=rs.DeflatedSharpeMetrics(
             dsr=dsr,
-            sharpe=_num(annualize(m.daily_sharpe)),
+            sharpe=finite(annualize(m.daily_sharpe)),
             expected_max_sharpe=sr0,
             n_trials=trials.n_trials,
             n_effective=n_eff,
@@ -441,15 +443,15 @@ def _dsr_check(
             n_effective_eigenvalue=trials.by_eigenvalue,
             average_correlation=rho,
             sharpe_variance=daily_sharpe_variance,
-            skewness=_num(m.skewness),
-            kurtosis=_num(m.kurtosis),
+            skewness=finite(m.skewness),
+            kurtosis=finite(m.kurtosis),
         ),
     )
 
 
 def _track_record_check(m: SharpeMoments, years: float, alpha: float) -> rs.TrackRecordCheck:
-    psr = _num(probabilistic_sharpe_ratio(m.daily_sharpe, 0.0, m.n, m.skewness, m.kurtosis))
-    trl = _num(min_track_record_length(m.daily_sharpe, 0.0, m.skewness, m.kurtosis, alpha))
+    psr = finite(probabilistic_sharpe_ratio(m.daily_sharpe, 0.0, m.n, m.skewness, m.kurtosis))
+    trl = finite(min_track_record_length(m.daily_sharpe, 0.0, m.skewness, m.kurtosis, alpha))
     trl_years = None if trl is None else trl / ANNUALIZATION
     if trl_years is None:
         need = "its Sharpe ratio is not positive, so no amount of data would establish skill"
@@ -465,7 +467,7 @@ def _track_record_check(m: SharpeMoments, years: float, alpha: float) -> rs.Trac
         summary=summary,
         metrics=rs.TrackRecordMetrics(
             psr=psr,
-            sharpe=_num(annualize(m.daily_sharpe)),
+            sharpe=finite(annualize(m.daily_sharpe)),
             min_track_record_years=trl_years,
             years=years,
             alpha=alpha,
@@ -474,8 +476,8 @@ def _track_record_check(m: SharpeMoments, years: float, alpha: float) -> rs.Trac
 
 
 def _min_backtest_check(n_eff: float, target: float, years: float) -> rs.MinBacktestCheck:
-    min_years = _num(min_backtest_length(n_eff, target))
-    bound = _num(min_backtest_length_bound(n_eff, target)) if target > 0 else None
+    min_years = finite(min_backtest_length(n_eff, target))
+    bound = finite(min_backtest_length_bound(n_eff, target)) if target > 0 else None
     if min_years is None:
         summary = (
             "The selected setting's Sharpe ratio is not positive, so no length of data supports it."
@@ -494,7 +496,7 @@ def _min_backtest_check(n_eff: float, target: float, years: float) -> rs.MinBack
             min_backtest_years=min_years,
             upper_bound_years=bound,
             years=years,
-            target_sharpe=_num(target),
+            target_sharpe=finite(target),
             n_effective=n_eff,
         ),
     )
@@ -512,7 +514,7 @@ def _sensitivity_check(
         if ordered and size > 1
     ]
     axes = s.heatmap_axes if s.heatmap_axes is not None else tuple(varied[:2])
-    retention = _num(result.retention)
+    retention = finite(result.retention)
     assessable = bool(result.neighbours)
     if not assessable:
         summary = (
@@ -532,8 +534,8 @@ def _sensitivity_check(
         summary=summary,
         metrics=rs.SensitivityMetrics(
             best_sharpe=result.best_sharpe,
-            neighbour_mean=_num(result.mean),
-            neighbour_std=_num(result.std),
+            neighbour_mean=finite(result.mean),
+            neighbour_std=finite(result.std),
             retention=retention,
             n_neighbours=len(result.neighbours),
             radius=s.radius,

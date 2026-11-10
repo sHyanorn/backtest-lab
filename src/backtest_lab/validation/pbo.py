@@ -9,8 +9,7 @@ import numpy as np
 import numpy.typing as npt
 
 from backtest_lab.engine.metrics import ZERO_TOL
-
-type Matrix = npt.NDArray[np.float64]
+from backtest_lab.validation.selection import Matrix
 
 
 def n_combinations(blocks: int) -> int:

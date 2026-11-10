@@ -10,7 +10,6 @@ import re
 import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import date
 from pathlib import Path
 
 import numpy as np
@@ -37,7 +36,7 @@ from backtest_lab.engine.metrics import ANNUALIZATION
 from backtest_lab.strategies import STRATEGIES
 from backtest_lab.validation import report_schema as rs
 from backtest_lab.validation.report import Settings, metrics_model, weekly_curve
-from backtest_lab.validation.search import Grid, Params, ParamValue
+from backtest_lab.validation.search import Grid, Param, Params
 
 DEV_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]  # Vite dev server
 # Another site's page can point its own name at 127.0.0.1 and call the API from a
@@ -91,7 +90,7 @@ def _prepare(body: SweepRequest, market: Market, job_id: str | None = None) -> S
         unknown = (set(body.axes) | set(body.fixed)) - set(specs)
         if unknown:
             raise P.ParamError(f"{body.strategy} has no parameter {sorted(unknown)}")
-        axes: dict[str, list[ParamValue]] = {
+        axes: dict[str, list[Param]] = {
             name: [P.check_value(specs[name], v) for v in values]
             for name, values in body.axes.items()
         }
@@ -227,7 +226,7 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
             metrics=metrics_model(values),
             annual_turnover=float(result.turnover.loc[result.start :].mean() * ANNUALIZATION),
             series=Curve(
-                dates=[date.fromisoformat(d) for d in weeks],
+                dates=weeks,
                 equity=curve.equity,
                 drawdown=curve.drawdown,
             ),
