@@ -9,7 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from backtest_lab.engine.backtest import Costs, run
-from backtest_lab.engine.metrics import ANNUALIZATION, sharpe, summarize
+from backtest_lab.engine.metrics import ANNUALIZATION, ZERO_TOL, sharpe, summarize
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation import report_schema as rs
 from backtest_lab.validation.pbo import cscv, n_combinations
@@ -195,11 +195,14 @@ def build_report(
     sr_all = ranking_sharpe(x)
     moments = sharpe_moments(chosen)
     variance = float(np.var(sr_all, ddof=1))
-    rho = average_correlation(x)
+    rho, rho_squared = average_correlation(x), mean_squared_correlation(x)
+    # A trial that never trades adds no independent trial to the floor's count.
+    live = int((x.std(axis=0, ddof=1) >= ZERO_TOL).sum())
     counts = _TrialCounts(
         n_trials,
         by_correlation=effective_trials(rho, n_trials),
-        by_eigenvalue=effective_trials(mean_squared_correlation(x), n_trials),
+        by_eigenvalue=effective_trials(rho_squared, n_trials),
+        fewest=min(effective_trials(rho, live), effective_trials(rho_squared, live)),
     )
     target = annualize(moments.sharpe)
 
@@ -363,6 +366,7 @@ class _TrialCounts:
     n_trials: int
     by_correlation: float
     by_eigenvalue: float
+    fewest: float  # the smaller estimate over the trials whose returns vary
 
     @property
     def used(self) -> float:
@@ -372,11 +376,11 @@ class _TrialCounts:
     @property
     def too_few(self) -> str | None:
         """The summary of a check that these trials are too few to judge."""
-        if enough_trials(self.by_correlation, self.by_eigenvalue):
+        if enough_trials(self.fewest):
             return None
-        fewest = min(self.by_correlation, self.by_eigenvalue)
+        shown = math.floor(10 * self.fewest) / 10  # 9.97 must not read as the 10 required
         return (
-            f"Only about {fewest:.1f} of the {self.n_trials} settings tried are independent; "
+            f"Only about {shown:.1f} of the {self.n_trials} settings tried are independent; "
             f"this check needs at least {MIN_EFFECTIVE_TRIALS}."
         )
 

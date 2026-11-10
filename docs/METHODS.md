@@ -267,7 +267,7 @@ $$
 
 Uncorrelated trials have every $\lambda_i = 1$ and $\hat N_\lambda = N$; identical trials have $\lambda = (N, 0, \dots, 0)$, $\mathbb V[\lambda] = N$ and $\hat N_\lambda = 1$. Because $\sum_i \lambda_i^2 = \sum_{i,j} \rho_{ij}^2$, the ratio $\mathbb V[\lambda] / N$ is the mean squared pairwise correlation $\overline{\rho^2}$, so $\hat N_\lambda = \overline{\rho^2} + (1 - \overline{\rho^2}) N$: the same rule with squared correlations, which is how the code computes it. A negative correlation lowers $\hat N_\lambda$ and raises $\hat N_\rho$.
 
-$\hat N = \max(\hat N_\rho, \hat N_\lambda)$ enters $\widehat{SR}_0$ here and MinBTL in Section 6; the larger count gives the higher threshold and the lower DSR. When $\min(\hat N_\rho, \hat N_\lambda) < 10$ the report gives DSR and PBO no verdict (D041).
+$\hat N = \max(\hat N_\rho, \hat N_\lambda)$ enters $\widehat{SR}_0$ here and MinBTL in Section 6; the larger count gives the higher threshold and the lower DSR. When $\min(\hat N_\rho, \hat N_\lambda) < 10$, with $N$ counting only the trials whose returns vary, the report gives DSR and PBO no verdict (D041).
 
 The report flags the strategy as significant when $\widehat{DSR} \ge 0.95$.
 

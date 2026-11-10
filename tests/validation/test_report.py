@@ -241,6 +241,32 @@ def test_too_few_independent_trials_get_no_pbo_or_dsr_verdict() -> None:
     )
 
 
+def test_trials_that_never_trade_do_not_count_towards_the_floor() -> None:
+    data = synthetic_market(n=2600, seed=3, drift=0.0003)
+    grid = Grid.of(
+        {"entry_z": [1.0, *(float(z) for z in range(5, 15))]},
+        {"ticker": "SPY", "lookback": 20, "allow_short": False},
+    )
+    trials = run_grid("mean_reversion", grid, data, processes=1)
+    x = trials.returns.to_numpy()
+    assert (x.std(axis=0) > 0).sum() == 1 and x.shape[1] == 11
+    checks = build_report(trials, data, "SPY", SETTINGS).checks
+    assert checks.pbo.verdict == checks.deflated_sharpe.verdict == "not_assessable"
+    assert checks.pbo.summary.startswith("Only about 1.0 of the 11 settings tried")
+
+
+def test_the_reported_count_is_not_rounded_up_to_the_floor() -> None:
+    data = synthetic_market(n=8000, seed=3)
+    grid = Grid.of({"seed": list(range(10))}, {"ticker": "SPY", "hold": 5})
+    trials = run_grid("random_signal", grid, data, processes=1)
+    report = build_report(trials, data, "SPY", SETTINGS)
+    assert report.checks.deflated_sharpe.metrics.n_effective > 9.95
+    summary = report.checks.pbo.summary
+    assert summary == (
+        "Only about 9.9 of the 10 settings tried are independent; this check needs at least 10."
+    )
+
+
 def test_ten_independent_trials_by_the_smaller_estimate_are_enough() -> None:
     assert not enough_trials(9.99, 50.0)
     assert not enough_trials(50.0, 9.99)
