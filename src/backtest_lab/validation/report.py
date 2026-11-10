@@ -216,7 +216,7 @@ def build_report(
         min_backtest_length=_min_backtest_check(
             counts.used, annualize(moments.daily_sharpe), years
         ),
-        sensitivity=_sensitivity_check(trials, annualize(daily_sharpe), settings),
+        sensitivity=_sensitivity_check(trials, annualize(daily_sharpe), best, settings),
     )
     selected = metrics_model(chosen)
     bench_metrics = metrics_model(bench)
@@ -509,10 +509,10 @@ def _min_backtest_check(n_eff: float, target: float, years: float) -> rs.MinBack
 
 
 def _sensitivity_check(
-    trials: Trials, annual_sharpe: npt.NDArray[np.float64], s: Settings
+    trials: Trials, annual_sharpe: npt.NDArray[np.float64], best: int, s: Settings
 ) -> rs.SensitivityCheck:
     grid = trials.grid
-    result = sensitivity(annual_sharpe, grid, s.radius)
+    result = sensitivity(annual_sharpe, grid, best, s.radius)
     # ordered axes with more than one value, the only ones along which neighbours exist
     varied = [
         name
@@ -547,9 +547,7 @@ def _sensitivity_check(
             radius=s.radius,
         ),
         details=rs.SensitivityDetails(
-            heatmap=_heatmap(annual_sharpe, trials, result.best, result.neighbours, axes)
-            if axes
-            else None
+            heatmap=_heatmap(annual_sharpe, trials, best, result.neighbours, axes) if axes else None
         ),
     )
 

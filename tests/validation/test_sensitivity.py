@@ -14,8 +14,7 @@ def _surface(values: np.ndarray) -> np.ndarray:
 
 
 def test_constant_surface() -> None:
-    result = sensitivity(np.ones(25), GRID_5X5)
-    assert GRID_5X5.coords(result.best) == (0, 0)
+    result = sensitivity(np.ones(25), GRID_5X5, best=0)
     assert len(result.neighbours) == 3
     assert result.std == 0
     assert result.retention == 1
@@ -24,7 +23,7 @@ def test_constant_surface() -> None:
 def test_spike() -> None:
     p = np.zeros((5, 5))
     p[2, 2] = 1
-    result = sensitivity(_surface(p), GRID_5X5)
+    result = sensitivity(_surface(p), GRID_5X5, best=12)
     assert len(result.neighbours) == 8
     assert result.mean == 0
     assert result.retention == 0
@@ -39,8 +38,7 @@ def test_corner_neighbourhoods() -> None:
 
 def test_linear_surface() -> None:
     i, j = np.meshgrid(range(5), range(5), indexing="ij")
-    result = sensitivity(_surface((i + j).astype(float)), GRID_5X5)
-    assert GRID_5X5.coords(result.best) == (4, 4)
+    result = sensitivity(_surface((i + j).astype(float)), GRID_5X5, best=24)
     assert sorted(GRID_5X5.coords(n) for n in result.neighbours) == [(3, 3), (3, 4), (4, 3)]
     assert result.mean == pytest.approx(20 / 3)
     assert result.std == pytest.approx(math.sqrt(2) / 3)  # population form; sample form is 0.577
@@ -57,16 +55,16 @@ def test_categorical_axes_stay_fixed() -> None:
 def test_radius_two_and_nan_counts_as_zero() -> None:
     p = np.full(25, np.nan)
     p[12] = 2.0
-    result = sensitivity(p, GRID_5X5, radius=2)
+    result = sensitivity(p, GRID_5X5, best=12, radius=2)
     assert len(result.neighbours) == 24
     assert result.mean == 0
     assert result.retention == 0
 
 
 def test_retention_needs_positive_best() -> None:
-    assert sensitivity(-np.ones(25), GRID_5X5).retention is None
+    assert sensitivity(-np.ones(25), GRID_5X5, best=0).retention is None
     single = Grid.of({"a": [1]})
-    result = sensitivity([1.0], single)
+    result = sensitivity([1.0], single, best=0)
     assert result.neighbours == () and math.isnan(result.mean) and result.retention is None
 
 

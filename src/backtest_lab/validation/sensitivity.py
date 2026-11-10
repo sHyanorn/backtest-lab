@@ -14,7 +14,6 @@ type Matrix = npt.NDArray[np.float64]
 
 @dataclass(frozen=True)
 class Sensitivity:
-    best: int  # trial with the highest Sharpe, first in grid order on ties
     neighbours: tuple[int, ...]
     best_sharpe: float  # P(i*), annualized
     mean: float  # m, NaN without neighbours
@@ -42,19 +41,17 @@ def neighbours(grid: Grid, trial: int, radius: int = 1) -> tuple[int, ...]:
     )
 
 
-def sensitivity(sharpe: npt.ArrayLike, grid: Grid, radius: int = 1) -> Sensitivity:
-    """Mean and spread of the annualized Sharpe ratios around the best trial.
+def sensitivity(sharpe: npt.ArrayLike, grid: Grid, best: int, radius: int = 1) -> Sensitivity:
+    """Mean and spread of the annualized Sharpe ratios around the trial `best`.
 
     NaN Sharpe ratios count as 0 (METHODS.md, Conventions).
     """
     p = np.nan_to_num(np.asarray(sharpe, dtype=np.float64), nan=0.0)
     if p.shape != (len(grid),) or radius < 1:
         raise ValueError("need one Sharpe ratio per grid point and radius >= 1")
-    best = int(np.argmax(p))
     near = neighbours(grid, best, radius)
     values = p[list(near)]
     return Sensitivity(
-        best=best,
         neighbours=near,
         best_sharpe=float(p[best]),
         mean=float(values.mean()) if near else math.nan,
