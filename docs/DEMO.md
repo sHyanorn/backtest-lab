@@ -57,7 +57,7 @@ Counting every setting of the grid, as METHODS.md Section 5 requires, the deflat
 | DSR with each | 0.945 / 0.919 | 0.988 / 0.979 | 0.147 / 0.147 |
 | MinBTL in years with each | 8.0 / 9.1 | 4.8 / 5.8 | 123.4 / 123.3 |
 
-With the larger estimate every DSR and MinBTL verdict is the registered one, and no search falls under the floor of 10 independent trials below which PBO and DSR get no verdict.
+With the larger estimate every DSR and MinBTL verdict is the registered one, and no search falls under the floor of 10 independent trials below which PBO and DSR get no verdict. The long-only halves above are smaller: by the average correlation they have 10.5 and 3.8 independent settings, so under that floor the momentum half would get no PBO or DSR verdict, and its 0.72 is a description of 17 similar settings, not a test.
 
 **Selected setting against buy and hold.**
 

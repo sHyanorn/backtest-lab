@@ -1,7 +1,8 @@
 """Simplified time-series momentum, after Moskowitz, Ooi and Pedersen (2012).
 
-Fully long or short by the sign of the trailing total return, decided every day. The
-paper's volatility scaling, excess returns and monthly rebalancing are left out.
+Fully long after a positive trailing total return and short or flat after a negative
+one, decided every day. The paper's volatility scaling, excess returns and monthly
+rebalancing are left out.
 """
 
 from dataclasses import dataclass

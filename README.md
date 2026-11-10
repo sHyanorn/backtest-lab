@@ -6,7 +6,7 @@ A backtesting platform that tests whether a strategy is probably overfit: it run
 
 ## Pre-registered results
 
-Three searches on SPY from 1993 to October 2026, fixed before any strategy was run on real data ([D021](docs/DECISIONS.md#d021-pre-registered-demo)); the reports come from a single run. Returns are net of 1 bp fees and 5 bps slippage per side; Sharpe ratios are annualized. The momentum search is a simplified time-series momentum: fully long or short by the sign of the trailing total return, decided every day, without the volatility scaling, excess returns and monthly rebalancing of Moskowitz, Ooi & Pedersen (2012).
+Three searches on SPY from 1993 to October 2026, fixed before any strategy was run on real data ([D021](docs/DECISIONS.md#d021-pre-registered-demo)); the reports come from a single run. Returns are net of 1 bp fees and 5 bps slippage per side; Sharpe ratios are annualized. The momentum search is a simplified time-series momentum: fully long after a positive trailing total return and short or flat after a negative one, decided every day, without the volatility scaling, excess returns and monthly rebalancing of Moskowitz, Ooi & Pedersen (2012).
 
 | Search | Trials (independent, two estimates) | Selected setting | Sharpe, selected / buy and hold | Overfitting checks |
 |---|---|---|---|---|
