@@ -216,7 +216,7 @@
 
 ## D035 PBO estimator and the paper's Definition 2.2
 - Date: 2026-11-08
-- The code counts a combination as overfit when its logit is at most 0, the estimator ∫ f(λ) dλ over λ ≤ 0 of Bailey et al. (2017, Section 3.1). Their Definition 2.2 writes PBO with r̄ < N/2. Since ω̄ = r̄ / (N + 1), λ ≤ 0 means r̄ ≤ (N + 1) / 2, so for even N the two also differ at rank N/2 (λ = ln(N / (N + 2)) < 0): the estimator counts it and Definition 2.2 does not. Under the null that rank has probability 1/N. The statement in METHODS.md Section 4 that the two differ only at λ = 0 holds for odd N only
+- The code counts a combination as overfit when its logit is at most 0, the estimator ∫ f(λ) dλ over λ ≤ 0 of Bailey et al. (2017, Section 3.1). Their Definition 2.2 writes PBO with r̄ < N/2. Since ω̄ = r̄ / (N + 1), λ ≤ 0 means r̄ ≤ (N + 1) / 2, so for even N the two also differ at rank N/2 (λ = ln(N / (N + 2)) < 0): the estimator counts it and Definition 2.2 does not. Under the null that rank has probability 1/N. METHODS.md Section 4 states both differences
 - A rerun of the registered searches reproduces the registered counts of 607, 1,590 and 3,853 of 12,870 combinations for the moving average, momentum and the random-signal control. Under Definition 2.2 the same trial matrices give 585, 1,393 and 3,748 (PBO 0.045, 0.108 and 0.291), with every verdict the same. The registered reports keep the estimator
 
 ## D036 Information interval of a daily return

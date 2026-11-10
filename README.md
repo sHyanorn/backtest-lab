@@ -6,7 +6,7 @@ A backtesting platform that tests whether a strategy is probably overfit: it run
 
 ## Pre-registered results
 
-Three searches on SPY from 1993 to October 2026, fixed before any strategy was run on real data ([D021](docs/DECISIONS.md#d021-pre-registered-demo)); the reports come from a single run. Returns are net of 1 bp fees and 5 bps slippage per side; Sharpe ratios are annualized.
+Three searches on SPY from 1993 to October 2026, fixed before any strategy was run on real data ([D021](docs/DECISIONS.md#d021-pre-registered-demo)); the reports come from a single run. Returns are net of 1 bp fees and 5 bps slippage per side; Sharpe ratios are annualized. The momentum search is a simplified time-series momentum: fully long or short by the sign of the trailing total return, decided every day, without the volatility scaling, excess returns and monthly rebalancing of Moskowitz, Ooi & Pedersen (2012).
 
 | Search | Trials | Selected setting | Sharpe, selected / buy and hold | Overfitting checks |
 |---|---|---|---|---|
@@ -20,7 +20,7 @@ Three searches on SPY from 1993 to October 2026, fixed before any strategy was r
 - Post hoc: for both real strategies, the main finding of the search is that long only beats long/short on SPY, which keeps their registered PBO well below 0.5. Within the long-only settings, picking the best is no better than a coin flip (PBO 0.42 and 0.72).
 - The moving average has a higher Sharpe ratio than buy and hold because its volatility is lower (12.5% against 18.7%). Its maximum drawdown is smaller (−21% against −55%) and its CAGR is lower (9.7% against 10.8%).
 
-Passing the overfitting checks says a result is unlikely to come from the search alone. Whether it beats the market is a separate question, and each report answers the two apart. [DEMO.md](docs/DEMO.md) has every check and the post hoc analysis, labelled as such; [the notebook](notebooks/demo.ipynb) re-derives each report's statistics from the inputs stored in it and applies the thresholds again.
+Passing the overfitting checks says the selected Sharpe ratio is above zero and unlikely to be a product of the search alone. The checks do not test timing ability: in a market that rose over the sample, a long-only setting with no timing ability often comes out borderline or passing. Whether a result beats buy and hold is a separate question that no check tests; each report shows that comparison as descriptive figures, outside the verdict. [DEMO.md](docs/DEMO.md) has every check and the post hoc analysis, labelled as such; [the notebook](notebooks/demo.ipynb) re-derives each report's statistics from the inputs stored in it and applies the thresholds again.
 
 ## Methods
 

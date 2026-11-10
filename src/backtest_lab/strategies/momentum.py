@@ -1,4 +1,8 @@
-"""Time-series momentum (Moskowitz, Ooi and Pedersen, 2012)."""
+"""Simplified time-series momentum, after Moskowitz, Ooi and Pedersen (2012).
+
+Fully long or short by the sign of the trailing total return, decided every day. The
+paper's volatility scaling, excess returns and monthly rebalancing are left out.
+"""
 
 from dataclasses import dataclass
 
