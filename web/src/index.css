@@ -1,83 +1,50 @@
 :root {
-  color-scheme: light;
-  --page: #f5f5f2;
-  --surface: #fcfcfb;
-  --surface-2: #f0efec;
-  --ink: #0b0b0b;
-  --ink-2: #52514e;
-  --muted: #6b6a65;
-  --line: rgb(11 11 11 / 0.1);
-  --grid: #e6e5df;
-  --axis: #c3c2b7;
-  --focus: #2a78d6;
-  --series-1: #2a78d6;
-  --series-ref: #8a8880;
-  --series-1-wash: rgb(42 120 214 / 0.12);
-  --series-ref-wash: rgb(138 136 128 / 0.14);
+  color-scheme: light dark;
+  --page: light-dark(#f5f5f2, #0d0d0d);
+  --surface: light-dark(#fcfcfb, #1a1a19);
+  --surface-2: light-dark(#f0efec, #262624);
+  --ink: light-dark(#0b0b0b, #f0efec);
+  --ink-2: light-dark(#52514e, #c3c2b7);
+  --muted: light-dark(#6b6a65, #9d9b93);
+  --line: light-dark(rgb(11 11 11 / 0.1), rgb(255 255 255 / 0.1));
+  --grid: light-dark(#e6e5df, #2c2c2a);
+  --axis: light-dark(#c3c2b7, #45453f);
+  --focus: light-dark(#2a78d6, #6da7ec);
+  --series-1: light-dark(#2a78d6, #3987e5);
+  --series-ref: light-dark(#8a8880, #8f8d85);
+  --series-1-wash: light-dark(rgb(42 120 214 / 0.12), rgb(57 135 229 / 0.2));
+  --series-ref-wash: light-dark(
+    rgb(138 136 128 / 0.14),
+    rgb(143 141 133 / 0.18)
+  );
   --good: #0ca30c;
   --warning: #fab219;
   --critical: #d03b3b;
-  --critical-text: #b42d2d;
-  --link: #1c5cab;
-  --raised: #fcfcfb;
-  --backdrop: rgb(0 0 0 / 0.35);
+  --critical-text: light-dark(#b42d2d, #f08a87);
+  --link: light-dark(#1c5cab, #86b6ef);
+  --raised: light-dark(#fcfcfb, #242422);
+  --backdrop: light-dark(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.6));
   --on-good: #ffffff;
   --on-warning: #0b0b0b;
   --on-critical: #ffffff;
   --radius: 14px;
   --radius-s: 8px;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.05);
+  /* No shadow on dark surfaces */
+  --shadow:
+    0 1px 2px light-dark(rgb(0 0 0 / 0.04), transparent),
+    0 8px 24px light-dark(rgb(0 0 0 / 0.05), transparent);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
-/* Dark values twice: the system setting, and the toggle, which wins both ways. */
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme='light'])) {
-    color-scheme: dark;
-    --page: #0d0d0d;
-    --surface: #1a1a19;
-    --surface-2: #262624;
-    --ink: #f0efec;
-    --ink-2: #c3c2b7;
-    --muted: #9d9b93;
-    --line: rgb(255 255 255 / 0.1);
-    --grid: #2c2c2a;
-    --axis: #45453f;
-    --focus: #6da7ec;
-    --critical-text: #f08a87;
-    --link: #86b6ef;
-    --raised: #242422;
-    --backdrop: rgb(0 0 0 / 0.6);
-    --series-1: #3987e5;
-    --series-ref: #8f8d85;
-    --series-1-wash: rgb(57 135 229 / 0.2);
-    --series-ref-wash: rgb(143 141 133 / 0.18);
-    --shadow: none;
-  }
+/* The system setting picks the scheme until the toggle sets data-theme, which wins
+   both ways. */
+:root[data-theme='light'] {
+  color-scheme: light;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --page: #0d0d0d;
-  --surface: #1a1a19;
-  --surface-2: #262624;
-  --ink: #f0efec;
-  --ink-2: #c3c2b7;
-  --muted: #9d9b93;
-  --line: rgb(255 255 255 / 0.1);
-  --grid: #2c2c2a;
-  --axis: #45453f;
-  --focus: #6da7ec;
-  --critical-text: #f08a87;
-  --link: #86b6ef;
-  --raised: #242422;
-  --backdrop: rgb(0 0 0 / 0.6);
-  --series-1: #3987e5;
-  --series-ref: #8f8d85;
-  --series-1-wash: rgb(57 135 229 / 0.2);
-  --series-ref-wash: rgb(143 141 133 / 0.18);
-  --shadow: none;
 }
 
 *,
@@ -809,62 +776,22 @@ tbody th {
 /* Colour ramps: one blue ramp for magnitude, blue and red around zero for sign. */
 
 :root {
-  --seq-0: #cde2fb;
-  --seq-1: #9ec5f4;
-  --seq-2: #6da7ec;
-  --seq-3: #3987e5;
-  --seq-4: #256abf;
-  --seq-5: #184f95;
-  --seq-6: #0d366b;
-  --div-0: #a3302e;
-  --div-1: #cf5552;
-  --div-2: #e88d89;
-  --div-3: #f4c4c1;
-  --div-4: #e6e5e0;
-  --div-5: #b7d3f6;
-  --div-6: #6da7ec;
-  --div-7: #2a78d6;
-  --div-8: #184f95;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme='light'])) {
-    --seq-0: #173f6e;
-    --seq-1: #1c5cab;
-    --seq-2: #256abf;
-    --seq-3: #2a78d6;
-    --seq-4: #5598e7;
-    --seq-5: #86b6ef;
-    --seq-6: #b7d3f6;
-    --div-0: #f29a96;
-    --div-1: #e66767;
-    --div-2: #b8403f;
-    --div-3: #6e2b2a;
-    --div-4: #3a3a37;
-    --div-5: #1c4a85;
-    --div-6: #2a78d6;
-    --div-7: #5598e7;
-    --div-8: #9ec5f4;
-  }
-}
-
-:root[data-theme='dark'] {
-  --seq-0: #173f6e;
-  --seq-1: #1c5cab;
-  --seq-2: #256abf;
-  --seq-3: #2a78d6;
-  --seq-4: #5598e7;
-  --seq-5: #86b6ef;
-  --seq-6: #b7d3f6;
-  --div-0: #f29a96;
-  --div-1: #e66767;
-  --div-2: #b8403f;
-  --div-3: #6e2b2a;
-  --div-4: #3a3a37;
-  --div-5: #1c4a85;
-  --div-6: #2a78d6;
-  --div-7: #5598e7;
-  --div-8: #9ec5f4;
+  --seq-0: light-dark(#cde2fb, #173f6e);
+  --seq-1: light-dark(#9ec5f4, #1c5cab);
+  --seq-2: light-dark(#6da7ec, #256abf);
+  --seq-3: light-dark(#3987e5, #2a78d6);
+  --seq-4: light-dark(#256abf, #5598e7);
+  --seq-5: light-dark(#184f95, #86b6ef);
+  --seq-6: light-dark(#0d366b, #b7d3f6);
+  --div-0: light-dark(#a3302e, #f29a96);
+  --div-1: light-dark(#cf5552, #e66767);
+  --div-2: light-dark(#e88d89, #b8403f);
+  --div-3: light-dark(#f4c4c1, #6e2b2a);
+  --div-4: light-dark(#e6e5e0, #3a3a37);
+  --div-5: light-dark(#b7d3f6, #1c4a85);
+  --div-6: light-dark(#6da7ec, #2a78d6);
+  --div-7: light-dark(#2a78d6, #5598e7);
+  --div-8: light-dark(#184f95, #9ec5f4);
 }
 
 /* Columns and heat grid */
