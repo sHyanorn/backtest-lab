@@ -57,11 +57,10 @@ export function Overview({
           <ul className="strip" aria-label="Verdict of each check">
             {checkViews(report).map((c) => (
               <li key={c.key}>
-                <a
-                  href={`#check-${c.key}`}
+                <button
+                  type="button"
                   title={`${c.title}: ${VERDICT_LABEL[c.verdict]}`}
-                  onClick={(e) => {
-                    e.preventDefault()
+                  onClick={() => {
                     const card = document.getElementById(`check-${c.key}`)
                     card?.scrollIntoView({
                       behavior: 'smooth',
@@ -74,7 +73,7 @@ export function Overview({
                   <span className="visually-hidden">
                     {c.title}: {VERDICT_LABEL[c.verdict]}
                   </span>
-                </a>
+                </button>
               </li>
             ))}
           </ul>
