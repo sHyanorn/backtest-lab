@@ -142,13 +142,14 @@ def _job(request: Request, job_id: str) -> dict[str, object]:
 def _requeue(store: JobStore, runner: Runner, market: Market | None) -> None:
     """Queue again the sweeps a previous server process left waiting."""
     for job_id, request in store.queued():
+        if market is None:
+            store.failed(job_id, NO_MARKET)
+            continue
         try:
-            if market is None:
-                raise ValueError(NO_MARKET)
             job = _prepare(SweepRequest.model_validate_json(request), market, job_id)
         except HTTPException as exc:  # the cache no longer supports the request
             store.failed(job_id, str(exc.detail))
-        except ValueError as exc:
+        except ValueError as exc:  # the stored request no longer parses
             store.failed(job_id, str(exc))
         else:
             runner.submit(job)

@@ -24,7 +24,7 @@ from backtest_lab.strategies import STRATEGIES, MarketData
 from backtest_lab.validation.demo import SEARCHES, SETTINGS, TICKER, Search, load_market
 from backtest_lab.validation.pbo import cscv
 from backtest_lab.validation.report import buy_and_hold
-from backtest_lab.validation.search import run_grid
+from backtest_lab.validation.search import Trials, run_grid
 from backtest_lab.validation.selection import annualize, best_trial, ranking_sharpe
 from backtest_lab.validation.sharpe_stats import (
     average_correlation,
@@ -83,10 +83,13 @@ def _profile(r: Returns, in_market: float) -> dict[str, float | None]:
     }
 
 
-def analyse(search: Search, data: MarketData, processes: int | None = None) -> dict[str, Any]:
+def analyse(
+    search: Search, data: MarketData, processes: int | None = None, trials: Trials | None = None
+) -> dict[str, Any]:
     """Long-only vs long/short halves of a grid with an `allow_short` axis, and the
-    selected trial against buy and hold."""
-    trials = run_grid(search.strategy, search.grid, data, processes=processes)
+    selected trial against buy and hold. `trials` saves running the search again."""
+    if trials is None:
+        trials = run_grid(search.strategy, search.grid, data, processes=processes)
     x = trials.returns.to_numpy(dtype=np.float64)
     dates = trials.returns.index
     long_only = np.array([p["allow_short"] is False for p in trials.params])
@@ -184,13 +187,14 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     data = load_market(args.data_dir)
+    runs = {s.name: run_grid(s.strategy, s.grid, data, processes=args.processes) for s in SEARCHES}
     args.out.mkdir(parents=True, exist_ok=True)
     _write(
         args.out / "long_only.json",
         "Chosen after seeing the pre-registered demo results (D021) to explain them; "
         "exploratory, with no confirmatory weight (D029).",
         {
-            s.name: analyse(s, data, args.processes)
+            s.name: analyse(s, data, trials=runs[s.name])
             for s in SEARCHES
             if "allow_short" in s.grid.names
         },
@@ -200,14 +204,7 @@ def main(argv: list[str] | None = None) -> None:
         "The registered searches under the rule adopted after them (D041): the selected "
         "trial's deflated Sharpe ratio and minimum backtest length with each estimate of "
         "the independent trials. The registered reports keep their verdicts (D032).",
-        {
-            s.name: trial_counts(
-                run_grid(s.strategy, s.grid, data, processes=args.processes).returns.to_numpy(
-                    dtype=np.float64
-                )
-            )
-            for s in SEARCHES
-        },
+        {name: trial_counts(t.returns.to_numpy(dtype=np.float64)) for name, t in runs.items()},
     )
 
 

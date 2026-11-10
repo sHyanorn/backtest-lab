@@ -63,13 +63,18 @@ def expected_max_sharpe(n_trials: float, variance: float) -> float:
     return math.sqrt(variance) * max(expected_max_z(n_trials), 0.0)
 
 
+def varying(returns: npt.ArrayLike) -> npt.NDArray[np.float64]:
+    """The columns whose returns vary: a trial that never trades is degenerate."""
+    x = np.asarray(returns, dtype=np.float64)
+    return x[:, x.std(axis=0, ddof=1) >= ZERO_TOL] if len(x) >= 2 else x[:, :0]
+
+
 def _mean_off_diagonal(returns: npt.ArrayLike, power: int) -> float:
     """Mean of rho_ij ** power over the pairs of distinct columns, clipped to [0, 1].
 
     Degenerate columns are skipped; with fewer than two others the result is 0.
     """
-    x = np.asarray(returns, dtype=np.float64)
-    live = x[:, x.std(axis=0, ddof=1) >= ZERO_TOL] if len(x) >= 2 else x[:, :0]
+    live = varying(returns)
     n = live.shape[1]
     if n < 2:
         return 0.0

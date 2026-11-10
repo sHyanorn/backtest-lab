@@ -9,7 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from backtest_lab.engine.backtest import Costs, run
-from backtest_lab.engine.metrics import ANNUALIZATION, ZERO_TOL, sharpe, summarize
+from backtest_lab.engine.metrics import ANNUALIZATION, sharpe, summarize
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation import report_schema as rs
 from backtest_lab.validation.pbo import cscv, n_combinations
@@ -29,6 +29,7 @@ from backtest_lab.validation.sharpe_stats import (
     min_track_record_length,
     probabilistic_sharpe_ratio,
     sharpe_moments,
+    varying,
 )
 from backtest_lab.validation.walk_forward import holdout, walk_forward
 
@@ -197,7 +198,7 @@ def build_report(
     variance = float(np.var(sr_all, ddof=1))
     rho, rho_squared = average_correlation(x), mean_squared_correlation(x)
     # A trial that never trades adds no independent trial to the floor's count.
-    live = int((x.std(axis=0, ddof=1) >= ZERO_TOL).sum())
+    live = varying(x).shape[1]
     counts = _TrialCounts(
         n_trials,
         by_correlation=effective_trials(rho, n_trials),
@@ -373,13 +374,12 @@ class _TrialCounts:
         """The larger estimate: the higher DSR threshold and the longer MinBTL."""
         return max(self.by_correlation, self.by_eigenvalue)
 
-    @property
-    def too_few(self) -> str | None:
-        """The summary of a check that these trials are too few to judge."""
+    def judge(self, verdict: rs.Verdict, summary: str) -> tuple[rs.CheckVerdict, str]:
+        """A check's verdict and summary, withheld when these trials are too few to judge it."""
         if enough_trials(self.fewest):
-            return None
+            return verdict, summary
         shown = math.floor(10 * self.fewest) / 10  # 9.97 must not read as the 10 required
-        return (
+        return "not_assessable", (
             f"Only about {shown:.1f} of the {self.n_trials} settings tried are independent; "
             f"this check needs at least {MIN_EFFECTIVE_TRIALS}."
         )
@@ -393,10 +393,11 @@ def _pbo_check(x: npt.NDArray[np.float64], s: Settings, trials: _TrialCounts) ->
         f"In {result.pbo:.0%} of {combos:,} ways to split the history into two halves, the "
         f"best of {result.n_trials} settings on one half ranked in the bottom half on the other."
     )
+    verdict, summary = trials.judge(pbo_verdict(result.pbo), summary)
     return rs.PBOCheck(
         title="Probability of backtest overfitting",
-        verdict="not_assessable" if trials.too_few else pbo_verdict(result.pbo),
-        summary=trials.too_few or summary,
+        verdict=verdict,
+        summary=summary,
         metrics=rs.PBOMetrics(
             pbo=result.pbo,
             n_combinations=combos,
@@ -425,10 +426,11 @@ def _dsr_check(
         f"estimates; the larger is used), the chance that the best one's true Sharpe ratio "
         f"beats the {sr0:.2f} expected from the luckiest of them by chance is {_fmt(dsr, '.0%')}."
     )
+    verdict, summary = trials.judge(probability_verdict(dsr), summary)
     return rs.DeflatedSharpeCheck(
         title="Deflated Sharpe ratio",
-        verdict="not_assessable" if trials.too_few else probability_verdict(dsr),
-        summary=trials.too_few or summary,
+        verdict=verdict,
+        summary=summary,
         metrics=rs.DeflatedSharpeMetrics(
             dsr=dsr,
             sharpe=_num(annualize(sr)),
@@ -581,7 +583,8 @@ def overall_summary(checks: rs.Checks) -> tuple[rs.Verdict, str]:
         (b, borderline), (u, unassessed) = titled("yellow"), titled("not_assessable")
         parts = [f"{b} of {len(items)} are borderline ({borderline})"] if b else []
         if u:
-            parts.append(f"{u} {'' if b else f'of {len(items)} '}cannot be assessed ({unassessed})")
+            of_all = "" if b else f"of {len(items)} "
+            parts.append(f"{u} {of_all}cannot be assessed ({unassessed})")
         summary = (
             f"No check fails, but {' and '.join(parts)}: treat the selected setting's "
             "performance with caution."
