@@ -94,7 +94,7 @@ def test_registered_verdicts_hold_under_the_two_estimate_rule(name: str) -> None
     assert first["n_effective"] == pytest.approx(dsr.metrics.n_effective, abs=0.01)
     assert first["dsr"] == pytest.approx(dsr.metrics.dsr, abs=0.001)
 
-    assert enough_trials(first["n_effective"], second["n_effective"])  # PBO and DSR are judged
+    assert enough_trials(min(first["n_effective"], second["n_effective"]))  # PBO and DSR are judged
     used = max(first, second, key=lambda e: e["n_effective"])
     assert probability_verdict(used["dsr"]) == dsr.verdict
     btl = registered.checks.min_backtest_length

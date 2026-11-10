@@ -115,9 +115,9 @@ def logit_histogram(
     return counts, edges
 
 
-def enough_trials(*estimates: float) -> bool:
-    """Whether the smallest estimate of the independent trials lets PBO or DSR pass."""
-    return min(estimates) >= MIN_EFFECTIVE_TRIALS
+def enough_trials(fewest: float) -> bool:
+    """Whether the smaller estimate of the independent trials lets PBO or DSR pass."""
+    return fewest >= MIN_EFFECTIVE_TRIALS
 
 
 def worst(verdicts: list[rs.CheckVerdict]) -> rs.Verdict:

@@ -289,9 +289,8 @@ def test_the_reported_count_is_not_rounded_up_to_the_floor() -> None:
 
 
 def test_ten_independent_trials_by_the_smaller_estimate_are_enough() -> None:
-    assert not enough_trials(9.99, 50.0)
-    assert not enough_trials(50.0, 9.99)
-    assert enough_trials(10.0, 50.0)
+    assert not enough_trials(9.99)
+    assert enough_trials(10.0)
 
 
 @pytest.mark.parametrize(

@@ -18,9 +18,17 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
-from backtest_lab.api import params as P
 from backtest_lab.api.jobs import REPORT_FILE, JobStore, Runner, SweepJob
 from backtest_lab.api.market import Market, load_market
+from backtest_lab.api.params import (
+    ParamError,
+    SymbolKind,
+    build,
+    check_params,
+    check_value,
+    specs,
+    symbols,
+)
 from backtest_lab.api.schemas import (
     BacktestRequest,
     BacktestResponse,
@@ -58,12 +66,12 @@ def _market(request: Request) -> Market:
 
 def _check_symbols(market: Market, strategy: str, params: list[Params]) -> None:
     """Every ticker parameter names a ticker and every series parameter a macro series."""
-    kinds: list[tuple[P.SymbolKind, list[str]]] = [
+    kinds: list[tuple[SymbolKind, list[str]]] = [
         ("ticker", market.tickers),
         ("series", market.series),
     ]
     for kind, known in kinds:
-        missing = sorted(P.symbols(strategy, params, kind) - set(known))
+        missing = sorted(symbols(strategy, params, kind) - set(known))
         if missing:
             raise HTTPException(422, f"no {kind} data for {missing}")
 
@@ -74,7 +82,7 @@ def _benchmark(body: SweepRequest, market: Market) -> str:
     if body.benchmark is not None:
         name = body.benchmark
     else:
-        first = next((s for s in P.specs(body.strategy) if s.symbol == "ticker"), None)
+        first = next((s for s in specs(body.strategy) if s.symbol == "ticker"), None)
         if first is None or first.name in body.axes:
             raise HTTPException(422, "set a benchmark ticker")
         name = str(body.fixed.get(first.name, first.default))
@@ -86,26 +94,25 @@ def _benchmark(body: SweepRequest, market: Market) -> str:
 def _prepare(body: SweepRequest, market: Market, job_id: str | None = None) -> SweepJob:
     """Check a sweep request completely before it is queued."""
     try:
-        specs = {s.name: s for s in P.specs(body.strategy)}
-        unknown = (set(body.axes) | set(body.fixed)) - set(specs)
+        spec = {s.name: s for s in specs(body.strategy)}
+        unknown = (set(body.axes) | set(body.fixed)) - set(spec)
         if unknown:
-            raise P.ParamError(f"{body.strategy} has no parameter {sorted(unknown)}")
+            raise ParamError(f"{body.strategy} has no parameter {sorted(unknown)}")
         axes: dict[str, list[Param]] = {
-            name: [P.check_value(specs[name], v) for v in values]
-            for name, values in body.axes.items()
+            name: [check_value(spec[name], v) for v in values] for name, values in body.axes.items()
         }
         # Every parameter that is not an axis is fixed, defaults included, so the stored
         # trials and the report state the full configuration.
-        given = P.check_params(body.strategy, body.fixed)
-        fixed = {n: given.get(n, s.default) for n, s in specs.items() if n not in axes}
+        given = check_params(body.strategy, body.fixed)
+        fixed = {n: given.get(n, s.default) for n, s in spec.items() if n not in axes}
         grid = Grid.of(axes, fixed, body.categorical)
         if len(grid) > MAX_TRIALS:
-            raise P.ParamError(f"the grid has {len(grid)} trials; the limit is {MAX_TRIALS}")
+            raise ParamError(f"the grid has {len(grid)} trials; the limit is {MAX_TRIALS}")
         params = grid.params()
-        warmup = max(P.build(body.strategy, p).warmup for p in params)
+        warmup = max(build(body.strategy, p).warmup for p in params)
         _check_symbols(market, body.strategy, params)
         benchmark = _benchmark(body, market)
-        traded = sorted(P.symbols(body.strategy, params, "ticker"))
+        traded = sorted(symbols(body.strategy, params, "ticker"))
         data = market.between(body.start, body.end, traded, also=(benchmark,))
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
@@ -188,7 +195,7 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
                 description=(cls.__doc__ or "").strip().split("\n\n")[0].replace("\n", " "),
                 params=[
                     ParamInfo(name=s.name, type=s.type, default=s.default, symbol=s.symbol)
-                    for s in P.specs(name)
+                    for s in specs(name)
                 ],
             )
             for name, cls in STRATEGIES.items()
@@ -198,11 +205,11 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
     def backtest(body: BacktestRequest, request: Request) -> BacktestResponse:
         market = _market(request)
         try:
-            given = P.check_params(body.strategy, body.params)
-            params = {s.name: given.get(s.name, s.default) for s in P.specs(body.strategy)}
-            strategy = P.build(body.strategy, params)
+            given = check_params(body.strategy, body.params)
+            params = {s.name: given.get(s.name, s.default) for s in specs(body.strategy)}
+            strategy = build(body.strategy, params)
             _check_symbols(market, body.strategy, [params])
-            tickers = sorted(P.symbols(body.strategy, [params], "ticker"))
+            tickers = sorted(symbols(body.strategy, [params], "ticker"))
             data = market.between(body.start, body.end, tickers)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc

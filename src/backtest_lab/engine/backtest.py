@@ -65,13 +65,12 @@ class Result:
     start: pd.Timestamp | None  # first date whose return follows a valid signal
 
 
-def _targets(weights: pd.DataFrame, prices: Prices) -> pd.DataFrame:
+def _check_weights(weights: pd.DataFrame, prices: Prices) -> None:
     unknown = weights.columns.difference(prices.close.columns)
     if len(unknown):
         raise ValueError(f"no prices for {list(unknown)}")
     if not weights.index.equals(prices.close.index):
         raise ValueError("weights must have one row per price date")
-    return weights
 
 
 def run(
@@ -90,10 +89,10 @@ def run(
     Uninvested capital earns zero. A row with any NaN (warm-up) is flat, and
     tickers without a column have zero weight.
     """
-    targets = _targets(weights, prices)
-    valid = targets.notna().all(axis=1).to_numpy()
+    _check_weights(weights, prices)
+    valid = weights.notna().all(axis=1).to_numpy()
     tickers = prices.close.columns
-    w_all = targets.reindex(columns=tickers).fillna(0.0).to_numpy(dtype=np.float64, copy=True)
+    w_all = weights.reindex(columns=tickers).fillna(0.0).to_numpy(dtype=np.float64, copy=True)
     w_all[~valid] = 0.0
     if (np.abs(w_all).sum(axis=1) > max_leverage + LEVERAGE_TOL).any():
         raise ValueError(f"gross exposure above {max_leverage}")
