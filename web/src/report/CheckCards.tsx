@@ -13,7 +13,7 @@ export function CheckCards({ report }: { report: Report }) {
         Checks
       </h2>
       <ol className="cards">
-        {checkViews(report.checks).map((c) => (
+        {checkViews(report).map((c) => (
           <li key={c.key} className="card" id={`check-${c.key}`} tabIndex={-1}>
             <div className="card-head">
               <Verdict verdict={c.verdict} />

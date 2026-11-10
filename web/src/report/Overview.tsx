@@ -55,7 +55,7 @@ export function Overview({
           )}
           <p className="overall-summary">{overall.summary}</p>
           <ul className="strip" aria-label="Verdict of each check">
-            {checkViews(report.checks).map((c) => (
+            {checkViews(report).map((c) => (
               <li key={c.key}>
                 <a
                   href={`#check-${c.key}`}

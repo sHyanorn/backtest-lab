@@ -1,5 +1,5 @@
 import { num, pct, prob, years } from '../format.ts'
-import type { CheckVerdict, Checks } from '../report.gen.ts'
+import type { CheckVerdict, Checks, Report } from '../report.gen.ts'
 
 export type CheckKey = keyof Checks
 
@@ -29,14 +29,16 @@ export interface CheckView {
 }
 
 const TOO_FEW_RULE =
-  'Not assessed when fewer than 10 independent settings were tried.'
+  ' Not assessed when fewer than 10 independent settings were tried.'
 
 const RETENTION_RULE =
   'Pass when out-of-sample performance is positive and keeps at least half of in-sample; borderline below half; fail when it is not positive.'
 
 /** The headline number of each check and the rule that judges it (D022). */
-export function checkViews(checks: Checks): CheckView[] {
-  const c = checks
+export function checkViews(report: Report): CheckView[] {
+  const c = report.checks
+  // The registered 1.0 reports were judged before the floor existed (D041).
+  const floor = report.schema_version === '1.0' ? '' : TOO_FEW_RULE
   const base = <K extends CheckKey>(key: K) => ({
     key,
     title: c[key].title,
@@ -69,13 +71,13 @@ export function checkViews(checks: Checks): CheckView[] {
       ...base('pbo'),
       value: judged('pbo', num(c.pbo.metrics.pbo, 3)),
       measure: 'PBO',
-      rule: `Pass up to 0.10, borderline up to 0.30, fail above. A search with no skill lands near 0.5. ${TOO_FEW_RULE}`,
+      rule: `Pass up to 0.10, borderline up to 0.30, fail above. A search with no skill lands near 0.5.${floor}`,
     },
     {
       ...base('deflated_sharpe'),
       value: judged('deflated_sharpe', prob(c.deflated_sharpe.metrics.dsr)),
       measure: 'DSR',
-      rule: `Pass from 0.95, borderline from 0.50, fail below. Below 0.50 the selected Sharpe ratio is under the best expected from skill-less trials. ${TOO_FEW_RULE}`,
+      rule: `Pass from 0.95, borderline from 0.50, fail below. Below 0.50 the selected Sharpe ratio is under the best expected from skill-less trials.${floor}`,
     },
     {
       ...base('track_record'),

@@ -6,6 +6,7 @@ import { asPostHoc, asReport, type Report } from '../data.ts'
 import { colourScale } from '../charts/colour.ts'
 import { num, pct, signed, trialParams } from '../format.ts'
 import { CheckCards } from './CheckCards.tsx'
+import { checkViews } from './checks.ts'
 import { Overview } from './Overview.tsx'
 import { PostHoc } from './PostHoc.tsx'
 
@@ -133,6 +134,15 @@ describe('check cards', () => {
     const dsr = screen.getByRole('heading', { name: 'Deflated Sharpe ratio' })
       .parentElement as HTMLElement
     expect(dsr.querySelector('.figure-value')?.textContent).toBe('0.945')
+  })
+
+  it('states the floor on independent settings only for reports built under it', () => {
+    const report = load('ma_crossover')
+    const rule = (r: Report) => checkViews(r).find((c) => c.key === 'pbo')?.rule
+    expect(rule(report)).not.toContain('Not assessed')
+    expect(rule({ ...report, schema_version: '1.1' })).toContain(
+      'Not assessed when fewer than 10 independent settings were tried.',
+    )
   })
 
   it('notes that the seed sensitivity verdict is uninformative', () => {
