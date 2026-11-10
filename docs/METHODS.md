@@ -39,7 +39,7 @@ Details that are easy to get wrong:
 - Maximum drawdown is computed on compounded wealth of net returns, not on prices or on summed returns. $W_0 = 1$ is included as a peak, so a loss on the first day counts as a drawdown.
 - $r_f = 0$ matches the engine, which credits uninvested cash with zero return. Every Sharpe ratio in the report uses this convention, so it measures total return per unit of risk, not excess return over Treasury bills; in periods of high short rates it overstates performance relative to cash. PSR, MinTRL and DSR inherit the same convention.
 - Calmar uses the full sample, as in empyrical.
-- Annualizing short samples extrapolates heavily: CAGR over a few weeks is not meaningful. The report's headline metrics require at least one year of data; walk-forward and cross-validation internals apply the same formulas to shorter windows.
+- Annualizing short samples extrapolates heavily: CAGR over a few weeks is not meaningful. A report is built only from at least `Settings.min_days` aligned days, 1,512 (six years) with the registered settings, so its headline metrics never annualize a short sample; walk-forward and cross-validation internals apply the same formulas to shorter windows.
 - Degenerate cases return NaN (see Conventions), including Sortino when no return falls below the target. empyrical returns `inf` or a float-noise value in some of these cases; this is a deliberate difference.
 
 **Intuition.** Sharpe measures return per unit of total risk; Sortino penalizes only returns below the target; maximum drawdown is the worst peak-to-trough loss an investor would have lived through; Calmar trades growth against that loss.

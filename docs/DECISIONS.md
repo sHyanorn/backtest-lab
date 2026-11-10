@@ -138,7 +138,7 @@
 - Date: 2026-11-08
 - A grid is rectangular: every combination of its axis values, enumerated with the last axis fastest, and the trial number is the position in that order. Numeric axes must be strictly increasing so that sensitivity neighbours are adjacent values; bool and string axes are categorical. A grid with any invalid combination is rejected before work starts
 - Trials run in a process pool. Each trial is a deterministic backtest of its parameters, and results are collected in grid order, so the output is identical for any number of processes. Market data and costs reach each worker once through the pool initializer, which works under the spawn start method used on Windows
-- Storage is one directory per search: `returns.parquet` (T x N net daily returns from the first date all trials are live, one column per trial) and `trials.json` (strategy, grid, costs, sample dates and each trial's parameters and first live date). The API can keep one directory per job; the dashboard reads the report instead of the matrix
+- Storage is one directory per search: `returns.parquet` (T x N net daily returns from the first date all trials are live, one column per trial) and `trials.json` (strategy, grid, costs, sample dates and each trial's parameters and first live date). The API keeps one directory per sweep; the dashboard reads the report instead of the matrix. The stored matrix, its `format_version` and `Trials.load` are there so that a report's statistics can be recomputed from its inputs outside this code; nothing in the project reads a stored matrix back
 - Strategies are looked up by name in a registry, so stored trials and worker jobs carry a name, not a class
 
 ## D024 Holdout and walk-forward defaults
@@ -169,7 +169,7 @@
 
 ## D028 Report format
 - Date: 2026-11-08
-- The report is defined by pydantic 2.14.3 models, and `docs/report.schema.json` is generated from them; a test keeps the committed schema in step. The API will use the same models as response types, and the dashboard can generate its types from the schema
+- The report is defined by pydantic 2.14.3 models, and `docs/report.schema.json` is generated from them; a test keeps the committed schema in step. The API returns reports in this format and uses the same models in its responses, and the dashboard generates its types from the schema
 - Undefined values are `null`; the models reject NaN and infinity, so a missing conversion fails loudly instead of producing invalid JSON. There is no timestamp, so the same inputs give the same bytes
 - Equity and drawdown are weekly: equity at each week's last date and the deepest daily drawdown within the week, so the maximum drawdown survives downsampling. Values are rounded to 6 decimals
 - Sensitivity needs an ordered axis with more than one value. A grid without one has no neighbourhood; its sensitivity check is yellow ("cannot be assessed"), the one case D022 does not cover. All pre-registered grids have such an axis (D021)
