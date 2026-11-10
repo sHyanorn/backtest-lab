@@ -47,6 +47,18 @@ An in-sample winner that is always long-only ranks in the top half out of sample
 
 Counting every setting of the grid, as METHODS.md Section 5 requires, the deflated Sharpe ratios of the same two settings are the registered 0.945 and 0.988; the values near 1.00 hold only when the long/short half is left out.
 
+**Independent trials.** The registered reports estimate the independent trials from the average correlation. The eigenvalue estimate (METHODS.md Section 5) and the rule that DSR and MinBTL use the larger of the two were adopted afterwards (D041). `results/posthoc/effective_trials.json` holds both for a rerun of the three searches on prices fetched on 2026-11-10; it is fixed like the other post hoc file.
+
+| | Moving average | Momentum | Random signal |
+|---|---|---|---|
+| Settings tried | 128 | 34 | 100 |
+| Independent, average correlation (registered) | 47.9 | 14.0 | 100.0 |
+| Independent, eigenvalues | 72.6 | 20.2 | 99.7 |
+| DSR with each | 0.945 / 0.919 | 0.988 / 0.979 | 0.147 / 0.147 |
+| MinBTL in years with each | 8.0 / 9.1 | 4.8 / 5.8 | 123.4 / 123.3 |
+
+With the larger estimate every DSR and MinBTL verdict is the registered one, and no search falls under the floor of 10 independent trials below which PBO and DSR get no verdict.
+
 **Selected setting against buy and hold.**
 
 | | Moving average | Momentum | Buy and hold |

@@ -498,6 +498,15 @@ tbody th {
 .verdict-icon.red path {
   stroke: var(--on-critical);
 }
+.verdict.not_assessable {
+  color: var(--muted);
+}
+.verdict-icon.not_assessable circle {
+  fill: var(--muted);
+}
+.verdict-icon.not_assessable path {
+  stroke: var(--surface);
+}
 
 /* Info tips */
 

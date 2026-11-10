@@ -18,19 +18,19 @@ The credibility report is one JSON document per parameter search. It runs every 
 
 | Field | Content |
 |---|---|
-| `schema_version` | `"1.0"` |
+| `schema_version` | `"1.1"`. The registered demo reports are `"1.0"` (D032): one estimate of the independent trials, no `not_assessable` verdict (D041) |
 | `strategy` | Registry name, fixed parameters, grid axes and their values, number of trials |
 | `sample` | First and last date of the aligned trial returns, number of days, years ($T / 252$) |
 | `costs` | Fees and slippage in basis points per side (D014) |
 | `selected` | Trial with the highest Sharpe over the whole sample, its parameters and its Section 1 metrics |
 | `benchmark` | Buy and hold of one instrument over the same dates through the engine with the same costs, its metrics, and `difference` = selected minus benchmark for Sharpe, CAGR, maximum drawdown and volatility. A reference only: it takes no part in any verdict (D021) |
-| `overall` | `verdict`: the worst verdict among the checks. `summary`: which checks fail or are borderline. `benchmark_summary`: the comparison with buy and hold, kept apart because passing the checks says the result is unlikely to come from the search alone, not that it beats the market |
+| `overall` | `verdict`: the worst verdict among the checks, with a check that is not assessable counted as yellow. `summary`: which checks fail, are borderline or cannot be assessed. `benchmark_summary`: the comparison with buy and hold, kept apart because passing the checks says the result is unlikely to come from the search alone, not that it beats the market |
 | `checks` | The eight checks below, always in this order |
 | `series` | Weekly equity and drawdown of the selected trial and of the benchmark |
 
 ## Checks
 
-Every check has `title`, `verdict` (`green`, `yellow` or `red`), `summary` and `metrics`; some also have `details` for charts. Thresholds are fixed in D022.
+Every check has `title`, `verdict` (`green`, `yellow` or `red`), `summary` and `metrics`; some also have `details` for charts. Thresholds are fixed in D022. `pbo` and `deflated_sharpe` have the verdict `not_assessable` when fewer than 10 trials are effectively independent by the smaller of the two estimates; their metrics are still reported (D041).
 
 | Key | Method | Verdict | `details` |
 |---|---|---|---|
@@ -44,6 +44,8 @@ Every check has `title`, `verdict` (`green`, `yellow` or `red`), `summary` and `
 | `sensitivity` | Section 7, radius 1 | Retention green from 0.75, yellow from 0.5, red below or when the best Sharpe is not positive; yellow when no ordered axis has more than one value | Heatmap |
 
 Retention rule: green when the ratio is at least 0.5 and OOS performance is positive, yellow when the ratio is below 0.5 with positive OOS performance, red when OOS performance is not positive or the ratio is undefined.
+
+`deflated_sharpe.metrics` gives the trials run (`n_trials`), the two estimates of the independent trials (`n_effective_correlation`, `n_effective_eigenvalue`) and the larger of them (`n_effective`), which DSR and MinBTL use.
 
 Units worth noting: `deflated_sharpe.metrics.sharpe_variance` is the variance of the non-annualized Sharpe ratios across trials; `kurtosis` is raw (3 for normal returns); `walk_forward.metrics.is_return` and `oos_return` are annualized arithmetic returns ($252 \times$ mean); `track_record.metrics.min_track_record_years` and the MinBTL fields are in years.
 

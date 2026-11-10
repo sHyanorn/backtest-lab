@@ -25,11 +25,13 @@ from backtest_lab.validation.demo import SEARCHES, SETTINGS, TICKER, Search, loa
 from backtest_lab.validation.pbo import cscv
 from backtest_lab.validation.report import buy_and_hold
 from backtest_lab.validation.search import run_grid
-from backtest_lab.validation.selection import best_trial, ranking_sharpe
+from backtest_lab.validation.selection import annualize, best_trial, ranking_sharpe
 from backtest_lab.validation.sharpe_stats import (
     average_correlation,
     deflated_sharpe_ratio,
     effective_trials,
+    mean_squared_correlation,
+    min_backtest_length,
     sharpe_moments,
 )
 
@@ -144,6 +146,36 @@ def analyse(search: Search, data: MarketData, processes: int | None = None) -> d
     }
 
 
+def trial_counts(x: Returns) -> dict[str, Any]:
+    """DSR and MinBTL of the selected trial under each estimate of the independent
+    trials (METHODS.md Section 5, D041)."""
+    n_trials = x.shape[1]
+    moments = sharpe_moments(x[:, best_trial(x)])
+    variance = float(np.var(ranking_sharpe(x), ddof=1))
+
+    def under(n_effective: float) -> dict[str, float]:
+        return {
+            "n_effective": n_effective,
+            "dsr": deflated_sharpe_ratio(
+                moments.sharpe, variance, n_effective, moments.n, moments.skewness, moments.kurtosis
+            ),
+            "min_backtest_years": min_backtest_length(n_effective, annualize(moments.sharpe)),
+        }
+
+    return {
+        "n_trials": n_trials,
+        "years": len(x) / ANNUALIZATION,
+        "average_correlation": under(effective_trials(average_correlation(x), n_trials)),
+        "eigenvalue": under(effective_trials(mean_squared_correlation(x), n_trials)),
+    }
+
+
+def _write(path: Path, note: str, searches: dict[str, Any]) -> None:
+    result = {"post_hoc": True, "note": note, "searches": searches}
+    path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(f"wrote {path}")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
@@ -152,22 +184,31 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     data = load_market(args.data_dir)
-    result = {
-        "post_hoc": True,
-        "note": (
-            "Chosen after seeing the pre-registered demo results (D021) to explain them; "
-            "exploratory, with no confirmatory weight (D029)."
-        ),
-        "searches": {
+    args.out.mkdir(parents=True, exist_ok=True)
+    _write(
+        args.out / "long_only.json",
+        "Chosen after seeing the pre-registered demo results (D021) to explain them; "
+        "exploratory, with no confirmatory weight (D029).",
+        {
             s.name: analyse(s, data, args.processes)
             for s in SEARCHES
             if "allow_short" in s.grid.names
         },
-    }
-    args.out.mkdir(parents=True, exist_ok=True)
-    path = args.out / "long_only.json"
-    path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8", newline="\n")
-    print(f"wrote {path}")
+    )
+    _write(
+        args.out / "effective_trials.json",
+        "The registered searches under the rule adopted after them (D041): the selected "
+        "trial's deflated Sharpe ratio and minimum backtest length with each estimate of "
+        "the independent trials. The registered reports keep their verdicts (D032).",
+        {
+            s.name: trial_counts(
+                run_grid(s.strategy, s.grid, data, processes=args.processes).returns.to_numpy(
+                    dtype=np.float64
+                )
+            )
+            for s in SEARCHES
+        },
+    )
 
 
 if __name__ == "__main__":

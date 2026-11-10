@@ -8,16 +8,17 @@ A backtesting platform that tests whether a strategy is probably overfit: it run
 
 Three searches on SPY from 1993 to October 2026, fixed before any strategy was run on real data ([D021](docs/DECISIONS.md#d021-pre-registered-demo)); the reports come from a single run. Returns are net of 1 bp fees and 5 bps slippage per side; Sharpe ratios are annualized. The momentum search is a simplified time-series momentum: fully long or short by the sign of the trailing total return, decided every day, without the volatility scaling, excess returns and monthly rebalancing of Moskowitz, Ooi & Pedersen (2012).
 
-| Search | Trials | Selected setting | Sharpe, selected / buy and hold | Overfitting checks |
+| Search | Trials (independent, two estimates) | Selected setting | Sharpe, selected / buy and hold | Overfitting checks |
 |---|---|---|---|---|
-| Moving-average crossover | 128 | fast 10, slow 200, long only | 0.80 / 0.64 | Borderline: DSR 0.945, just below 0.95 |
-| Time-series momentum | 34 | lookback 273, long only | 0.79 / 0.65 | Borderline: PBO 0.12, above 0.10 |
-| Random-signal control | 100 | seed 55 | 0.23 / 0.64 | Fail on 6 of 8 checks, one of them sensitivity, which is uninformative for seeds |
+| Moving-average crossover | 128 (47.9, 72.6) | fast 10, slow 200, long only | 0.80 / 0.64 | Borderline: DSR 0.945, just below 0.95 |
+| Time-series momentum | 34 (14.0, 20.2) | lookback 273, long only | 0.79 / 0.65 | Borderline: PBO 0.12, above 0.10 |
+| Random-signal control | 100 (100.0, 99.7) | seed 55 | 0.23 / 0.64 | Fail on 6 of 8 checks, one of them sensitivity, which is uninformative for seeds |
 
 ![The dashboard for the moving-average search: a borderline verdict with one borderline check out of eight, a separate table against SPY buy and hold, and equity on a log scale with drawdown below it from 1994 to 2026.](docs/images/dashboard.png)
 
 - A search with no skill still finds a winner with a positive Sharpe ratio; the checks fail it.
 - Post hoc: for both real strategies, the main finding of the search is that long only beats long/short on SPY, which keeps their registered PBO well below 0.5. Within the long-only settings, picking the best is no better than a coin flip (PBO 0.42 and 0.72).
+- Post hoc: the registered reports estimate the independent trials from the average correlation, the first figure in the table. The second, from the eigenvalues of the correlation matrix, was added afterwards ([D041](docs/DECISIONS.md#d041-two-estimates-of-the-independent-trials-and-a-floor-of-ten)); new reports use the larger of the two. With it the deflated Sharpe ratios are 0.919, 0.979 and 0.147, and every verdict stays as registered.
 - The moving average has a higher Sharpe ratio than buy and hold because its volatility is lower (12.5% against 18.7%). Its maximum drawdown is smaller (−21% against −55%) and its CAGR is lower (9.7% against 10.8%).
 
 Passing the overfitting checks says the selected Sharpe ratio is above zero and unlikely to be a product of the search alone. The checks do not test timing ability: in a market that rose over the sample, a long-only setting with no timing ability often comes out borderline or passing. Whether a result beats buy and hold is a separate question that no check tests; each report shows that comparison as descriptive figures, outside the verdict. [DEMO.md](docs/DEMO.md) has every check and the post hoc analysis, labelled as such; [the notebook](notebooks/demo.ipynb) re-derives each report's statistics from the inputs stored in it and applies the thresholds again.

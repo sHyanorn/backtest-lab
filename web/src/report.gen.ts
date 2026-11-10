@@ -5,7 +5,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type SchemaVersion = '1.0'
+export type SchemaVersion = '1.0' | '1.1'
 export type Name = string
 export type Param = boolean | number | string
 export type NTrials = number
@@ -31,6 +31,7 @@ export type Verdict = 'green' | 'yellow' | 'red'
 export type Summary = string
 export type BenchmarkSummary = string
 export type Title = string
+export type CheckVerdict = Verdict | 'not_assessable'
 export type Summary1 = string
 export type SplitDate = string
 export type IsSharpe = number | null
@@ -85,6 +86,8 @@ export type Sharpe2 = number | null
 export type ExpectedMaxSharpe = number
 export type NTrials1 = number
 export type NEffective = number
+export type NEffectiveCorrelation = number | null
+export type NEffectiveEigenvalue = number | null
 export type AverageCorrelation = number
 export type SharpeVariance = number
 export type Skewness = number | null
@@ -212,7 +215,7 @@ export interface Checks {
 }
 export interface HoldoutCheck {
   title: Title
-  verdict: Verdict
+  verdict: CheckVerdict
   summary: Summary1
   metrics: HoldoutMetrics
   details: HoldoutDetails
@@ -233,7 +236,7 @@ export interface Params1 {
 }
 export interface WalkForwardCheck {
   title: Title1
-  verdict: Verdict
+  verdict: CheckVerdict
   summary: Summary2
   metrics: WalkForwardMetrics
   details: WalkForwardDetails
@@ -261,7 +264,7 @@ export interface WalkForwardWindow {
 }
 export interface PurgedCVCheck {
   title: Title2
-  verdict: Verdict
+  verdict: CheckVerdict
   summary: Summary3
   metrics: PurgedCVMetrics
   details: PurgedCVDetails
@@ -286,7 +289,7 @@ export interface PurgedCVFold {
 }
 export interface PBOCheck {
   title: Title3
-  verdict: Verdict
+  verdict: CheckVerdict
   summary: Summary4
   metrics: PBOMetrics
   details: PBODetails
@@ -307,7 +310,7 @@ export interface Histogram {
 }
 export interface DeflatedSharpeCheck {
   title: Title4
-  verdict: Verdict
+  verdict: CheckVerdict
   summary: Summary5
   metrics: DeflatedSharpeMetrics
 }
@@ -317,6 +320,8 @@ export interface DeflatedSharpeMetrics {
   expected_max_sharpe: ExpectedMaxSharpe
   n_trials: NTrials1
   n_effective: NEffective
+  n_effective_correlation?: NEffectiveCorrelation
+  n_effective_eigenvalue?: NEffectiveEigenvalue
   average_correlation: AverageCorrelation
   sharpe_variance: SharpeVariance
   skewness: Skewness
@@ -324,7 +329,7 @@ export interface DeflatedSharpeMetrics {
 }
 export interface TrackRecordCheck {
   title: Title5
-  verdict: Verdict
+  verdict: CheckVerdict
   summary: Summary6
   metrics: TrackRecordMetrics
 }
@@ -337,7 +342,7 @@ export interface TrackRecordMetrics {
 }
 export interface MinBacktestCheck {
   title: Title6
-  verdict: Verdict
+  verdict: CheckVerdict
   summary: Summary7
   metrics: MinBacktestMetrics
 }
@@ -350,7 +355,7 @@ export interface MinBacktestMetrics {
 }
 export interface SensitivityCheck {
   title: Title7
-  verdict: Verdict
+  verdict: CheckVerdict
   summary: Summary8
   metrics: SensitivityMetrics
   details: SensitivityDetails

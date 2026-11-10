@@ -119,6 +119,22 @@ describe('check cards', () => {
     expect(card.querySelector('.verdict')?.textContent).toBe('Fail')
   })
 
+  it('gives no verdict or headline number to a check that is not assessable', () => {
+    const report = load('ma_crossover')
+    const pbo = { ...report.checks.pbo, verdict: 'not_assessable' as const }
+    render(
+      <CheckCards report={{ ...report, checks: { ...report.checks, pbo } }} />,
+    )
+    const card = screen.getByRole('heading', {
+      name: 'Probability of backtest overfitting',
+    }).parentElement as HTMLElement
+    expect(card.querySelector('.verdict')?.textContent).toBe('Not assessable')
+    expect(card.querySelector('.figure-value')?.textContent).toBe('–')
+    const dsr = screen.getByRole('heading', { name: 'Deflated Sharpe ratio' })
+      .parentElement as HTMLElement
+    expect(dsr.querySelector('.figure-value')?.textContent).toBe('0.945')
+  })
+
   it('notes that the seed sensitivity verdict is uninformative', () => {
     render(<CheckCards report={load('random_signal')} />)
     expect(screen.getByText(/Neighbouring seeds are unrelated/)).toBeTruthy()

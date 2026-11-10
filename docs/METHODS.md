@@ -205,7 +205,7 @@ The report also includes two by-products from Section 3.2 of the paper: the OLS 
 **Pitfalls.**
 
 - $N$ is every configuration tried, including the bad ones. The paper (Section 5.2) warns that hiding trials underestimates overfitting and that adding trials doomed to fail, to make one configuration succeed, biases the result as well. The direction depends on which trials are left out: in the demo the long/short half of each grid is the weaker one, and dropping it raises PBO from 0.05 to 0.42 for the moving average (DEMO.md, post hoc). A PBO verdict therefore depends on the composition of the grid, not only on the selected configuration.
-- Small $N$ makes ranks coarse; the paper notes that an investor sensitive to PBO values below 1/10 needs $N \gg 10$.
+- Small $N$ makes ranks coarse; the paper notes that an investor sensitive to PBO values below 1/10 needs $N \gg 10$. The report gives PBO no verdict when fewer than 10 trials are effectively independent (Section 5, D041).
 - PBO evaluates a selection process. It must not be used as the objective to choose a strategy.
 - A high PBO does not mean every configuration is bad: if all configurations have similar real skill, PBO is high too.
 - Sharpe ratios on unions of blocks can be computed exactly from per-block counts, sums and sums of squares, so all $\binom{16}{8}$ combinations are cheap.
@@ -251,13 +251,23 @@ Inputs:
 
 - $\widehat{SR}$, $\hat\gamma_3$, $\hat\gamma_4$, $T$: non-annualized Sharpe, skewness, raw kurtosis and length of the selected trial's returns.
 - $\mathbb V[\{\widehat{SR}_n\}]$: sample variance (`ddof=1`) of the non-annualized Sharpe ratios of **all** recorded trials.
-- $\hat N$: number of **independent** trials. Grid trials are strongly correlated, so $\hat N$ is estimated from the $N$ recorded trials with the average-correlation rule of Appendix A.3 (Eq. 8–9; the paper writes $M$ for recorded and $N$ for independent trials):
+- $\hat N$: number of **independent** trials. Grid trials are strongly correlated, so $\hat N$ is estimated from the $N$ recorded trials in two ways, and the larger estimate is used (D041). The first is the average-correlation rule of Appendix A.3 (Eq. 8–9; the paper writes $M$ for recorded and $N$ for independent trials):
 
 $$
-\hat\rho = \frac{2}{N(N-1)} \sum_{i<j} \rho_{ij}, \qquad \hat N = \hat\rho + (1 - \hat\rho) N,
+\hat\rho = \frac{2}{N(N-1)} \sum_{i<j} \rho_{ij}, \qquad \hat N_\rho = \hat\rho + (1 - \hat\rho) N,
 $$
 
-where $\rho_{ij}$ is the correlation of the daily returns of trials $i$ and $j$. $\hat\rho$ is clipped to $[0, 1]$, so $1 \le \hat N \le N$.
+where $\rho_{ij}$ is the correlation of the daily returns of trials $i$ and $j$. $\hat\rho$ is clipped to $[0, 1]$, so $1 \le \hat N_\rho \le N$.
+
+The second is the eigenvalue estimate of Nyholt (2004), with $\lambda_1, \dots, \lambda_N$ the eigenvalues of the correlation matrix $(\rho_{ij})$:
+
+$$
+\hat N_\lambda = 1 + (N - 1)\left(1 - \frac{\mathbb V[\lambda]}{N}\right), \qquad \mathbb V[\lambda] = \frac{1}{N-1} \sum_{i=1}^{N} (\lambda_i - 1)^2 .
+$$
+
+Uncorrelated trials have every $\lambda_i = 1$ and $\hat N_\lambda = N$; identical trials have $\lambda = (N, 0, \dots, 0)$, $\mathbb V[\lambda] = N$ and $\hat N_\lambda = 1$. Because $\sum_i \lambda_i^2 = \sum_{i,j} \rho_{ij}^2$, the ratio $\mathbb V[\lambda] / N$ is the mean squared pairwise correlation $\overline{\rho^2}$, so $\hat N_\lambda = \overline{\rho^2} + (1 - \overline{\rho^2}) N$: the same rule with squared correlations, which is how the code computes it. A negative correlation lowers $\hat N_\lambda$ and raises $\hat N_\rho$.
+
+$\hat N = \max(\hat N_\rho, \hat N_\lambda)$ enters $\widehat{SR}_0$ here and MinBTL in Section 6; the larger count gives the higher threshold and the lower DSR. When $\min(\hat N_\rho, \hat N_\lambda) < 10$ the report gives DSR and PBO no verdict (D041).
 
 The report flags the strategy as significant when $\widehat{DSR} \ge 0.95$.
 
@@ -269,17 +279,18 @@ The report flags the strategy as significant when $\widehat{DSR} \ge 0.95$.
 - $\hat\gamma_4$ is raw kurtosis. `scipy.stats.kurtosis` and `pandas.Series.kurt` return excess kurtosis by default; using those makes the term under the square root too small by $\frac{3}{4}\widehat{SR}^2$.
 - The denominator uses the selected $\widehat{SR}$, not $\widehat{SR}_0$.
 - Using $N$ instead of $\hat N$ overstates the threshold; using only the trials of the final grid when earlier grids were also run on the same data understates it. All trials ever run on the data count.
-- The average-correlation estimate of $\hat N$ is crude: correlation is only linear dependence, and the correlation matrix is ill-conditioned when $T < N(N-1)/2$ (Appendix A.3). The paper points to dimension reduction or information-theoretic estimates as alternatives.
+- Both estimates of $\hat N$ are crude: correlation is only linear dependence, and the correlation matrix is ill-conditioned when $T < N(N-1)/2$ (Appendix A.3). The paper points to dimension reduction or information-theoretic estimates as alternatives.
 - The variance formula assumes iid returns; serial correlation (Lo, 2002) is not corrected.
 
-**References.** Bailey & López de Prado (2014); Bailey & López de Prado (2012) for the PSR it builds on.
+**References.** Bailey & López de Prado (2014); Bailey & López de Prado (2012) for the PSR it builds on; Nyholt (2004) for $\hat N_\lambda$.
 
-**Code.** `src/backtest_lab/validation/sharpe_stats.py` (`expected_max_sharpe`, `effective_trials`, `deflated_sharpe_ratio`)
+**Code.** `src/backtest_lab/validation/sharpe_stats.py` (`expected_max_sharpe`, `average_correlation`, `mean_squared_correlation`, `effective_trials`, `deflated_sharpe_ratio`)
 
 **Tests.** `tests/validation/test_sharpe_stats.py`
 
 - Paper example (pp. 9–10): $N = 100$, $\mathbb V = \frac{1}{2 \cdot 250}$, $T = 1250$, $\widehat{SR} = 2.5/\sqrt{250}$, $\hat\gamma_3 = -3$, $\hat\gamma_4 = 10$. Expected $\widehat{SR}_0 = 0.1132$ and $\widehat{DSR} = 0.9004$. Also from the same page: $N = 46$ gives $0.9505$; normal returns ($\hat\gamma_3 = 0$, $\hat\gamma_4 = 3$) with $N = 88$ give $0.9505$. Reproduced: 0.113172, 0.900397, 0.950502, 0.950491. Tolerance 1e-4. Note that this example uses 250 observations per year, not 252.
 - $\hat N$: $\hat\rho = 0 \to \hat N = N$; $\hat\rho = 1 \to \hat N = 1$; $N = 100$, $\hat\rho = 0.5 \to \hat N = 50.5$.
+- $\hat N_\lambda$: the mean squared correlation reproduces the eigenvalue formula on a random correlation matrix; two independent pairs of identical trials have $\lambda = (2, 2, 0, 0)$, $\mathbb V[\lambda] = 4/3$ and $\hat N_\lambda = 3$, above the true 2.
 - Clipping: $e_{1.1} = -0.318 \to \widehat{SR}_0 = 0$; $e_2 = 0.5198$.
 - Random-signal control (SPEC Section 8): $X$ as in the PBO control ($T = 1000$, $N = 100$), select the highest Sharpe, use $\hat N = N$ (the trials are independent by construction). Over 200 seeds, DSR of the selected trial was never $\ge 0.95$ (mean 0.49), while $\widehat{PSR}(0)$ was $\ge 0.95$ in all 200. The test runs 50 seeds and requires DSR $< 0.95$ in at least 48 and $\widehat{PSR}(0) \ge 0.95$ in at least 48.
 - Sanity check, not a validation of the approximation: the mean annualized Sharpe of the selected trial over those 200 seeds was 1.271 (standard error 0.016), consistent with both the formula's $\sqrt{252/1000} \times 2.5306 = 1.2704$ and the exact expected maximum of 100 standard normals, which gives 1.259.
@@ -402,6 +413,7 @@ $s$ uses the population form because the neighbourhood is the whole set of inter
 4. Bailey, D. H., Borwein, J. M., López de Prado, M., & Zhu, Q. J. (2017). The probability of backtest overfitting. *Journal of Computational Finance*, 20(4), 39–69. https://doi.org/10.21314/JCF.2016.322. SSRN 2326253.
 5. Lo, A. W. (2002). The statistics of Sharpe ratios. *Financial Analysts Journal*, 58(4), 36–52. https://doi.org/10.2469/faj.v58.n4.2453.
 6. López de Prado, M. (2018). *Advances in Financial Machine Learning*. Wiley. ISBN 978-1-119-48208-6.
-7. Pardo, R. (2008). *The Evaluation and Optimization of Trading Strategies* (2nd ed.). Wiley. ISBN 978-0-470-12801-5. https://doi.org/10.1002/9781119196969.
-8. Sharpe, W. F. (1994). The Sharpe ratio. *Journal of Portfolio Management*, 21(1), 49–58. https://doi.org/10.3905/jpm.1994.409501.
-9. Sortino, F. A., & Price, L. N. (1994). Performance measurement in a downside risk framework. *Journal of Investing*, 3(3), 59–64. https://doi.org/10.3905/joi.3.3.59.
+7. Nyholt, D. R. (2004). A simple correction for multiple testing for single-nucleotide polymorphisms in linkage disequilibrium with each other. *American Journal of Human Genetics*, 74(4), 765–769. https://doi.org/10.1086/383251.
+8. Pardo, R. (2008). *The Evaluation and Optimization of Trading Strategies* (2nd ed.). Wiley. ISBN 978-0-470-12801-5. https://doi.org/10.1002/9781119196969.
+9. Sharpe, W. F. (1994). The Sharpe ratio. *Journal of Portfolio Management*, 21(1), 49–58. https://doi.org/10.3905/jpm.1994.409501.
+10. Sortino, F. A., & Price, L. N. (1994). Performance measurement in a downside risk framework. *Journal of Investing*, 3(3), 59–64. https://doi.org/10.3905/joi.3.3.59.

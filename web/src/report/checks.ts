@@ -1,12 +1,13 @@
 import { num, pct, prob, years } from '../format.ts'
-import type { Checks, Verdict } from '../report.gen.ts'
+import type { CheckVerdict, Checks } from '../report.gen.ts'
 
 export type CheckKey = keyof Checks
 
-export const VERDICT_LABEL: Record<Verdict, string> = {
+export const VERDICT_LABEL: Record<CheckVerdict, string> = {
   green: 'Pass',
   yellow: 'Borderline',
   red: 'Fail',
+  not_assessable: 'Not assessable',
 }
 
 /** Checks whose details open in a dialog; sensitivity has its own section. */
@@ -20,12 +21,15 @@ export const HAS_DETAILS: CheckKey[] = [
 export interface CheckView {
   key: CheckKey
   title: string
-  verdict: Verdict
+  verdict: CheckVerdict
   summary: string
   value: string
   measure: string
   rule: string
 }
+
+const TOO_FEW_RULE =
+  'Not assessed when fewer than 10 independent settings were tried.'
 
 const RETENTION_RULE =
   'Pass when out-of-sample performance is positive and keeps at least half of in-sample; borderline below half; fail when it is not positive.'
@@ -39,6 +43,9 @@ export function checkViews(checks: Checks): CheckView[] {
     verdict: c[key].verdict,
     summary: c[key].summary,
   })
+  // A figure that is not judged is not shown as a headline (D041).
+  const judged = (key: CheckKey, value: string) =>
+    c[key].verdict === 'not_assessable' ? '–' : value
   return [
     {
       ...base('holdout'),
@@ -60,15 +67,15 @@ export function checkViews(checks: Checks): CheckView[] {
     },
     {
       ...base('pbo'),
-      value: num(c.pbo.metrics.pbo, 3),
+      value: judged('pbo', num(c.pbo.metrics.pbo, 3)),
       measure: 'PBO',
-      rule: 'Pass up to 0.10, borderline up to 0.30, fail above. A search with no skill lands near 0.5.',
+      rule: `Pass up to 0.10, borderline up to 0.30, fail above. A search with no skill lands near 0.5. ${TOO_FEW_RULE}`,
     },
     {
       ...base('deflated_sharpe'),
-      value: prob(c.deflated_sharpe.metrics.dsr),
+      value: judged('deflated_sharpe', prob(c.deflated_sharpe.metrics.dsr)),
       measure: 'DSR',
-      rule: 'Pass from 0.95, borderline from 0.50, fail below. Below 0.50 the selected Sharpe ratio is under the best expected from skill-less trials.',
+      rule: `Pass from 0.95, borderline from 0.50, fail below. Below 0.50 the selected Sharpe ratio is under the best expected from skill-less trials. ${TOO_FEW_RULE}`,
     },
     {
       ...base('track_record'),

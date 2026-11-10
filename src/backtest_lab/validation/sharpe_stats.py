@@ -63,8 +63,8 @@ def expected_max_sharpe(n_trials: float, variance: float) -> float:
     return math.sqrt(variance) * max(expected_max_z(n_trials), 0.0)
 
 
-def average_correlation(returns: npt.ArrayLike) -> float:
-    """Mean pairwise correlation of the columns, clipped to [0, 1].
+def _mean_off_diagonal(returns: npt.ArrayLike, power: int) -> float:
+    """Mean of rho_ij ** power over the pairs of distinct columns, clipped to [0, 1].
 
     Degenerate columns are skipped; with fewer than two others the result is 0.
     """
@@ -73,14 +73,26 @@ def average_correlation(returns: npt.ArrayLike) -> float:
     n = live.shape[1]
     if n < 2:
         return 0.0
-    corr = np.corrcoef(live, rowvar=False)
+    corr = np.corrcoef(live, rowvar=False) ** power
     mean = (corr.sum() - np.trace(corr)) / (n * (n - 1))
     return float(np.clip(mean, 0.0, 1.0))
 
 
-def effective_trials(avg_correlation: float, n_trials: int) -> float:
-    """N-hat = rho + (1 - rho) N (Bailey and Lopez de Prado, 2014, Appendix A.3)."""
-    rho = min(max(avg_correlation, 0.0), 1.0)
+def average_correlation(returns: npt.ArrayLike) -> float:
+    """Mean pairwise correlation of the columns, clipped to [0, 1]."""
+    return _mean_off_diagonal(returns, 1)
+
+
+def mean_squared_correlation(returns: npt.ArrayLike) -> float:
+    """Mean squared pairwise correlation of the columns: Var(lambda) / N of the
+    correlation matrix's eigenvalues (Nyholt, 2004)."""
+    return _mean_off_diagonal(returns, 2)
+
+
+def effective_trials(correlation: float, n_trials: int) -> float:
+    """N-hat = rho + (1 - rho) N. With the average correlation this is Bailey and Lopez
+    de Prado (2014, Appendix A.3); with the mean squared correlation, Nyholt (2004)."""
+    rho = min(max(correlation, 0.0), 1.0)
     return rho + (1 - rho) * n_trials
 
 

@@ -81,9 +81,12 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
-/** Accepts a report of the schema version this build was generated from. */
+/** Accepts a report of a schema version this build was generated from (D041). */
 export function asReport(value: unknown): Report {
-  if (!isObject(value) || value.schema_version !== '1.0') {
+  if (
+    !isObject(value) ||
+    (value.schema_version !== '1.0' && value.schema_version !== '1.1')
+  ) {
     throw new Error('unsupported report format')
   }
   for (const key of [

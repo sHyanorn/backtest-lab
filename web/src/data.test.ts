@@ -63,6 +63,11 @@ describe('loading', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
+  it('reads a report of the current format', () => {
+    const report = committed('demo/momentum.json') as Record<string, unknown>
+    expect(asReport({ ...report, schema_version: '1.1' })).toBeTruthy()
+  })
+
   it('rejects another schema version', async () => {
     vi.stubGlobal('fetch', respond({ schema_version: '2.0' }))
     await expect(loadDemo('momentum')).rejects.toThrow(

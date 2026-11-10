@@ -132,7 +132,7 @@
 - Sensitivity retention: green from 0.75, yellow from 0.5, red below 0.5 or when the best Sharpe is not positive. A project convention; there is no published threshold
 - Overall: the worst verdict among the checks
 - Rationale: fixed before any real-data run so the thresholds cannot be fitted to the demo
-- See also D037
+- See also D037 and D041
 
 ## D023 Grid search and stored trials
 - Date: 2026-11-08
@@ -175,7 +175,7 @@
 - Sensitivity needs an ordered axis with more than one value. A grid without one has no neighbourhood; its sensitivity check is yellow ("cannot be assessed"), the one case D022 does not cover. All pre-registered grids have such an axis (D021)
 - Rationale: one source of truth for the format across the Python code, the API and the dashboard
 - See also D033: the dashboard's types are generated from this schema
-- See also D037
+- See also D037 and D041
 
 ## D029 Demo conclusions follow the pre-registered results
 - Date: 2026-11-08
@@ -207,6 +207,7 @@
 - `web/src/report.gen.ts` is generated from `docs/report.schema.json` with json-schema-to-typescript (`npm run gen:types`), and CI fails if the committed file differs. The loader accepts only `schema_version` 1.0 and checks the top-level sections before rendering
 - Post hoc results have no schema (D029), so their type is written by hand and the loader requires `post_hoc: true`
 - Rationale: one source of truth for the report format across the Python models, the API and the dashboard (D028)
+- See also D041: the loader also accepts `schema_version` 1.1
 
 ## D034 Dashboard deployed to GitHub Pages by Actions
 - Date: 2026-11-08
@@ -247,3 +248,12 @@
 - Each pool worker waits on the process that started the pool (`multiprocessing.parent_process()`) in a daemon thread and exits when it is gone. A killed server cannot terminate its workers; under forkserver on Linux they, the fork server and the resource tracker kept running afterwards
 - Requests whose Host header names anything other than 127.0.0.1 or localhost get 400 (Starlette's `TrustedHostMiddleware`). The API has no authentication (D016), and a page on another site can resolve its own name to 127.0.0.1 and call the API from the visitor's browser; such a request carries that site's name as its Host
 - The test that kills the server lists processes with `ps` and is skipped on Windows
+
+## D041 Two estimates of the independent trials and a floor of ten
+- Date: 2026-11-10
+- A report estimates the independent trials twice: from the average correlation (Bailey and López de Prado, 2014, Appendix A.3) and from the eigenvalues of the correlation matrix (Nyholt, 2004; METHODS.md Section 5). DSR and MinBTL use the larger estimate, which gives the higher threshold. The report states the trials run and both estimates
+- When the smaller estimate is below 10, PBO and DSR are computed but get the verdict `not_assessable` instead of a colour, and count as yellow in the overall verdict, so it cannot be green. A grid of four settings used to pass both: with one or two independent trials DSR reduces to PSR(0), and the PBO ranks take only four values. Ten follows the PBO paper's remark that sensitivity to PBO below 1/10 needs N well above 10. The floor is on independent trials, so a large grid of near-identical settings is not assessable either
+- Reports built under this rule have `schema_version` 1.1. `n_effective` is the estimate used, with `n_effective_correlation` and `n_effective_eigenvalue` beside it; in 1.0 it is the average-correlation estimate, the only one then
+- The rule was adopted after the registered results were seen. The reports in `results/demo` are 1.0, are not rewritten (D032) and keep their registered verdicts. `results/posthoc/effective_trials.json` holds a rerun of the three searches on prices fetched on 2026-11-10: the eigenvalue estimates are 72.6, 20.2 and 99.7 against 47.9, 14.0 and 100.0, the deflated Sharpe ratios with the larger estimate are 0.919, 0.979 and 0.147 against the registered 0.945, 0.988 and 0.147, and every DSR and MinBTL verdict is the same. The smaller estimates are 47.9, 14.0 and 99.7, so the floor does not apply. A test checks this against the registered reports
+- Not changed: a sensitivity check without neighbours stays yellow (D028)
+

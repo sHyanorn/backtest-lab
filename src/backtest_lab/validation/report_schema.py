@@ -9,9 +9,11 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-SCHEMA_VERSION: Final = "1.0"
+SCHEMA_VERSION: Final = "1.1"
 
 type Verdict = Literal["green", "yellow", "red"]
+# A check with too few independent trials to judge has no colour (D041).
+type CheckVerdict = Verdict | Literal["not_assessable"]
 type Param = bool | int | float | str
 
 
@@ -75,14 +77,14 @@ class Benchmark(_Model):
 
 
 class Overall(_Model):
-    verdict: Verdict  # the worst verdict among the checks
+    verdict: Verdict  # the worst among the checks; one that is not assessable counts as yellow
     summary: str
     benchmark_summary: str
 
 
 class Check(_Model):
     title: str
-    verdict: Verdict
+    verdict: CheckVerdict
     summary: str
 
 
@@ -186,7 +188,9 @@ class DeflatedSharpeMetrics(_Model):
     sharpe: float | None  # annualized, selected trial
     expected_max_sharpe: float  # annualized SR_0
     n_trials: int
-    n_effective: float
+    n_effective: float  # the estimate used: the larger of the two below (1.0: the first)
+    n_effective_correlation: float | None = None  # from the average correlation; absent in 1.0
+    n_effective_eigenvalue: float | None = None  # Nyholt (2004); absent in 1.0
     average_correlation: float
     sharpe_variance: float  # across trials, non-annualized
     skewness: float | None
@@ -284,7 +288,7 @@ class Series(_Model):
 
 
 class Report(_Model):
-    schema_version: Literal["1.0"]
+    schema_version: Literal["1.0", "1.1"]  # 1.0: the frozen demo reports (D032)
     strategy: StrategyInfo
     sample: Sample
     costs: CostInfo

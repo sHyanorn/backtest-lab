@@ -2,6 +2,7 @@ import math
 from typing import cast
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import pytest
 
@@ -12,6 +13,7 @@ from backtest_lab.validation.sharpe_stats import (
     effective_trials,
     expected_max_sharpe,
     expected_max_z,
+    mean_squared_correlation,
     min_backtest_length,
     min_backtest_length_bound,
     min_track_record_length,
@@ -52,6 +54,29 @@ def test_average_correlation() -> None:
     assert average_correlation(rng.standard_normal((5000, 4))) < 0.05
     assert average_correlation(np.hstack([base, -base])) == 0.0  # clipped
     assert average_correlation(base) == 0.0
+
+
+def test_mean_squared_correlation_gives_the_eigenvalue_estimate() -> None:
+    rng = np.random.default_rng(0)
+    n = 6
+    x = rng.standard_normal((500, n)) @ rng.standard_normal((n, n))
+    eigenvalues = np.linalg.eigvalsh(np.corrcoef(x, rowvar=False))
+    nyholt = 1 + (n - 1) * (1 - eigenvalues.var(ddof=1) / n)
+    assert effective_trials(mean_squared_correlation(x), n) == pytest.approx(nyholt)
+    assert 1 < nyholt < n
+
+    def n_hat(*columns: npt.NDArray[np.float64]) -> float:
+        return effective_trials(mean_squared_correlation(np.hstack(columns)), len(columns))
+
+    a = np.tile([1.0, -1.0, 1.0, -1.0], 25)[:, None]
+    b = np.tile([1.0, 1.0, -1.0, -1.0], 25)[:, None]  # uncorrelated with a
+    assert n_hat(a, b) == pytest.approx(2)
+    assert n_hat(a, 2 * a) == pytest.approx(1)
+    assert n_hat(a, a, b, b) == pytest.approx(3)  # two independent pairs: eigenvalues (2, 2, 0, 0)
+    # An exact opposite is one trial here and two under the average correlation.
+    assert n_hat(a, -a) == pytest.approx(1)
+    assert effective_trials(average_correlation(np.hstack([a, -a])), 2) == 2
+    assert mean_squared_correlation(a) == 0.0
 
 
 def test_random_control() -> None:

@@ -14,21 +14,24 @@ from backtest_lab.validation.report import (
     Settings,
     build_report,
     buy_and_hold,
+    enough_trials,
     logit_histogram,
     min_backtest_verdict,
+    overall_summary,
     pbo_verdict,
     probability_verdict,
     retention_verdict,
     sensitivity_verdict,
     worst,
 )
-from backtest_lab.validation.report_schema import Report, json_schema
+from backtest_lab.validation.report_schema import CheckVerdict, Report, json_schema
 from backtest_lab.validation.search import Grid, Trials, run_grid
 from backtest_lab.validation.selection import best_trial, ranking_sharpe
 from backtest_lab.validation.sharpe_stats import (
     average_correlation,
     deflated_sharpe_ratio,
     effective_trials,
+    mean_squared_correlation,
     min_backtest_length,
     min_track_record_length,
     probabilistic_sharpe_ratio,
@@ -101,6 +104,8 @@ def test_worst() -> None:
     assert worst(["green", "yellow", "green"]) == "yellow"
     assert worst(["green", "red", "yellow"]) == "red"
     assert worst(["green"]) == "green"
+    assert worst(["green", "not_assessable"]) == "yellow"  # never green (D041)
+    assert worst(["not_assessable", "red"]) == "red"
 
 
 def test_committed_schema_matches_the_models() -> None:
@@ -155,10 +160,15 @@ def test_statistics_receive_the_documented_inputs() -> None:
     sr = ranking_sharpe(x)
     m = sharpe_moments(x[:, best_trial(x)])
     variance = float(np.var(sr, ddof=1))
-    n_eff = effective_trials(average_correlation(x), n_trials)
+    by_correlation = effective_trials(average_correlation(x), n_trials)
+    by_eigenvalue = effective_trials(mean_squared_correlation(x), n_trials)
+    n_eff = max(by_correlation, by_eigenvalue)
+    assert by_correlation != by_eigenvalue
     target = float(np.sqrt(ANNUALIZATION) * m.sharpe)
 
     dsr = report.checks.deflated_sharpe.metrics
+    assert dsr.n_effective_correlation == by_correlation
+    assert dsr.n_effective_eigenvalue == by_eigenvalue
     assert (dsr.n_trials, dsr.n_effective, dsr.sharpe_variance) == (n_trials, n_eff, variance)
     assert (dsr.skewness, dsr.kurtosis) == (m.skewness, m.kurtosis)
     assert dsr.dsr == deflated_sharpe_ratio(
@@ -199,8 +209,71 @@ def test_random_signals_do_not_pass() -> None:
     grid = Grid.of({"seed": list(range(50))}, {"ticker": "SPY", "hold": 5})
     trials = run_grid("random_signal", grid, data, processes=1)
     report = build_report(trials, data, "SPY", Settings(is_days=250, oos_days=125))
-    assert report.checks.deflated_sharpe.verdict != "green"
+    assert report.checks.deflated_sharpe.verdict in ("yellow", "red")
+    assert report.checks.pbo.verdict != "not_assessable"  # 50 unrelated trials can be judged
     assert report.overall.verdict != "green"
+
+
+def test_too_few_independent_trials_get_no_pbo_or_dsr_verdict() -> None:
+    data = synthetic_market(n=2600, seed=3, drift=0.0003)
+    grid = Grid.of({"fast": [5, 10], "slow": [60, 100]}, {"ticker": "SPY"})
+    trials = run_grid("ma_crossover", grid, data, processes=1)
+    report = build_report(trials, data, "SPY", SETTINGS)
+    checks = report.checks
+    dsr = checks.deflated_sharpe.metrics
+    assert dsr.n_effective_correlation is not None and dsr.n_effective_eigenvalue is not None
+    fewest = min(dsr.n_effective_correlation, dsr.n_effective_eigenvalue)
+    for check in (checks.pbo, checks.deflated_sharpe):
+        assert check.verdict == "not_assessable"
+        assert check.summary == (
+            f"Only about {fewest:.1f} of the 4 settings tried are independent; "
+            "this check needs at least 10."
+        )
+    assert dsr.dsr is not None  # the figures stay in the report
+    others = [c.verdict for key, c in checks if key not in ("pbo", "deflated_sharpe")]
+    assert "not_assessable" not in others
+    assert set(others) == {"green", "yellow"}
+    assert report.overall.verdict == "yellow"
+    assert report.overall.summary.startswith(
+        "No check fails, but 2 of 8 are borderline (Walk-forward analysis, Parameter "
+        "sensitivity) and 2 cannot be assessed (Probability of backtest overfitting, "
+        "Deflated Sharpe ratio):"
+    )
+
+
+def test_ten_independent_trials_by_the_smaller_estimate_are_enough() -> None:
+    assert not enough_trials(9.99, 50.0)
+    assert not enough_trials(50.0, 9.99)
+    assert enough_trials(10.0, 50.0)
+
+
+@pytest.mark.parametrize(
+    ("verdicts", "summary"),
+    [
+        (
+            {"pbo": "not_assessable", "deflated_sharpe": "not_assessable"},
+            "No check fails, but 2 of 8 cannot be assessed (Probability of backtest "
+            "overfitting, Deflated Sharpe ratio): treat the selected setting's performance "
+            "with caution.",
+        ),
+        (
+            {"holdout": "yellow", "pbo": "not_assessable"},
+            "No check fails, but 1 of 8 are borderline (Holdout split) and 1 cannot be "
+            "assessed (Probability of backtest overfitting): treat the selected setting's "
+            "performance with caution.",
+        ),
+    ],
+)
+def test_overall_summary_names_the_checks_that_cannot_be_assessed(
+    verdicts: dict[str, CheckVerdict], summary: str
+) -> None:
+    _, _, report = _ma_case()
+    changed = {
+        key: check.model_copy(update={"verdict": verdicts.get(key, "green")})
+        for key, check in report.checks
+    }
+    overall = overall_summary(report.checks.model_copy(update=changed))
+    assert overall == ("yellow", summary)
 
 
 def test_sensitivity_without_neighbours_cannot_be_assessed() -> None:

@@ -1,0 +1,48 @@
+{
+  "post_hoc": true,
+  "note": "The registered searches under the rule adopted after them (D041): the selected trial's deflated Sharpe ratio and minimum backtest length with each estimate of the independent trials. The registered reports keep their verdicts (D032).",
+  "searches": {
+    "ma_crossover": {
+      "n_trials": 128,
+      "years": 32.726190476190474,
+      "average_correlation": {
+        "n_effective": 47.936426892703736,
+        "dsr": 0.9451493149846084,
+        "min_backtest_years": 7.9714527902645615
+      },
+      "eigenvalue": {
+        "n_effective": 72.63942907081687,
+        "dsr": 0.9192065225158215,
+        "min_backtest_years": 9.10916395133787
+      }
+    },
+    "momentum": {
+      "n_trials": 34,
+      "years": 32.214285714285715,
+      "average_correlation": {
+        "n_effective": 13.999656605054321,
+        "dsr": 0.9876212924979817,
+        "min_backtest_years": 4.831849198451712
+      },
+      "eigenvalue": {
+        "n_effective": 20.21457773645504,
+        "dsr": 0.9791937909206415,
+        "min_backtest_years": 5.804561786535128
+      }
+    },
+    "random_signal": {
+      "n_trials": 100,
+      "years": 33.714285714285715,
+      "average_correlation": {
+        "n_effective": 100.0,
+        "dsr": 0.14713285408236768,
+        "min_backtest_years": 123.39166063415895
+      },
+      "eigenvalue": {
+        "n_effective": 99.6502262756228,
+        "dsr": 0.1473993198766786,
+        "min_backtest_years": 123.27144545963712
+      }
+    }
+  }
+}

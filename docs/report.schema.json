@@ -64,6 +64,17 @@
       "title": "Cell",
       "type": "object"
     },
+    "CheckVerdict": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Verdict"
+        },
+        {
+          "const": "not_assessable",
+          "type": "string"
+        }
+      ]
+    },
     "Checks": {
       "additionalProperties": false,
       "properties": {
@@ -157,7 +168,7 @@
           "type": "string"
         },
         "verdict": {
-          "$ref": "#/$defs/Verdict"
+          "$ref": "#/$defs/CheckVerdict"
         },
         "summary": {
           "title": "Summary",
@@ -212,6 +223,30 @@
         "n_effective": {
           "title": "N Effective",
           "type": "number"
+        },
+        "n_effective_correlation": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "N Effective Correlation"
+        },
+        "n_effective_eigenvalue": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "N Effective Eigenvalue"
         },
         "average_correlation": {
           "title": "Average Correlation",
@@ -408,7 +443,7 @@
           "type": "string"
         },
         "verdict": {
-          "$ref": "#/$defs/Verdict"
+          "$ref": "#/$defs/CheckVerdict"
         },
         "summary": {
           "title": "Summary",
@@ -599,7 +634,7 @@
           "type": "string"
         },
         "verdict": {
-          "$ref": "#/$defs/Verdict"
+          "$ref": "#/$defs/CheckVerdict"
         },
         "summary": {
           "title": "Summary",
@@ -704,7 +739,7 @@
           "type": "string"
         },
         "verdict": {
-          "$ref": "#/$defs/Verdict"
+          "$ref": "#/$defs/CheckVerdict"
         },
         "summary": {
           "title": "Summary",
@@ -805,7 +840,7 @@
           "type": "string"
         },
         "verdict": {
-          "$ref": "#/$defs/Verdict"
+          "$ref": "#/$defs/CheckVerdict"
         },
         "summary": {
           "title": "Summary",
@@ -1007,7 +1042,7 @@
           "type": "string"
         },
         "verdict": {
-          "$ref": "#/$defs/Verdict"
+          "$ref": "#/$defs/CheckVerdict"
         },
         "summary": {
           "title": "Summary",
@@ -1188,7 +1223,7 @@
           "type": "string"
         },
         "verdict": {
-          "$ref": "#/$defs/Verdict"
+          "$ref": "#/$defs/CheckVerdict"
         },
         "summary": {
           "title": "Summary",
@@ -1278,7 +1313,7 @@
           "type": "string"
         },
         "verdict": {
-          "$ref": "#/$defs/Verdict"
+          "$ref": "#/$defs/CheckVerdict"
         },
         "summary": {
           "title": "Summary",
@@ -1441,7 +1476,10 @@
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "const": "1.0",
+      "enum": [
+        "1.0",
+        "1.1"
+      ],
       "title": "Schema Version",
       "type": "string"
     },

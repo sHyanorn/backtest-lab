@@ -23,6 +23,7 @@ from backtest_lab.validation.sharpe_stats import (
     deflated_sharpe_ratio,
     effective_trials,
     expected_max_sharpe,
+    mean_squared_correlation,
     min_backtest_length,
     min_backtest_length_bound,
     min_track_record_length,
@@ -39,8 +40,11 @@ PROBABILITY_GREEN = 0.95
 PROBABILITY_YELLOW = 0.5
 SENSITIVITY_GREEN = 0.75
 SENSITIVITY_YELLOW = 0.5
+# Fewer independent trials than this and PBO and DSR get no verdict (D041)
+MIN_EFFECTIVE_TRIALS = 10
 
-_SEVERITY: dict[rs.Verdict, int] = {"green": 0, "yellow": 1, "red": 2}
+_SEVERITY: dict[rs.CheckVerdict, int] = {"green": 0, "yellow": 1, "not_assessable": 1, "red": 2}
+_OVERALL: tuple[rs.Verdict, ...] = ("green", "yellow", "red")
 _LOGIT_BINS = 20
 
 
@@ -108,8 +112,14 @@ def logit_histogram(
     return counts, edges
 
 
-def worst(verdicts: list[rs.Verdict]) -> rs.Verdict:
-    return max(verdicts, key=_SEVERITY.__getitem__)
+def enough_trials(*estimates: float) -> bool:
+    """Whether the smallest estimate of the independent trials allows a PBO or DSR verdict."""
+    return min(estimates) >= MIN_EFFECTIVE_TRIALS
+
+
+def worst(verdicts: list[rs.CheckVerdict]) -> rs.Verdict:
+    """The overall verdict; a check that cannot be assessed counts as yellow."""
+    return _OVERALL[max(_SEVERITY[v] for v in verdicts)]
 
 
 def _num(x: float | None) -> float | None:
@@ -186,17 +196,21 @@ def build_report(
     moments = sharpe_moments(chosen)
     variance = float(np.var(sr_all, ddof=1))
     rho = average_correlation(x)
-    n_eff = effective_trials(rho, n_trials)
+    counts = _TrialCounts(
+        n_trials,
+        by_correlation=effective_trials(rho, n_trials),
+        by_eigenvalue=effective_trials(mean_squared_correlation(x), n_trials),
+    )
     target = annualize(moments.sharpe)
 
     checks = rs.Checks(
         holdout=_holdout_check(trials, settings),
         walk_forward=_walk_forward_check(trials, data, settings),
         purged_cv=_purged_cv_check(trials, settings),
-        pbo=_pbo_check(x, settings),
-        deflated_sharpe=_dsr_check(moments, variance, n_trials, n_eff, rho),
+        pbo=_pbo_check(x, settings, counts),
+        deflated_sharpe=_dsr_check(moments, variance, counts, rho),
         track_record=_track_record_check(moments, years, settings.alpha),
-        min_backtest_length=_min_backtest_check(n_eff, target, years),
+        min_backtest_length=_min_backtest_check(counts.used, target, years),
         sensitivity=_sensitivity_check(trials, np.sqrt(ANNUALIZATION) * sr_all, settings),
     )
     selected = metrics_model(chosen)
@@ -341,7 +355,33 @@ def _purged_cv_check(trials: Trials, s: Settings) -> rs.PurgedCVCheck:
     )
 
 
-def _pbo_check(x: npt.NDArray[np.float64], s: Settings) -> rs.PBOCheck:
+@dataclass(frozen=True)
+class _TrialCounts:
+    """The trials run and the two estimates of how many are independent (METHODS.md
+    Section 5)."""
+
+    n_trials: int
+    by_correlation: float
+    by_eigenvalue: float
+
+    @property
+    def used(self) -> float:
+        """The larger estimate: the higher DSR threshold and the longer MinBTL."""
+        return max(self.by_correlation, self.by_eigenvalue)
+
+    @property
+    def too_few(self) -> str | None:
+        """The summary of a check that these trials are too few to judge."""
+        if enough_trials(self.by_correlation, self.by_eigenvalue):
+            return None
+        fewest = min(self.by_correlation, self.by_eigenvalue)
+        return (
+            f"Only about {fewest:.1f} of the {self.n_trials} settings tried are independent; "
+            f"this check needs at least {MIN_EFFECTIVE_TRIALS}."
+        )
+
+
+def _pbo_check(x: npt.NDArray[np.float64], s: Settings, trials: _TrialCounts) -> rs.PBOCheck:
     result = cscv(x, s.blocks)
     counts, edges = logit_histogram(result.logits, result.n_trials)
     combos = n_combinations(s.blocks)
@@ -351,8 +391,8 @@ def _pbo_check(x: npt.NDArray[np.float64], s: Settings) -> rs.PBOCheck:
     )
     return rs.PBOCheck(
         title="Probability of backtest overfitting",
-        verdict=pbo_verdict(result.pbo),
-        summary=summary,
+        verdict="not_assessable" if trials.too_few else pbo_verdict(result.pbo),
+        summary=trials.too_few or summary,
         metrics=rs.PBOMetrics(
             pbo=result.pbo,
             n_combinations=combos,
@@ -367,28 +407,32 @@ def _pbo_check(x: npt.NDArray[np.float64], s: Settings) -> rs.PBOCheck:
 
 
 def _dsr_check(
-    moments: SharpeMoments, variance: float, n_trials: int, n_eff: float, rho: float
+    moments: SharpeMoments, variance: float, trials: _TrialCounts, rho: float
 ) -> rs.DeflatedSharpeCheck:
     sr = moments.sharpe
+    n_eff = trials.used
+    low, high = sorted((trials.by_correlation, trials.by_eigenvalue))
     dsr = _num(
         deflated_sharpe_ratio(sr, variance, n_eff, moments.n, moments.skewness, moments.kurtosis)
     )
     sr0 = annualize(expected_max_sharpe(n_eff, variance))
     summary = (
-        f"With {n_trials} settings tried (about {n_eff:.0f} independent), the chance that the "
-        f"best one's true Sharpe ratio beats the {sr0:.2f} expected from the luckiest of them "
-        f"by chance is {_fmt(dsr, '.0%')}."
+        f"With {trials.n_trials} settings tried ({low:.0f} to {high:.0f} independent by two "
+        f"estimates; the larger is used), the chance that the best one's true Sharpe ratio "
+        f"beats the {sr0:.2f} expected from the luckiest of them by chance is {_fmt(dsr, '.0%')}."
     )
     return rs.DeflatedSharpeCheck(
         title="Deflated Sharpe ratio",
-        verdict=probability_verdict(dsr),
-        summary=summary,
+        verdict="not_assessable" if trials.too_few else probability_verdict(dsr),
+        summary=trials.too_few or summary,
         metrics=rs.DeflatedSharpeMetrics(
             dsr=dsr,
             sharpe=_num(annualize(sr)),
             expected_max_sharpe=sr0,
-            n_trials=n_trials,
+            n_trials=trials.n_trials,
             n_effective=n_eff,
+            n_effective_correlation=trials.by_correlation,
+            n_effective_eigenvalue=trials.by_eigenvalue,
             average_correlation=rho,
             sharpe_variance=variance,
             skewness=_num(moments.skewness),
@@ -515,26 +559,40 @@ def _heatmap(
     )
 
 
-def _overall(checks: rs.Checks, selected: rs.Metrics, bench: rs.Metrics, name: str) -> rs.Overall:
+def overall_summary(checks: rs.Checks) -> tuple[rs.Verdict, str]:
+    """The overall verdict and the sentence naming the checks behind it."""
     items: list[rs.Check] = [getattr(checks, field) for field in rs.Checks.model_fields]
     verdict = worst([c.verdict for c in items])
-    failed = [c.title for c in items if c.verdict == "red"]
-    borderline = [c.title for c in items if c.verdict == "yellow"]
+
+    def titled(v: rs.CheckVerdict) -> tuple[int, str]:
+        titles = [c.title for c in items if c.verdict == v]
+        return len(titles), ", ".join(titles)
+
     if verdict == "green":
         summary = (
             "Every check passes: the selected setting's performance is unlikely to be an "
             "artefact of the parameter search."
         )
     elif verdict == "yellow":
+        (b, borderline), (u, unassessed) = titled("yellow"), titled("not_assessable")
+        parts = [f"{b} of {len(items)} are borderline ({borderline})"] if b else []
+        if u:
+            parts.append(f"{u} {'' if b else f'of {len(items)} '}cannot be assessed ({unassessed})")
         summary = (
-            f"No check fails, but {len(borderline)} of {len(items)} are borderline "
-            f"({', '.join(borderline)}): treat the selected setting's performance with caution."
+            f"No check fails, but {' and '.join(parts)}: treat the selected setting's "
+            "performance with caution."
         )
     else:
+        n, failed = titled("red")
         summary = (
-            f"{len(failed)} of {len(items)} checks fail ({', '.join(failed)}): the selected "
+            f"{n} of {len(items)} checks fail ({failed}): the selected "
             "setting's performance may well be an artefact of the parameter search."
         )
+    return verdict, summary
+
+
+def _overall(checks: rs.Checks, selected: rs.Metrics, bench: rs.Metrics, name: str) -> rs.Overall:
+    verdict, summary = overall_summary(checks)
     benchmark_summary = (
         "The checks ask whether the result could come from the search alone, not whether it "
         f"beats the market: over the same dates the selected setting's Sharpe ratio was "
