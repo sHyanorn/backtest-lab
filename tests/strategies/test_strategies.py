@@ -5,6 +5,7 @@ import pytest
 from backtest_lab.data.macro import Frequency, available_dates
 from backtest_lab.engine.backtest import Prices, run
 from backtest_lab.strategies import (
+    STRATEGIES,
     MarketData,
     MeanReversion,
     MovingAverageCrossover,
@@ -55,20 +56,44 @@ def _trend(direction: float) -> MarketData:
     return MarketData(prices=Prices(open=close, close=close))
 
 
-STRATEGIES: list[Strategy] = [
-    MovingAverageCrossover(fast=10, slow=50),
-    MovingAverageCrossover(fast=5, slow=20, allow_short=True),
-    TimeSeriesMomentum(lookback=60),
-    TimeSeriesMomentum(lookback=20, allow_short=False),
-    MeanReversion(lookback=20, entry_z=1.0),
-    MeanReversion(lookback=10, entry_z=0.5, allow_short=False),
-    RateRotation(),
-    RateRotation(threshold=0.2, smoothing=5),
-    RandomSignal(seed=3, hold=5),
+# Settings that trade more often in 400 rows than some defaults do.
+VARIANTS: dict[str, list[dict[str, object]]] = {
+    "ma_crossover": [{"fast": 10, "slow": 50}, {"fast": 5, "slow": 20, "allow_short": True}],
+    "momentum": [{"lookback": 60}, {"lookback": 20, "allow_short": False}],
+    "mean_reversion": [{"lookback": 10, "entry_z": 0.5, "allow_short": False}],
+    "rate_rotation": [{"threshold": 0.2, "smoothing": 5}],
+    "random_signal": [{"seed": 3}],
+}
+# Every registered strategy at its defaults, so a new one is covered once it is registered.
+CASES: list[Strategy] = [make() for make in STRATEGIES.values()] + [
+    STRATEGIES[name](**kwargs) for name, variants in VARIANTS.items() for kwargs in variants
 ]
 
 
-@pytest.mark.parametrize("strategy", STRATEGIES, ids=repr)
+class PeekingCrossover(MovingAverageCrossover):
+    """Reads the next close: each day gets the weight the crossover reaches a day later."""
+
+    def weights(self, data: MarketData) -> pd.DataFrame:
+        honest = super().weights(data)
+        return honest.shift(-1).fillna(honest)
+
+
+def _known_at(data: MarketData, t: int) -> MarketData:
+    prices = Prices(open=data.prices.open.iloc[: t + 1], close=data.prices.close.iloc[: t + 1])
+    macro = {sid: df[df["available_date"] <= DATES[t]] for sid, df in data.macro.items()}
+    return MarketData(prices=prices, macro=macro)
+
+
+def _assert_no_lookahead(strategy: Strategy) -> None:
+    """Each day's weights equal the ones computed from the data known that day."""
+    data = _market(seed=3)
+    full = strategy.weights(data)
+    assert np.ptp(full.dropna().to_numpy(), axis=0).any()  # a constant signal would hide a leak
+    causal = [strategy.weights(_known_at(data, t)).iloc[-1].to_numpy() for t in range(N)]
+    np.testing.assert_array_equal(np.vstack(causal), full.to_numpy())
+
+
+@pytest.mark.parametrize("strategy", CASES, ids=repr)
 def test_warmup_is_the_leading_nan_rows(strategy: Strategy) -> None:
     data = _market()
     weights = strategy.weights(data)
@@ -80,30 +105,17 @@ def test_warmup_is_the_leading_nan_rows(strategy: Strategy) -> None:
     assert run(weights, data.prices).start == DATES[first + 1]
 
 
-@pytest.mark.parametrize("strategy", STRATEGIES, ids=repr)
-@pytest.mark.parametrize("cut", [80, 200, 350])
-def test_future_data_does_not_change_past_weights(strategy: Strategy, cut: int) -> None:
-    data = _market(seed=cut)
-    t = DATES[cut]
-    rng = np.random.default_rng(cut)
-    later = t < DATES
-    order = rng.permutation(int(later.sum()))
-    open_, close = data.prices.open.copy(), data.prices.close.copy()
-    open_.loc[later] = open_.loc[later].to_numpy()[order] * 2.0
-    close.loc[later] = close.loc[later].to_numpy()[order] * 0.5
-    macro = {}
-    for sid, df in data.macro.items():
-        df = df.copy()
-        unknown = df["available_date"] > t
-        df.loc[unknown, "value"] = rng.normal(0, 5, int(unknown.sum()))
-        macro[sid] = df
-    perturbed = MarketData(prices=Prices(open=open_, close=close), macro=macro)
-    pd.testing.assert_frame_equal(
-        strategy.weights(data).loc[:t], strategy.weights(perturbed).loc[:t]
-    )
+@pytest.mark.parametrize("strategy", CASES, ids=repr)
+def test_weights_use_only_data_known_that_day(strategy: Strategy) -> None:
+    _assert_no_lookahead(strategy)
 
 
-@pytest.mark.parametrize("strategy", STRATEGIES, ids=repr)
+def test_a_one_day_peek_is_caught() -> None:
+    with pytest.raises(AssertionError):
+        _assert_no_lookahead(PeekingCrossover(fast=10, slow=200))
+
+
+@pytest.mark.parametrize("strategy", CASES, ids=repr)
 @pytest.mark.parametrize("cut", [80, 350])
 def test_weights_are_scale_invariant(strategy: Strategy, cut: int) -> None:
     # Back-adjusting for a later dividend rescales all earlier prices by one factor;
