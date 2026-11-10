@@ -6,7 +6,7 @@ import numpy.typing as npt
 import pandas as pd
 import pytest
 
-from backtest_lab.validation.selection import sharpe_ratios
+from backtest_lab.validation.selection import daily_sharpe_ratios
 from backtest_lab.validation.sharpe_stats import (
     average_correlation,
     deflated_sharpe_ratio,
@@ -85,11 +85,11 @@ def test_random_control() -> None:
     dsr_significant = psr_significant = 0
     for seed in range(50):
         x = 0.01 * np.random.default_rng(seed).standard_normal((1000, 100))
-        sr = sharpe_ratios(x)
+        sr = daily_sharpe_ratios(x)
         best = sharpe_moments(x[:, int(np.argmax(sr))])
-        psr = probabilistic_sharpe_ratio(best.sharpe, 0, best.n, best.skewness, best.kurtosis)
+        psr = probabilistic_sharpe_ratio(best.daily_sharpe, 0, best.n, best.skewness, best.kurtosis)
         dsr = deflated_sharpe_ratio(
-            best.sharpe, float(np.var(sr, ddof=1)), 100, best.n, best.skewness, best.kurtosis
+            best.daily_sharpe, float(np.var(sr, ddof=1)), 100, best.n, best.skewness, best.kurtosis
         )
         dsr_significant += dsr >= 0.95
         psr_significant += psr >= 0.95
@@ -154,11 +154,11 @@ def test_moments_match_pandas_after_bias_conversion() -> None:
     g2 = cast(float, s.kurt()) * (n - 2) * (n - 3) / ((n - 1) * (n + 1)) - 6 / (n + 1)
     assert m.skewness == pytest.approx(g1, rel=1e-12)
     assert m.kurtosis == pytest.approx(g2 + 3, rel=1e-12)  # raw, not excess
-    assert m.sharpe == pytest.approx(r.mean() / r.std(ddof=1), rel=1e-15)
+    assert m.daily_sharpe == pytest.approx(r.mean() / r.std(ddof=1), rel=1e-15)
     assert m.n == n
 
 
 def test_moments_of_a_constant_series_are_nan() -> None:
     m = sharpe_moments(np.full(10, 0.01))
-    assert math.isnan(m.sharpe) and math.isnan(m.kurtosis)
-    assert math.isnan(probabilistic_sharpe_ratio(m.sharpe, 0, m.n, m.skewness, m.kurtosis))
+    assert math.isnan(m.daily_sharpe) and math.isnan(m.kurtosis)
+    assert math.isnan(probabilistic_sharpe_ratio(m.daily_sharpe, 0, m.n, m.skewness, m.kurtosis))

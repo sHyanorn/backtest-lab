@@ -5,7 +5,7 @@ import numpy as np
 
 from backtest_lab.validation.pbo import cscv
 from backtest_lab.validation.search import Grid, run_grid
-from backtest_lab.validation.selection import sharpe_ratios
+from backtest_lab.validation.selection import daily_sharpe_ratios
 from backtest_lab.validation.sharpe_stats import (
     average_correlation,
     deflated_sharpe_ratio,
@@ -25,12 +25,17 @@ def test_random_signals_look_overfit_and_insignificant() -> None:
             "random_signal", GRID, synthetic_market(n=1500, seed=path), processes=1
         ).returns
         pbos.append(cscv(x).pbo)
-        sr = np.nan_to_num(sharpe_ratios(x), nan=0.0)
+        sr = np.nan_to_num(daily_sharpe_ratios(x), nan=0.0)
         best = sharpe_moments(x[int(np.argmax(sr))])
         n_eff = effective_trials(average_correlation(x), x.shape[1])
         dsrs.append(
             deflated_sharpe_ratio(
-                best.sharpe, float(np.var(sr, ddof=1)), n_eff, best.n, best.skewness, best.kurtosis
+                best.daily_sharpe,
+                float(np.var(sr, ddof=1)),
+                n_eff,
+                best.n,
+                best.skewness,
+                best.kurtosis,
             )
         )
     assert 0.33 <= np.mean(pbos) <= 0.67

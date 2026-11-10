@@ -26,7 +26,7 @@ from backtest_lab.validation.report import (
 )
 from backtest_lab.validation.report_schema import CheckVerdict, Report, json_schema
 from backtest_lab.validation.search import Grid, Trials, run_grid
-from backtest_lab.validation.selection import best_trial, ranking_sharpe
+from backtest_lab.validation.selection import best_trial, ranking_daily_sharpe
 from backtest_lab.validation.sharpe_stats import (
     average_correlation,
     deflated_sharpe_ratio,
@@ -157,14 +157,14 @@ def test_statistics_receive_the_documented_inputs() -> None:
     trials, _, report = _ma_case()
     x = trials.returns.to_numpy()
     n_days, n_trials = x.shape
-    sr = ranking_sharpe(x)
+    sr = ranking_daily_sharpe(x)
     m = sharpe_moments(x[:, best_trial(x)])
     variance = float(np.var(sr, ddof=1))
     by_correlation = effective_trials(average_correlation(x), n_trials)
     by_eigenvalue = effective_trials(mean_squared_correlation(x), n_trials)
     n_eff = max(by_correlation, by_eigenvalue)
     assert by_correlation != by_eigenvalue
-    target = float(np.sqrt(ANNUALIZATION) * m.sharpe)
+    target = float(np.sqrt(ANNUALIZATION) * m.daily_sharpe)
 
     dsr = report.checks.deflated_sharpe.metrics
     assert dsr.n_effective_correlation == by_correlation
@@ -172,13 +172,15 @@ def test_statistics_receive_the_documented_inputs() -> None:
     assert (dsr.n_trials, dsr.n_effective, dsr.sharpe_variance) == (n_trials, n_eff, variance)
     assert (dsr.skewness, dsr.kurtosis) == (m.skewness, m.kurtosis)
     assert dsr.dsr == deflated_sharpe_ratio(
-        m.sharpe, variance, n_eff, n_days, m.skewness, m.kurtosis
+        m.daily_sharpe, variance, n_eff, n_days, m.skewness, m.kurtosis
     )
     assert dsr.dsr is not None and 0.05 < dsr.dsr < 0.95  # not saturated, so N vs N-hat shows
 
     track = report.checks.track_record.metrics
-    assert track.psr == probabilistic_sharpe_ratio(m.sharpe, 0.0, n_days, m.skewness, m.kurtosis)
-    trl = min_track_record_length(m.sharpe, 0.0, m.skewness, m.kurtosis, 0.05)
+    assert track.psr == probabilistic_sharpe_ratio(
+        m.daily_sharpe, 0.0, n_days, m.skewness, m.kurtosis
+    )
+    trl = min_track_record_length(m.daily_sharpe, 0.0, m.skewness, m.kurtosis, 0.05)
     assert track.min_track_record_years == trl / ANNUALIZATION
 
     btl = report.checks.min_backtest_length.metrics

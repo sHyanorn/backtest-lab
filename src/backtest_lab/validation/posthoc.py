@@ -25,7 +25,7 @@ from backtest_lab.validation.demo import SEARCHES, SETTINGS, TICKER, Search, loa
 from backtest_lab.validation.pbo import cscv
 from backtest_lab.validation.report import buy_and_hold
 from backtest_lab.validation.search import Trials, run_grid
-from backtest_lab.validation.selection import annualize, best_trial, ranking_sharpe
+from backtest_lab.validation.selection import annualize, best_trial, ranking_daily_sharpe
 from backtest_lab.validation.sharpe_stats import (
     average_correlation,
     deflated_sharpe_ratio,
@@ -93,16 +93,16 @@ def analyse(
     x = trials.returns.to_numpy(dtype=np.float64)
     dates = trials.returns.index
     long_only = np.array([p["allow_short"] is False for p in trials.params])
-    sharpe = np.sqrt(ANNUALIZATION) * ranking_sharpe(x)
+    annual_sharpe = annualize(ranking_daily_sharpe(x))
 
     full = cscv(x, SETTINGS.blocks)
     half = x[:, long_only]
-    half_sr = ranking_sharpe(half)
-    best_half = sharpe_moments(half[:, int(np.argmax(half_sr))])
+    half_daily_sharpe = ranking_daily_sharpe(half)
+    best_half = sharpe_moments(half[:, int(np.argmax(half_daily_sharpe))])
     n_eff = effective_trials(average_correlation(half), half.shape[1])
     dsr = deflated_sharpe_ratio(
-        best_half.sharpe,
-        float(np.var(half_sr, ddof=1)),
+        best_half.daily_sharpe,
+        float(np.var(half_daily_sharpe, ddof=1)),
         n_eff,
         best_half.n,
         best_half.skewness,
@@ -128,8 +128,14 @@ def analyse(
     return {
         "n_trials": x.shape[1],
         "annual_sharpe_range": {
-            "long_only": [float(sharpe[long_only].min()), float(sharpe[long_only].max())],
-            "long_short": [float(sharpe[~long_only].min()), float(sharpe[~long_only].max())],
+            "long_only": [
+                float(annual_sharpe[long_only].min()),
+                float(annual_sharpe[long_only].max()),
+            ],
+            "long_short": [
+                float(annual_sharpe[~long_only].min()),
+                float(annual_sharpe[~long_only].max()),
+            ],
         },
         "cscv": {
             "combinations": len(full.winners),
@@ -154,15 +160,20 @@ def trial_counts(x: Returns) -> dict[str, Any]:
     trials (METHODS.md Section 5, D041)."""
     n_trials = x.shape[1]
     moments = sharpe_moments(x[:, best_trial(x)])
-    variance = float(np.var(ranking_sharpe(x), ddof=1))
+    variance = float(np.var(ranking_daily_sharpe(x), ddof=1))
 
     def under(n_effective: float) -> dict[str, float]:
         return {
             "n_effective": n_effective,
             "dsr": deflated_sharpe_ratio(
-                moments.sharpe, variance, n_effective, moments.n, moments.skewness, moments.kurtosis
+                moments.daily_sharpe,
+                variance,
+                n_effective,
+                moments.n,
+                moments.skewness,
+                moments.kurtosis,
             ),
-            "min_backtest_years": min_backtest_length(n_effective, annualize(moments.sharpe)),
+            "min_backtest_years": min_backtest_length(n_effective, annualize(moments.daily_sharpe)),
         }
 
     return {

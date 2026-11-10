@@ -15,7 +15,7 @@ from backtest_lab.validation import report_schema as rs
 from backtest_lab.validation.pbo import cscv, n_combinations
 from backtest_lab.validation.purged_kfold import purged_cv
 from backtest_lab.validation.search import Trials
-from backtest_lab.validation.selection import annualize, best_trial, ranking_sharpe
+from backtest_lab.validation.selection import annualize, best_trial, ranking_daily_sharpe
 from backtest_lab.validation.sensitivity import heatmap, sensitivity
 from backtest_lab.validation.sharpe_stats import (
     SharpeMoments,
@@ -193,9 +193,9 @@ def build_report(
     chosen = x[:, best]
     bench = buy_and_hold(benchmark, data, trials.costs).loc[dates].to_numpy(dtype=np.float64)
 
-    sr_all = ranking_sharpe(x)
+    daily_sharpe = ranking_daily_sharpe(x)
     moments = sharpe_moments(chosen)
-    variance = float(np.var(sr_all, ddof=1))
+    daily_sharpe_variance = float(np.var(daily_sharpe, ddof=1))
     rho, rho_squared = average_correlation(x), mean_squared_correlation(x)
     # A trial that never trades adds no independent trial to the floor's count.
     live = varying(x).shape[1]
@@ -205,17 +205,18 @@ def build_report(
         by_eigenvalue=effective_trials(rho_squared, n_trials),
         fewest=min(effective_trials(rho, live), effective_trials(rho_squared, live)),
     )
-    target = annualize(moments.sharpe)
 
     checks = rs.Checks(
         holdout=_holdout_check(trials, settings),
         walk_forward=_walk_forward_check(trials, data, settings),
         purged_cv=_purged_cv_check(trials, settings),
         pbo=_pbo_check(x, settings, counts),
-        deflated_sharpe=_dsr_check(moments, variance, counts, rho),
+        deflated_sharpe=_dsr_check(moments, daily_sharpe_variance, counts, rho),
         track_record=_track_record_check(moments, years, settings.alpha),
-        min_backtest_length=_min_backtest_check(counts.used, target, years),
-        sensitivity=_sensitivity_check(trials, np.sqrt(ANNUALIZATION) * sr_all, settings),
+        min_backtest_length=_min_backtest_check(
+            counts.used, annualize(moments.daily_sharpe), years
+        ),
+        sensitivity=_sensitivity_check(trials, annualize(daily_sharpe), settings),
     )
     selected = metrics_model(chosen)
     bench_metrics = metrics_model(bench)
@@ -413,15 +414,21 @@ def _pbo_check(x: npt.NDArray[np.float64], s: Settings, trials: _TrialCounts) ->
 
 
 def _dsr_check(
-    moments: SharpeMoments, variance: float, trials: _TrialCounts, rho: float
+    moments: SharpeMoments, daily_sharpe_variance: float, trials: _TrialCounts, rho: float
 ) -> rs.DeflatedSharpeCheck:
-    sr = moments.sharpe
     n_eff = trials.used
     low, high = sorted((trials.by_correlation, trials.by_eigenvalue))
     dsr = _num(
-        deflated_sharpe_ratio(sr, variance, n_eff, moments.n, moments.skewness, moments.kurtosis)
+        deflated_sharpe_ratio(
+            moments.daily_sharpe,
+            daily_sharpe_variance,
+            n_eff,
+            moments.n,
+            moments.skewness,
+            moments.kurtosis,
+        )
     )
-    sr0 = annualize(expected_max_sharpe(n_eff, variance))
+    sr0 = annualize(expected_max_sharpe(n_eff, daily_sharpe_variance))
     summary = (
         f"With {trials.n_trials} settings tried ({low:.0f} to {high:.0f} independent by two "
         f"estimates; the larger is used), the chance that the best one's true Sharpe ratio "
@@ -434,14 +441,14 @@ def _dsr_check(
         summary=summary,
         metrics=rs.DeflatedSharpeMetrics(
             dsr=dsr,
-            sharpe=_num(annualize(sr)),
+            sharpe=_num(annualize(moments.daily_sharpe)),
             expected_max_sharpe=sr0,
             n_trials=trials.n_trials,
             n_effective=n_eff,
             n_effective_correlation=trials.by_correlation,
             n_effective_eigenvalue=trials.by_eigenvalue,
             average_correlation=rho,
-            sharpe_variance=variance,
+            sharpe_variance=daily_sharpe_variance,
             skewness=_num(moments.skewness),
             kurtosis=_num(moments.kurtosis),
         ),
@@ -449,8 +456,8 @@ def _dsr_check(
 
 
 def _track_record_check(m: SharpeMoments, years: float, alpha: float) -> rs.TrackRecordCheck:
-    psr = _num(probabilistic_sharpe_ratio(m.sharpe, 0.0, m.n, m.skewness, m.kurtosis))
-    trl = _num(min_track_record_length(m.sharpe, 0.0, m.skewness, m.kurtosis, alpha))
+    psr = _num(probabilistic_sharpe_ratio(m.daily_sharpe, 0.0, m.n, m.skewness, m.kurtosis))
+    trl = _num(min_track_record_length(m.daily_sharpe, 0.0, m.skewness, m.kurtosis, alpha))
     trl_years = None if trl is None else trl / ANNUALIZATION
     if trl_years is None:
         need = "its Sharpe ratio is not positive, so no amount of data would establish skill"
@@ -466,7 +473,7 @@ def _track_record_check(m: SharpeMoments, years: float, alpha: float) -> rs.Trac
         summary=summary,
         metrics=rs.TrackRecordMetrics(
             psr=psr,
-            sharpe=_num(annualize(m.sharpe)),
+            sharpe=_num(annualize(m.daily_sharpe)),
             min_track_record_years=trl_years,
             years=years,
             alpha=alpha,

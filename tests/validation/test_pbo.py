@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from backtest_lab.validation.pbo import cscv, n_combinations, selection_logits
-from backtest_lab.validation.selection import sharpe_ratios
+from backtest_lab.validation.selection import daily_sharpe_ratios
 
 
 def _noise(seed: int) -> np.ndarray:
@@ -61,12 +61,12 @@ def test_union_sharpe_matches_direct_computation() -> None:
     blocks = x[1:].reshape(6, 17, 5)
     for c, chosen in enumerate(itertools.combinations(range(6), 3)):
         rest = [b for b in range(6) if b not in chosen]
-        is_sr = sharpe_ratios(np.concatenate(blocks[list(chosen)]))
-        oos_sr = sharpe_ratios(np.concatenate(blocks[rest]))
+        is_sr = daily_sharpe_ratios(np.concatenate(blocks[list(chosen)]))
+        oos_sr = daily_sharpe_ratios(np.concatenate(blocks[rest]))
         winner = int(np.argmax(is_sr))
         assert result.winners[c] == winner
-        assert result.is_sharpe[c] == pytest.approx(is_sr[winner], rel=1e-12)
-        assert result.oos_sharpe[c] == pytest.approx(oos_sr[winner], rel=1e-12)
+        assert result.is_daily_sharpe[c] == pytest.approx(is_sr[winner], rel=1e-12)
+        assert result.oos_daily_sharpe[c] == pytest.approx(oos_sr[winner], rel=1e-12)
 
 
 def test_degenerate_columns_rank_as_zero_without_warnings() -> None:
@@ -76,7 +76,7 @@ def test_degenerate_columns_rank_as_zero_without_warnings() -> None:
     with np.errstate(all="raise"):
         result = cscv(x, blocks=4)
     assert np.isfinite(result.logits).all()
-    assert (np.abs(result.is_sharpe) < 10).all()
+    assert (np.abs(result.is_daily_sharpe) < 10).all()
 
 
 def test_a_flat_trial_ranks_below_positive_sharpe_ratios() -> None:
@@ -85,7 +85,7 @@ def test_a_flat_trial_ranks_below_positive_sharpe_ratios() -> None:
     x = np.random.default_rng(2).normal(0.004, 0.01, (64, 4))
     x[:, 0] = 0.0
     result = cscv(x, blocks=4)
-    assert (result.is_sharpe > 0).all()
+    assert (result.is_daily_sharpe > 0).all()
     assert (result.winners != 0).all()
 
 

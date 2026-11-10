@@ -20,7 +20,7 @@ _NORMAL = NormalDist()
 
 @dataclass(frozen=True)
 class SharpeMoments:
-    sharpe: float  # non-annualized, ddof = 1
+    daily_sharpe: float  # ddof = 1
     skewness: float  # population moments
     kurtosis: float  # raw, population moments
     n: int
@@ -36,7 +36,7 @@ def sharpe_moments(returns: npt.ArrayLike) -> SharpeMoments:
     centred = r - r.mean()
     m2 = float(np.mean(centred**2))
     return SharpeMoments(
-        sharpe=float(r.mean() / r.std(ddof=1)),
+        daily_sharpe=float(r.mean() / r.std(ddof=1)),
         skewness=float(np.mean(centred**3)) / m2**1.5,
         kurtosis=float(np.mean(centred**4)) / m2**2,
         n=len(r),

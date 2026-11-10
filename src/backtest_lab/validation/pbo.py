@@ -31,8 +31,10 @@ def selection_logits(is_perf: Matrix, oos_perf: Matrix) -> Matrix:
     return np.asarray(np.log(omega / (1 - omega)), dtype=np.float64)
 
 
-def _union_sharpe(members: Matrix, length: int, centre: Matrix, dev: Matrix, m2: Matrix) -> Matrix:
-    """Sharpe ratio of each column over each union of blocks (rows of `members`).
+def _union_daily_sharpe(
+    members: Matrix, length: int, centre: Matrix, dev: Matrix, m2: Matrix
+) -> Matrix:
+    """Daily Sharpe ratio of each column over each union of blocks (rows of `members`).
 
     Uses per-block means as deviations `dev` from a per-column `centre` and per-block
     sums of squared deviations `m2`, so a constant column has zero variance up to
@@ -51,8 +53,8 @@ def _union_sharpe(members: Matrix, length: int, centre: Matrix, dev: Matrix, m2:
 @dataclass(frozen=True)
 class CSCV:
     logits: Matrix  # one per combination
-    is_sharpe: Matrix  # IS Sharpe of each combination's winner, non-annualized
-    oos_sharpe: Matrix  # OOS Sharpe of the same trial
+    is_daily_sharpe: Matrix  # IS Sharpe of each combination's winner
+    oos_daily_sharpe: Matrix  # OOS Sharpe of the same trial
     winners: npt.NDArray[np.intp]  # the IS winner (trial) of each combination
     n_trials: int
     n_blocks: int
@@ -64,13 +66,13 @@ class CSCV:
     @property
     def degradation_slope(self) -> float | None:
         """OLS slope of OOS on IS Sharpe across combinations; descriptive only."""
-        x = self.is_sharpe - self.is_sharpe.mean()
+        x = self.is_daily_sharpe - self.is_daily_sharpe.mean()
         sxx = float(x @ x)
-        return float(x @ self.oos_sharpe) / sxx if sxx > 0 else None
+        return float(x @ self.oos_daily_sharpe) / sxx if sxx > 0 else None
 
     @property
     def prob_oos_loss(self) -> float:
-        return float(np.mean(self.oos_sharpe < 0))
+        return float(np.mean(self.oos_daily_sharpe < 0))
 
 
 def cscv(returns: npt.ArrayLike, blocks: int = 16) -> CSCV:
@@ -92,15 +94,15 @@ def cscv(returns: npt.ArrayLike, blocks: int = 16) -> CSCV:
     chosen = np.array(list(itertools.combinations(range(blocks), blocks // 2)))
     members = np.zeros((len(chosen), blocks))
     members[np.arange(len(chosen))[:, None], chosen] = 1.0
-    is_perf = _union_sharpe(members, length, centre, dev, m2)
-    oos_perf = _union_sharpe(1.0 - members, length, centre, dev, m2)
+    is_perf = _union_daily_sharpe(members, length, centre, dev, m2)
+    oos_perf = _union_daily_sharpe(1.0 - members, length, centre, dev, m2)
 
     rows = np.arange(len(members))
     winner = np.argmax(is_perf, axis=1)
     return CSCV(
         logits=selection_logits(is_perf, oos_perf),
-        is_sharpe=is_perf[rows, winner],
-        oos_sharpe=oos_perf[rows, winner],
+        is_daily_sharpe=is_perf[rows, winner],
+        oos_daily_sharpe=oos_perf[rows, winner],
         winners=winner,
         n_trials=n,
         n_blocks=blocks,
