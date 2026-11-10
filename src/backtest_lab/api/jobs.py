@@ -182,7 +182,6 @@ class Runner:
 
     def _run(self, job: SweepJob) -> None:
         store = self.store
-        store.started(job.id)
         total = len(job.grid)
         step = max(1, total // 100)  # about 100 progress writes per sweep
 
@@ -191,6 +190,7 @@ class Runner:
                 store.progress(job.id, done)
 
         try:
+            store.started(job.id)
             trials = run_grid(
                 job.strategy,
                 job.grid,

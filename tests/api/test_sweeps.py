@@ -1,5 +1,6 @@
 import json
 import multiprocessing
+import sqlite3
 import time
 from pathlib import Path
 from typing import Any
@@ -214,6 +215,27 @@ def test_internal_errors_hide_details(client: TestClient, monkeypatch: pytest.Mo
     status = wait(client, client.post("/api/sweeps", json=SWEEP).json()["id"])
     assert status["status"] == "failed"
     assert status["error"] == "internal error (RuntimeError); see the server log"
+
+
+def test_a_database_error_as_a_sweep_starts_fails_it_and_keeps_the_runner(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    started = JobStore.started
+    calls: list[str] = []
+
+    def locked_once(self: JobStore, job_id: str) -> None:
+        calls.append(job_id)
+        if len(calls) == 1:
+            raise sqlite3.OperationalError("database is locked")
+        started(self, job_id)
+
+    monkeypatch.setattr(JobStore, "started", locked_once)
+    first = client.post("/api/sweeps", json=SWEEP).json()["id"]
+    second = client.post("/api/sweeps", json=SWEEP).json()["id"]
+    assert wait(client, first, timeout=20)["error"] == (
+        "internal error (OperationalError); see the server log"
+    )
+    assert wait(client, second, timeout=20)["status"] == "done"
 
 
 def test_restart_keeps_finished_sweeps_fails_the_interrupted_one_and_runs_the_queued(
