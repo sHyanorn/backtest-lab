@@ -15,7 +15,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from backtest_lab.api.jobs import REPORT_FILE, JobStore, Runner, SweepJob
@@ -46,7 +45,6 @@ from backtest_lab.validation import report_schema as rs
 from backtest_lab.validation.report import Settings, metrics_model, weekly_curve
 from backtest_lab.validation.search import Grid, Param, Params
 
-DEV_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]  # Vite dev server
 # Another site's page can point its own name at 127.0.0.1 and call the API from a
 # browser; the Host header it sends is that name.
 LOCAL_HOSTS = ["127.0.0.1", "localhost"]
@@ -184,7 +182,6 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
             store.close()
 
     app = FastAPI(title="backtest-lab", lifespan=lifespan)
-    app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["GET", "POST"])
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=LOCAL_HOSTS)
 
     @app.get("/api/strategies")
