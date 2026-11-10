@@ -93,12 +93,17 @@ def test_report_states_default_parameters(client: TestClient) -> None:
     assert report["benchmark"]["name"] == "SPY buy and hold"
 
 
-def test_benchmark_does_not_limit_the_length_check(client: TestClient) -> None:
-    # IEF trades on the same dates here; a benchmark with a short history would be flat
-    # before it lists, not a reason to reject the sweep.
-    r = client.post("/api/sweeps", json=SWEEP | {"benchmark": "IEF"})
-    assert r.status_code == 202, r.text
-    assert wait(client, r.json()["id"])["status"] == "done"
+def test_benchmark_does_not_limit_the_length_check(tmp_path: Path) -> None:
+    # IEF lists 800 days after SPY, so the two share fewer days than a report needs. Buy
+    # and hold is flat before it lists; that is not a reason to reject the sweep.
+    spy = price_frame(n=N_DAYS, start="2010-01-04", seed=0)
+    for ticker, df in (("SPY", spy), ("IEF", spy.iloc[800:])):
+        frame = df.reset_index().assign(ticker=ticker)
+        write_parquet_atomic(frame, tmp_path / "raw" / "prices" / f"{ticker}.parquet")
+    with local_client(create_app(tmp_path, processes=1)) as client:
+        r = client.post("/api/sweeps", json=SWEEP | {"benchmark": "IEF"})
+        assert r.status_code == 202, r.text
+        assert wait(client, r.json()["id"])["status"] == "done"
 
 
 def test_a_gap_in_the_traded_ticker_keeps_the_traded_dates(tmp_path: Path) -> None:

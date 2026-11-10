@@ -139,10 +139,10 @@ describe('check cards', () => {
   it('states the floor on independent settings only for reports built under it', () => {
     const report = load('ma_crossover')
     const rule = (r: Report) => checkViews(r).find((c) => c.key === 'pbo')?.rule
-    expect(rule(report)).not.toContain('Not assessed')
-    expect(rule({ ...report, schema_version: '1.1' })).toContain(
-      'With fewer than 10 independent settings a pass is not assessed; a fail still counts.',
-    )
+    const floor =
+      'With fewer than 10 independent settings a pass is not assessed; a fail still counts.'
+    expect(rule(report)).not.toContain(floor)
+    expect(rule({ ...report, schema_version: '1.1' })).toContain(floor)
   })
 
   it('notes that the seed sensitivity verdict is uninformative', () => {
