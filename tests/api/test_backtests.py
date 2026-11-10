@@ -9,6 +9,7 @@ from backtest_lab.data.store import connect, price_panel
 from backtest_lab.engine.backtest import Prices, run
 from backtest_lab.engine.metrics import sharpe
 from backtest_lab.strategies import MarketData, MovingAverageCrossover
+from tests.api.conftest import local_client
 
 
 def test_lists_every_strategy_with_typed_parameters(client: TestClient) -> None:
@@ -100,6 +101,6 @@ def test_float_parameter_accepts_an_integer(client: TestClient) -> None:
 
 
 def test_missing_cache_is_503(tmp_path: Path) -> None:
-    with TestClient(create_app(tmp_path)) as c:
+    with local_client(create_app(tmp_path)) as c:
         assert c.post("/api/backtests", json={"strategy": "momentum"}).status_code == 503
         assert c.get("/api/strategies").status_code == 200

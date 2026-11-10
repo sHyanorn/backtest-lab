@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from backtest_lab.api.main import create_app
@@ -41,7 +42,12 @@ def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return root
 
 
+def local_client(app: FastAPI) -> TestClient:
+    """A client that sends the Host header of a local browser."""
+    return TestClient(app, base_url="http://127.0.0.1")
+
+
 @pytest.fixture
 def client(data_dir: Path) -> Iterator[TestClient]:
-    with TestClient(create_app(data_dir)) as c:
+    with local_client(create_app(data_dir)) as c:
         yield c

@@ -1,3 +1,4 @@
+import json
 import multiprocessing
 import time
 from pathlib import Path
@@ -16,13 +17,21 @@ from backtest_lab.engine.backtest import Prices
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation.report import Settings, build_report
 from backtest_lab.validation.search import Grid, run_grid
-from tests.api.conftest import N_DAYS, write_cache
+from tests.api.conftest import N_DAYS, local_client, write_cache
 from tests.factories import price_frame
 
 SWEEP = {
     "strategy": "ma_crossover",
     "axes": {"fast": [5, 10], "slow": [50, 100]},
     "fixed": {"ticker": "SPY"},
+}
+
+# Long enough to still be running when a test stops the server.
+LONG_SWEEP = {
+    "strategy": "random_signal",
+    "axes": {"seed": list(range(500))},
+    "fixed": {"ticker": "SPY"},
+    "categorical": ["seed"],
 }
 
 # The grid the API builds from SWEEP: every other parameter fixed at its default.
@@ -55,7 +64,7 @@ def direct_report(data_dir: Path, grid: Grid, strategy: str, benchmark: str) -> 
 
 @pytest.mark.parametrize("processes", [1, 2])
 def test_report_is_byte_identical_to_the_direct_pipeline(data_dir: Path, processes: int) -> None:
-    with TestClient(create_app(data_dir, processes=processes)) as client:
+    with local_client(create_app(data_dir, processes=processes)) as client:
         r = client.post("/api/sweeps", json=SWEEP)
         assert r.status_code == 202, r.text
         status = wait(client, r.json()["id"])
@@ -100,7 +109,7 @@ def test_a_gap_in_the_traded_ticker_keeps_the_traded_dates(tmp_path: Path) -> No
         frame = df.reset_index().assign(ticker=ticker)
         write_parquet_atomic(frame, tmp_path / "raw" / "prices" / f"{ticker}.parquet")
     sweep = SWEEP | {"fixed": {"ticker": "QQQ"}, "benchmark": "SPY"}
-    with TestClient(create_app(tmp_path, processes=1)) as client:
+    with local_client(create_app(tmp_path, processes=1)) as client:
         status = wait(client, client.post("/api/sweeps", json=sweep).json()["id"])
         assert status["status"] == "done", status
         report = client.get(f"/api/sweeps/{status['id']}/report")
@@ -190,7 +199,7 @@ def late_macro_dir(tmp_path: Path) -> Path:
 
 def test_failed_sweep_reports_a_short_reason(late_macro_dir: Path) -> None:
     sweep = {"strategy": "rate_rotation", "axes": {"threshold": [0.0, 0.5]}}
-    with TestClient(create_app(late_macro_dir, processes=1)) as client:
+    with local_client(create_app(late_macro_dir, processes=1)) as client:
         status = wait(client, client.post("/api/sweeps", json=sweep).json()["id"])
         assert status["status"] == "failed"
         assert "need at least 1512" in status["error"]
@@ -207,18 +216,30 @@ def test_internal_errors_hide_details(client: TestClient, monkeypatch: pytest.Mo
     assert status["error"] == "internal error (RuntimeError); see the server log"
 
 
-def test_restart_fails_unfinished_sweeps_and_keeps_finished_ones(tmp_path: Path) -> None:
+def test_restart_keeps_finished_sweeps_fails_the_interrupted_one_and_runs_the_queued(
+    tmp_path: Path,
+) -> None:
     write_cache(tmp_path)
-    with TestClient(create_app(tmp_path, processes=1)) as client:
+    with local_client(create_app(tmp_path, processes=1)) as client:
         done = wait(client, client.post("/api/sweeps", json=SWEEP).json()["id"])
+    # What a killed server leaves behind: one sweep running, others waiting.
+    running, waiting, stale = "a" * 32, "b" * 32, "c" * 32
     store = JobStore(tmp_path / "jobs")
-    assert store.enqueue("f" * 32, "ma_crossover", "{}", 4, max_queued=10)
+    for job_id, request in [(running, SWEEP), (waiting, SWEEP), (stale, {})]:
+        assert store.enqueue(job_id, "ma_crossover", json.dumps(request), 4, max_queued=10)
+    store.started(running)
     store.close()
-    with TestClient(create_app(tmp_path, processes=1)) as client:
+    with local_client(create_app(tmp_path, processes=1)) as client:
         assert client.get(f"/api/sweeps/{done['id']}/report").status_code == 200
-        orphan = client.get(f"/api/sweeps/{'f' * 32}").json()
-        assert orphan["status"] == "failed"
-        assert "restarted" in orphan["error"]
+        interrupted = client.get(f"/api/sweeps/{running}").json()
+        assert interrupted["status"] == "failed"
+        assert "restarted" in interrupted["error"]
+        assert wait(client, waiting)["status"] == "done"
+        assert client.get(f"/api/sweeps/{waiting}/report").content == direct_report(
+            tmp_path, GRID, "ma_crossover", "SPY"
+        )
+        # A stored request the server can no longer check fails instead of blocking the start.
+        assert client.get(f"/api/sweeps/{stale}").json()["status"] == "failed"
 
 
 def test_store_enqueue_respects_the_limit(tmp_path: Path) -> None:
@@ -231,15 +252,9 @@ def test_store_enqueue_respects_the_limit(tmp_path: Path) -> None:
 
 def test_stopping_the_server_cancels_the_sweep_and_its_workers(tmp_path: Path) -> None:
     write_cache(tmp_path)
-    sweep = {
-        "strategy": "random_signal",
-        "axes": {"seed": list(range(500))},
-        "fixed": {"ticker": "SPY"},
-        "categorical": ["seed"],
-    }
-    with TestClient(create_app(tmp_path, processes=2)) as client:
-        job = client.post("/api/sweeps", json=sweep).json()["id"]
-        queued = client.post("/api/sweeps", json=sweep).json()["id"]
+    with local_client(create_app(tmp_path, processes=2)) as client:
+        job = client.post("/api/sweeps", json=LONG_SWEEP).json()["id"]
+        queued = client.post("/api/sweeps", json=LONG_SWEEP).json()["id"]
         deadline = time.monotonic() + 60
         while client.get(f"/api/sweeps/{job}").json()["done"] == 0:
             assert time.monotonic() < deadline, "sweep did not start"
@@ -248,8 +263,19 @@ def test_stopping_the_server_cancels_the_sweep_and_its_workers(tmp_path: Path) -
     assert not runner._thread.is_alive()
     assert multiprocessing.active_children() == []
     store = JobStore(tmp_path / "jobs")
-    for job_id in (job, queued):
-        row = store.get(job_id)
-        assert row is not None
-        assert (row["status"], row["error"]) == ("failed", STOPPED)
+    stopped, kept = store.get(job), store.get(queued)
     store.close()
+    assert stopped is not None and kept is not None
+    assert (stopped["status"], stopped["error"]) == ("failed", STOPPED)
+    assert kept["status"] == "queued"  # the next start runs it
+
+
+@pytest.mark.parametrize("host", ["127.0.0.1:8000", "localhost"])
+def test_local_host_headers_are_served(client: TestClient, host: str) -> None:
+    assert client.get("/api/strategies", headers={"Host": host}).status_code == 200
+
+
+@pytest.mark.parametrize("host", ["attacker.example", "127.0.0.1.attacker.example"])
+def test_other_host_headers_are_rejected(client: TestClient, host: str) -> None:
+    # A page on another site that resolves its own name to 127.0.0.1 sends that name.
+    assert client.get("/api/strategies", headers={"Host": host}).status_code == 400

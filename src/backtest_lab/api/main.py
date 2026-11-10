@@ -17,9 +17,10 @@ import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from backtest_lab.api import params as P
-from backtest_lab.api.jobs import REPORT_FILE, STOPPED, JobStore, Runner, SweepJob
+from backtest_lab.api.jobs import REPORT_FILE, JobStore, Runner, SweepJob
 from backtest_lab.api.market import Market, load_market
 from backtest_lab.api.schemas import (
     BacktestRequest,
@@ -39,6 +40,10 @@ from backtest_lab.validation.report import Settings, metrics_model, weekly_curve
 from backtest_lab.validation.search import Grid, Params, ParamValue
 
 DEV_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]  # Vite dev server
+# Another site's page can point its own name at 127.0.0.1 and call the API from a
+# browser; the Host header it sends is that name.
+LOCAL_HOSTS = ["127.0.0.1", "localhost"]
+NO_MARKET = "no market data; run python -m backtest_lab.data.update"
 MAX_TRIALS = 500  # CSCV peaks near 0.7 MB per trial (D017)
 MAX_QUEUED = 10
 DEFAULT_PROCESSES = 4
@@ -48,7 +53,7 @@ _JOB_ID = re.compile(r"[0-9a-f]{32}")
 def _market(request: Request) -> Market:
     market: Market | None = request.app.state.market
     if market is None:
-        raise HTTPException(503, "no market data; run python -m backtest_lab.data.update")
+        raise HTTPException(503, NO_MARKET)
     return market
 
 
@@ -79,7 +84,7 @@ def _benchmark(body: SweepRequest, market: Market) -> str:
     return name
 
 
-def _prepare(body: SweepRequest, market: Market) -> SweepJob:
+def _prepare(body: SweepRequest, market: Market, job_id: str | None = None) -> SweepJob:
     """Check a sweep request completely before it is queued."""
     try:
         specs = {s.name: s for s in P.specs(body.strategy)}
@@ -117,7 +122,7 @@ def _prepare(body: SweepRequest, market: Market) -> SweepJob:
             f"least {needed}",
         )
     return SweepJob(
-        id=uuid.uuid4().hex,
+        id=job_id or uuid.uuid4().hex,
         strategy=body.strategy,
         grid=grid,
         data=data,
@@ -134,6 +139,21 @@ def _job(request: Request, job_id: str) -> dict[str, object]:
     return row
 
 
+def _requeue(store: JobStore, runner: Runner, market: Market | None) -> None:
+    """Queue again the sweeps a previous server process left waiting."""
+    for job_id, request in store.queued():
+        try:
+            if market is None:
+                raise ValueError(NO_MARKET)
+            job = _prepare(SweepRequest.model_validate_json(request), market, job_id)
+        except HTTPException as exc:  # the cache no longer supports the request
+            store.failed(job_id, str(exc.detail))
+        except ValueError as exc:
+            store.failed(job_id, str(exc))
+        else:
+            runner.submit(job)
+
+
 def create_app(data_dir: Path | None = None, processes: int | None = None) -> FastAPI:
     root = data_dir or Path(os.environ.get("BACKTEST_LAB_DATA_DIR", "data"))
     if processes is None:
@@ -147,17 +167,18 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.market = load_market(root / "raw")
         store = JobStore(root / "jobs")
-        store.fail_unfinished("the server restarted before this sweep finished")
+        store.fail_running("the server restarted before this sweep finished")
         runner = Runner(store, processes)
         runner.start()
+        _requeue(store, runner, app.state.market)
         app.state.store, app.state.runner = store, runner
         yield
         if runner.stop():
-            store.fail_unfinished(STOPPED)
             store.close()
 
     app = FastAPI(title="backtest-lab", lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["GET", "POST"])
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=LOCAL_HOSTS)
 
     @app.get("/api/strategies")
     def strategies() -> list[StrategyInfo]:

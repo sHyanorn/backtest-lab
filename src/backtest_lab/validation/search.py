@@ -8,6 +8,7 @@ import json
 import multiprocessing
 import os
 import signal
+import threading
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
@@ -195,11 +196,21 @@ def backtest(strategy: str, params: Params, data: MarketData, costs: Costs) -> T
 _worker_state: tuple[MarketData, Costs] | None = None
 
 
+def _exit_with_parent() -> None:
+    parent = multiprocessing.parent_process()
+    assert parent is not None
+    parent.join()  # returns once the process that started the pool is gone
+    os._exit(1)
+
+
 def _init_worker(data: MarketData, costs: Costs) -> None:
     global _worker_state
     _worker_state = (data, costs)
     # Ctrl+C reaches every process in the console; the parent decides what to stop.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
+    # A killed parent cannot terminate its workers, and under forkserver they would
+    # wait for work forever.
+    threading.Thread(target=_exit_with_parent, daemon=True).start()
 
 
 class GridCancelled(Exception):

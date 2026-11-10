@@ -72,13 +72,21 @@ class JobStore:
     def directory(self, job_id: str) -> Path:
         return self.root / job_id
 
-    def fail_unfinished(self, reason: str) -> int:
-        """Mark jobs left queued or running by a previous server process as failed."""
+    def fail_running(self, reason: str) -> int:
+        """Mark the job a previous server process left running as failed."""
         return self._write(
             "UPDATE jobs SET status = 'failed', error = ?, finished_at = ? "
-            "WHERE status IN ('queued', 'running')",
+            "WHERE status = 'running'",
             (reason, _now()),
         )
+
+    def queued(self) -> list[tuple[str, str]]:
+        """Id and stored request of every waiting job, oldest first."""
+        with self._lock:
+            rows = self._db.execute(
+                "SELECT id, request FROM jobs WHERE status = 'queued' ORDER BY rowid"
+            ).fetchall()
+        return [(row["id"], row["request"]) for row in rows]
 
     def enqueue(
         self, job_id: str, strategy: str, request: str, n_trials: int, max_queued: int
@@ -162,7 +170,7 @@ class Runner:
 
     def stop(self, timeout: float = 30.0) -> bool:
         """Cancel the running sweep, terminating its workers, and leave queued ones
-        unstarted. True once the thread has stopped."""
+        waiting for the next start. True once the thread has stopped."""
         self._stop.set()
         self._queue.put(None)
         self._thread.join(timeout)
