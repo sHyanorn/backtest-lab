@@ -44,7 +44,7 @@ def test_invariants_on_random_intervals(seed: int) -> None:
 
 def test_intervals_follow_the_engine() -> None:
     t0, t1 = information_intervals(5)
-    assert INFORMATION_SPAN == 1  # decided at close t, marked to close t + 1 (D013)
+    assert INFORMATION_SPAN == 1  # a return spans close t - 1 to close t (D036)
     assert (t1 - t0 == INFORMATION_SPAN).all()
     assert t1.tolist() == [0, 1, 2, 3, 4]
 

@@ -19,8 +19,8 @@ def default_embargo(n: int) -> int:
 
 
 def information_intervals(n: int) -> tuple[Index, Index]:
-    """[t0, t1] of each of `n` daily returns, in rows: a return is earned on row i from a
-    target decided INFORMATION_SPAN rows earlier."""
+    """[t0, t1] of each of `n` daily returns, in rows: the first and the last close of
+    the return's price span, INFORMATION_SPAN rows apart (D036)."""
     t1 = np.arange(n, dtype=np.intp)
     return t1 - INFORMATION_SPAN, t1
 

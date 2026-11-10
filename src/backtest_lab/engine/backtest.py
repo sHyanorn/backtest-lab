@@ -6,8 +6,9 @@ import numpy as np
 import pandas as pd
 
 LEVERAGE_TOL = 1e-9
-# Trading days from the close at which a target is decided to the last close its
-# return depends on: decided at close t, filled at the open of t+1, marked to close t+1.
+# Trading days between the first and the last close of a daily return's price span:
+# the return of row t runs from close t-1 to close t. The target from close t-2, which
+# earns its overnight leg, counts as a feature of the row (D036).
 INFORMATION_SPAN = 1
 
 
