@@ -105,7 +105,9 @@ def test_killing_the_server_stops_its_workers(tmp_path: Path) -> None:
             assert time.monotonic() < deadline, "sweep did not start"
             time.sleep(0.02)
         children = _descendants(server.pid)
-        assert len(children) >= 2  # at least the two workers
+        status = client.get(f"/api/sweeps/{job}").json()
+        assert status["done"] < status["n_trials"]  # the workers were alive when listed
+        assert len(children) >= 2
         server.kill()
         server.wait(timeout=30)
         deadline = time.monotonic() + 10
