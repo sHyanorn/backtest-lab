@@ -107,6 +107,8 @@
 - `trials.json` writes the list only when it is not empty, so files saved before this change load unchanged. The pre-registered demo (D021) keeps its configuration, in which `seed` is an ordered axis
 - Rationale: adjacent seeds are unrelated, so treating them as neighbours gives a sensitivity verdict with no meaning
 - A strategy marks such a parameter in its definition (the random-signal `seed`), `/api/strategies` reports it, and the dashboard's sweep form lists it under `categorical` when it is an axis. The dashboard's note that the seed sensitivity verdict is uninformative is shown for the registered 1.0 report only
+- Limitation: a 1.1 report in which `seed` is still an ordered axis, from a sweep stored before the form sent `categorical` or from an API request without it, shows no such note while its sensitivity verdict is coloured from unrelated neighbours
+- Limitation: the sweep form asks for increasing values on every numeric axis, categorical ones included; the API does not
 
 ## D020 Metrics return NaN in degenerate cases
 - Date: 2026-11-08
@@ -174,6 +176,7 @@
 - Undefined values are `null`; the models reject NaN and infinity, so a missing conversion fails loudly instead of producing invalid JSON. There is no timestamp, so the same inputs give the same bytes
 - Equity and drawdown are weekly: equity at each week's last date and the deepest daily drawdown within the week, so the maximum drawdown survives downsampling. Values are rounded to 6 decimals
 - Sensitivity needs an ordered axis with more than one value. A grid without one has no neighbourhood; its sensitivity check is yellow ("cannot be assessed"), the one case D022 does not cover. All pre-registered grids have such an axis (D021)
+- Limitation: the dashboard labels that yellow verdict "Borderline", as it does any yellow check, although here it means the check could not be assessed. Its colour and its part in the overall verdict follow this decision
 - Rationale: one source of truth for the format across the Python code, the API and the dashboard
 - See also D033: the dashboard's types are generated from this schema
 - See also D037 and D041
@@ -202,6 +205,7 @@
 - `results/demo` holds the reports produced once with the configuration of D021. They are not regenerated, by the weekly workflow or by hand; CI checks them against `results/demo/SHA256SUMS`, and the post hoc file the documents quote against `results/posthoc/SHA256SUMS`. The weekly `data` workflow (D012) fetches and checks data only
 - Rationale: rerunning on newer data changes the sample, and so the numbers, after the conclusions were drawn from them. A pre-registered result has to stay the one that was registered; an analysis of newer data would be a new, separately labelled result
 - Not done: a weekly rerun over the registered dates to detect revisions in Yahoo's history. It would need the raw data that is not committed (D003), and a difference would only say that the data changed
+- Limitation: a rerun with D021's configuration differs from `results/demo` for two reasons at once, the prices the source serves today and the 1.1 report format (D041). The repository has no rerun of the full reports on the registered data that would separate the two
 
 ## D033 Dashboard types generated from the report schema
 - Date: 2026-11-08
