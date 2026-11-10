@@ -33,12 +33,7 @@ export function Sensitivity({ report }: { report: Report }) {
       {heatmap?.y ? (
         <div className="heat-layout">
           <div className="heat-col">
-            <HeatLegend
-              values={heatmap.sharpe
-                .flat()
-                .filter((v): v is number => v !== null)}
-              format={sharpe}
-            />
+            <HeatLegend values={heatmap.sharpe.flat()} format={sharpe} />
             <HeatGrid
               heatmap={heatmap}
               format={sharpe}

@@ -1,8 +1,8 @@
 import { useEffect, useId, useState, type FormEvent } from 'react'
-import { ReportView } from '../DemoView.tsx'
 import type { Report } from '../data.ts'
 import { InfoTip } from '../InfoTip.tsx'
 import { count, paramLabel, strategyTitle } from '../format.ts'
+import { ReportView } from '../report/ReportView.tsx'
 import { api, ApiError, type StrategyInfo, type SweepStatus } from './api.ts'
 import { buildRequest, defaultText, type FormState } from './form.ts'
 

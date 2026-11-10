@@ -18,8 +18,7 @@ export function HeatGrid({ heatmap, label, format, describe }: Props) {
   const id = useId()
   const nx = heatmap.x.values.length
   const ny = heatmap.sharpe.length
-  const values = heatmap.sharpe.flat().filter((v): v is number => v !== null)
-  const colour = colourScale(values)
+  const colour = colourScale(heatmap.sharpe.flat())
   const cell = Math.max(Math.min(56, (width - M.left - M.right) / nx), 14)
   const gridWidth = cell * nx
   const gridHeight = cell * ny
@@ -89,7 +88,7 @@ export function HeatGrid({ heatmap, label, format, describe }: Props) {
                   width={cell - 2}
                   height={cell - 2}
                   rx={3}
-                  fill={v === null ? 'var(--surface-2)' : colour.fill(v)}
+                  fill={colour.fill(v)}
                   onPointerEnter={() => setActive({ x, y })}
                   onPointerDown={() => setActive({ x, y })}
                 />
