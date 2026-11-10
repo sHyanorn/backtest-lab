@@ -95,7 +95,7 @@ def test_cv_uses_an_explicit_embargo() -> None:
 def test_cv_selects_a_planted_edge_in_every_fold() -> None:
     x = _matrix(2000, 20, seed=0)
     x[11] += 0.002
-    cv = purged_cv(x, k=5)
+    cv = purged_cv(x, k=5, embargo=None)
     assert cv.embargo == 20
     assert [f.trial for f in cv.folds] == [11] * 5
     assert cv.score > 0
@@ -104,6 +104,6 @@ def test_cv_selects_a_planted_edge_in_every_fold() -> None:
 
 
 def test_cv_of_noise_scores_near_zero() -> None:
-    scores = [purged_cv(_matrix(1000, 50, seed), k=5).score for seed in range(20)]
+    scores = [purged_cv(_matrix(1000, 50, seed), k=5, embargo=None).score for seed in range(20)]
     # each fold has 200 days; the mean of 5 folds has SE about sqrt(252 / 1000)
     assert abs(np.mean(scores)) < 2 * np.sqrt(252 / 1000) / np.sqrt(20)

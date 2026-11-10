@@ -135,7 +135,7 @@ def dsr_inputs(returns: npt.ArrayLike) -> tuple[SharpeMoments, float]:
 
 
 def min_track_record_length(
-    sharpe: float, benchmark: float, skewness: float, kurtosis: float, alpha: float = 0.05
+    sharpe: float, benchmark: float, skewness: float, kurtosis: float, alpha: float
 ) -> float:
     """Observations needed for PSR(benchmark) to reach 1 - alpha (Eq. 13); NaN unless
     sharpe > benchmark."""

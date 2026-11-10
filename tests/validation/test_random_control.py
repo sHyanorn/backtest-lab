@@ -24,7 +24,7 @@ def test_random_signals_look_overfit_and_insignificant() -> None:
         x = run_grid(
             "random_signal", GRID, synthetic_market(n=1500, seed=path), processes=1
         ).returns
-        pbos.append(cscv(x).pbo)
+        pbos.append(cscv(x, blocks=16).pbo)
         sr = np.nan_to_num(daily_sharpe_ratios(x), nan=0.0)
         best = sharpe_moments(x[int(np.argmax(sr))])
         n_eff = effective_trials(average_correlation(x), x.shape[1])

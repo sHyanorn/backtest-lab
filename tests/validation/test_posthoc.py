@@ -48,8 +48,10 @@ def test_analyse_is_consistent_with_the_registered_methods() -> None:
     )
     result = analyse(Search("ma", "ma_crossover", grid), data, processes=1)
     x = run_grid("ma_crossover", grid, data, processes=1).returns.to_numpy()
-    assert result["pbo"]["full_grid"] == cscv(x).pbo
-    assert result["pbo"]["long_only_half"] == cscv(x[:, ::2]).pbo  # allow_short is the last axis
+    assert result["pbo"]["full_grid"] == cscv(x, blocks=16).pbo
+    assert (
+        result["pbo"]["long_only_half"] == cscv(x[:, ::2], blocks=16).pbo
+    )  # allow_short is the last axis
     assert result["long_only_half_dsr"]["n_trials"] == 4
     assert 0 <= result["cscv"]["long_only_winner_share"] <= 1
     assert result["cscv"]["combinations"] == 12_870

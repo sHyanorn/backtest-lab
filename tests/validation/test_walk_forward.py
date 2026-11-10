@@ -36,24 +36,24 @@ def _tied_except(row: int, trial: int, t: int, n: int) -> npt.NDArray[np.float64
 
 def test_holdout_boundaries() -> None:
     x = _matrix(10, 3, seed=0)
-    assert holdout(x).split == x.index[7]
+    assert holdout(x, 0.7).split == x.index[7]
 
 
 @pytest.mark.parametrize(("t", "first_oos"), [(90, 63), (170, 119), (8247, 5772)])
 def test_holdout_split_is_exact(t: int, first_oos: int) -> None:
     x = _matrix(t, 3, seed=0)
-    assert holdout(x).split == x.index[first_oos]  # floor(0.7 t) in exact arithmetic
+    assert holdout(x, 0.7).split == x.index[first_oos]  # floor(0.7 t) in exact arithmetic
 
 
 def test_holdout_selection_ignores_even_the_first_oos_row() -> None:
     x = pd.DataFrame(_tied_except(row=350, trial=3, t=500, n=5))
-    assert holdout(x).trial == 0  # IS rows [0, 350) tie
+    assert holdout(x, 0.7).trial == 0  # IS rows [0, 350) tie
     assert best_trial(x.iloc[:351]) == 3  # one OOS row would change the choice
 
 
 def test_holdout_sharpe_ratios_use_only_their_own_rows() -> None:
     x = _matrix(100, 3, seed=1)
-    result = holdout(x)
+    result = holdout(x, 0.7)
     assert result.split == x.index[70]
     assert result.is_sharpe == sharpe(x.iloc[:70, result.trial])
     assert result.oos_sharpe == sharpe(x.iloc[70:, result.trial])
@@ -62,7 +62,7 @@ def test_holdout_sharpe_ratios_use_only_their_own_rows() -> None:
 def test_holdout_finds_a_planted_edge() -> None:
     x = _matrix(1000, 20, seed=3)
     x[7] += 0.002
-    result = holdout(x)
+    result = holdout(x, 0.7)
     assert result.trial == 7
     assert result.oos_sharpe > 0
     assert result.retention is not None and result.retention > 0
@@ -71,13 +71,13 @@ def test_holdout_finds_a_planted_edge() -> None:
 def test_holdout_of_noise_is_within_two_standard_errors() -> None:
     n_oos = 300
     se = np.sqrt(ANNUALIZATION / n_oos)
-    within = [abs(holdout(_matrix(1000, 50, seed)).oos_sharpe) < 2 * se for seed in range(20)]
+    within = [abs(holdout(_matrix(1000, 50, seed), 0.7).oos_sharpe) < 2 * se for seed in range(20)]
     assert sum(within) >= 17
 
 
 def test_holdout_retention_needs_positive_is_sharpe() -> None:
     x = _matrix(100, 2, seed=4) - 0.01
-    assert holdout(x).retention is None
+    assert holdout(x, 0.7).retention is None
 
 
 # Walk-forward (Section 2.2)
@@ -103,7 +103,7 @@ def test_window_invariants(n: int, is_len: int, oos_len: int, anchored: bool) ->
 def test_fixed_parameters_reproduce_the_trial_after_entry() -> None:
     data = synthetic_market(n=600, seed=5)
     trials = run_grid("ma_crossover", Grid.of({"fast": [5], "slow": [20]}), data, processes=1)
-    result = walk_forward(trials, data, is_len=200, oos_len=100)
+    result = walk_forward(trials, data, is_len=200, oos_len=100, anchored=False)
     assert len(result.windows) == 3
     expected = trials.returns[0].loc[result.returns.index]
     # The first OOS day enters from cash; afterwards no parameter ever changes.
@@ -115,7 +115,7 @@ def test_stitched_series_pays_the_trials_costs() -> None:
     costs = Costs(fee_bps=20.0, slippage_bps=30.0)
     grid = Grid.of({"fast": [5], "slow": [20]})
     trials = run_grid("ma_crossover", grid, data, costs, processes=1)
-    result = walk_forward(trials, data, is_len=200, oos_len=100)
+    result = walk_forward(trials, data, is_len=200, oos_len=100, anchored=False)
     expected = trials.returns[0].loc[result.returns.index]
     np.testing.assert_allclose(result.returns.iloc[1:], expected.iloc[1:], rtol=0, atol=1e-15)
 
@@ -141,13 +141,17 @@ def test_walk_forward_has_no_look_ahead() -> None:
     data = synthetic_market(n=900, tickers=("A", "B"), seed=6)
     grid = Grid.of({"ticker": ["A", "B"], "fast": [5, 10], "slow": [20, 40]})
     base_trials = run_grid("ma_crossover", grid, data, processes=1)
-    base = walk_forward(base_trials, data, is_len=200, oos_len=100)
+    base = walk_forward(base_trials, data, is_len=200, oos_len=100, anchored=False)
     k = 2
     last = base.windows[k].oos_end
     row = int(data.prices.close.index.searchsorted(last)) + 1
     changed_data = _shift_prices_after(data, row, seed=7)
     changed = walk_forward(
-        run_grid("ma_crossover", grid, changed_data, processes=1), changed_data, 200, 100
+        run_grid("ma_crossover", grid, changed_data, processes=1),
+        changed_data,
+        200,
+        100,
+        anchored=False,
     )
     assert [w.trial for w in changed.windows[: k + 1]] == [w.trial for w in base.windows[: k + 1]]
     pd.testing.assert_series_equal(changed.returns.loc[:last], base.returns.loc[:last])
@@ -162,7 +166,7 @@ def test_walk_forward_selection_ignores_its_own_oos_rows() -> None:
     first_oos = window_bounds(len(trials.returns), 200, 100, anchored=False)[k][1]
     x = _tied_except(row=first_oos, trial=5, t=len(trials.returns), n=len(grid))
     rigged = replace(trials, returns=pd.DataFrame(x, index=trials.returns.index))
-    picks = [w.trial for w in walk_forward(rigged, data, 200, 100).windows]
+    picks = [w.trial for w in walk_forward(rigged, data, 200, 100, anchored=False).windows]
     assert picks[: k + 1] == [0] * (k + 1)
     assert picks[k + 1] == 5  # the next IS window contains the row
 
@@ -173,7 +177,7 @@ def test_stitched_returns_follow_each_windows_pick() -> None:
     data = synthetic_market(n=900, tickers=("A", "B"), seed=6)
     grid = Grid.of({"ticker": ["A", "B"], "fast": [5, 10], "slow": [20, 40]})
     trials = run_grid("ma_crossover", grid, data, processes=1)
-    result = walk_forward(trials, data, is_len=200, oos_len=100)
+    result = walk_forward(trials, data, is_len=200, oos_len=100, anchored=False)
     picks = [w.trial for w in result.windows]
     assert len(set(picks)) > 1
     pairs = itertools.pairwise(result.windows)
@@ -190,7 +194,7 @@ def test_walk_forward_finds_a_planted_edge() -> None:
     data = synthetic_market(n=1500, tickers=tickers, seed=8, drift=(0.0, 0.0, 0.0, 0.002))
     grid = Grid.of({"ticker": list(tickers), "lookback": [20, 60]}, {"allow_short": False})
     trials = run_grid("momentum", grid, data, processes=1)
-    result = walk_forward(trials, data, is_len=250, oos_len=125)
+    result = walk_forward(trials, data, is_len=250, oos_len=125, anchored=False)
     picks = [trials.params[w.trial]["ticker"] for w in result.windows]
     assert picks.count("D") > len(picks) / 2
     assert result.returns.mean() > 0
@@ -202,7 +206,9 @@ def test_walk_forward_of_noise_is_within_two_standard_errors() -> None:
     within = []
     for seed in range(10):
         data = synthetic_market(n=1200, seed=seed)
-        result = walk_forward(run_grid("ma_crossover", grid, data, processes=1), data, 250, 125)
+        result = walk_forward(
+            run_grid("ma_crossover", grid, data, processes=1), data, 250, 125, anchored=False
+        )
         oos = result.returns
         se = np.sqrt(ANNUALIZATION / len(oos))
         within.append(abs(np.sqrt(ANNUALIZATION) * oos.mean() / oos.std()) < 2 * se)
@@ -213,4 +219,4 @@ def test_walk_forward_needs_one_window() -> None:
     data = synthetic_market(n=100)
     trials = run_grid("ma_crossover", Grid.of({"fast": [5], "slow": [20]}), data, processes=1)
     with pytest.raises(ValueError, match="too short"):
-        walk_forward(trials, data, is_len=60, oos_len=30)
+        walk_forward(trials, data, is_len=60, oos_len=30, anchored=False)

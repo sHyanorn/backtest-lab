@@ -26,7 +26,7 @@ class Sensitivity:
         return self.mean / self.best_sharpe
 
 
-def neighbours(grid: Grid, trial: int, radius: int = 1) -> tuple[int, ...]:
+def neighbours(grid: Grid, trial: int, radius: int) -> tuple[int, ...]:
     """Trials within `radius` steps along every ordered axis, with categorical axes fixed."""
     centre = grid.coords(trial)
     ranges = [
@@ -40,7 +40,7 @@ def neighbours(grid: Grid, trial: int, radius: int = 1) -> tuple[int, ...]:
     )
 
 
-def sensitivity(sharpe: npt.ArrayLike, grid: Grid, best: int, radius: int = 1) -> Sensitivity:
+def sensitivity(sharpe: npt.ArrayLike, grid: Grid, best: int, radius: int) -> Sensitivity:
     """Mean and spread of the annualized Sharpe ratios around the trial `best`.
 
     NaN Sharpe ratios count as 0 (METHODS.md, Conventions).

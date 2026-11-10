@@ -114,12 +114,12 @@ def test_psr_paper_example(n: int, skew: float, kurt: float, expected: float) ->
 )
 def test_min_trl_paper_example(periods: int, skew: float, kurt: float, years: float) -> None:
     sr, benchmark = 2 / math.sqrt(periods), 1 / math.sqrt(periods)
-    trl = min_track_record_length(sr, benchmark, skew, kurt)
+    trl = min_track_record_length(sr, benchmark, skew, kurt, alpha=0.05)
     assert trl / periods == pytest.approx(years, abs=0.01)
 
 
 def test_min_trl_needs_sharpe_above_benchmark() -> None:
-    assert math.isnan(min_track_record_length(0.05, 0.05, 0, 3))
+    assert math.isnan(min_track_record_length(0.05, 0.05, 0, 3, alpha=0.05))
 
 
 # Section 6: MinBTL, Bailey, Borwein, Lopez de Prado and Zhu (2014) pp. 9-11

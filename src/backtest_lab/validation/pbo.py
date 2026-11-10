@@ -74,7 +74,7 @@ class CSCV:
         return float(np.mean(self.oos_daily_sharpe < 0))
 
 
-def cscv(returns: npt.ArrayLike, blocks: int = 16) -> CSCV:
+def cscv(returns: npt.ArrayLike, blocks: int) -> CSCV:
     """CSCV over all C(S, S/2) splits of S contiguous blocks; the earliest T mod S rows
     are dropped."""
     x = np.asarray(returns, dtype=np.float64)

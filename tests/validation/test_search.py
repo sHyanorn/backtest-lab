@@ -53,7 +53,7 @@ def test_numeric_axis_can_be_categorical() -> None:
     grid = Grid.of({"seed": [3, 1, 2], "hold": [5, 10]}, categorical=["seed"])
     assert grid.ordered == (False, True)
     # Seeds have no neighbours; only the ordered axis varies around a trial.
-    assert neighbours(grid, grid.params().index({"seed": 1, "hold": 5})) == (3,)
+    assert neighbours(grid, grid.params().index({"seed": 1, "hold": 5}), radius=1) == (3,)
 
 
 @pytest.mark.parametrize(

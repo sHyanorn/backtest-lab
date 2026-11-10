@@ -91,13 +91,13 @@ def test_a_flat_trial_ranks_below_positive_sharpe_ratios() -> None:
 
 def test_random_control() -> None:
     # Expected PBO is 0.5 for even N; one seed is noisy, so average seeds 0-99.
-    mean = np.mean([cscv(_noise(seed)).pbo for seed in range(100)])
+    mean = np.mean([cscv(_noise(seed), blocks=16).pbo for seed in range(100)])
     assert 0.42 <= mean <= 0.58
 
 
 @pytest.mark.parametrize("seed", range(10))
 def test_planted_edge(seed: int) -> None:
-    result = cscv(_noise(seed) + np.linspace(0, 0.002, 100))
+    result = cscv(_noise(seed) + np.linspace(0, 0.002, 100), blocks=16)
     assert result.pbo < 0.1
 
 

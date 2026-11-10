@@ -52,15 +52,16 @@ _LOGIT_BINS = 20
 
 @dataclass(frozen=True)
 class Settings:
+    """The registered defaults (D021, D024, D025); the checks themselves have none."""
+
     holdout_fraction: float = 0.7
     is_days: int = 1260
     oos_days: int = 252
-    anchored: bool = False
+    anchored: bool = False  # nothing sets it, but every report states it
     folds: int = 10
-    embargo: int | None = None  # default ceil(0.01 T)
+    embargo: int | None = None  # ceil(0.01 T)
     blocks: int = 16
     radius: int = 1
-    heatmap_axes: tuple[str, ...] | None = None  # default: the first two ordered axes
     alpha: float = 0.05
 
     @property
@@ -513,7 +514,7 @@ def _sensitivity_check(
         for name, ordered, size in zip(grid.names, grid.ordered, grid.shape, strict=True)
         if ordered and size > 1
     ]
-    axes = s.heatmap_axes if s.heatmap_axes is not None else tuple(varied[:2])
+    axes = tuple(varied[:2])
     retention = finite(result.retention)
     assessable = bool(result.neighbours)
     if not assessable:

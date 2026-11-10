@@ -33,7 +33,7 @@ class Holdout:
         return _positive_ratio(self.oos_sharpe, self.is_sharpe)
 
 
-def holdout(returns: pd.DataFrame, fraction: float = 0.7) -> Holdout:
+def holdout(returns: pd.DataFrame, fraction: float) -> Holdout:
     """Select on the first `fraction` of the rows and evaluate on the rest."""
     n = len(returns)
     # floor(f T) for f as written in decimal: 0.7 * 90 is 62.99999... in binary floating point
@@ -96,10 +96,10 @@ class WalkForward:
 def walk_forward(
     trials: Trials,
     data: MarketData,
-    is_len: int = 1260,
-    oos_len: int = 252,
+    is_len: int,
+    oos_len: int,
     *,
-    anchored: bool = False,
+    anchored: bool,
 ) -> WalkForward:
     """Re-select on each IS window and trade the selection on the next OOS window.
 

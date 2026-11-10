@@ -94,7 +94,7 @@ def test_sensitivity_verdict() -> None:
 def test_logit_histogram_counts_every_combination(n: int) -> None:
     # The winner ranks first or last OOS in many splits; those logits are +-ln N.
     x = 0.01 * np.random.default_rng(0).standard_normal((1000, n)) + np.linspace(0, 0.002, n)
-    result = cscv(x)
+    result = cscv(x, blocks=16)
     counts, edges = logit_histogram(result.logits, n)
     assert counts.sum() == len(result.logits) == 12_870
     assert edges[0] == -edges[-1] == pytest.approx(-math.log(n))

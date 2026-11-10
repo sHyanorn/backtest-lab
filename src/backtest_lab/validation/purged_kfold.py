@@ -74,8 +74,10 @@ class PurgedCV:
         return self.score / self.train_score if self.train_score > 0 else None
 
 
-def purged_cv(returns: pd.DataFrame, k: int = 10, embargo: int | None = None) -> PurgedCV:
-    """Select the best trial on each fold's purged training rows; score it on the test fold."""
+def purged_cv(returns: pd.DataFrame, k: int, embargo: int | None) -> PurgedCV:
+    """Select the best trial on each fold's purged training rows; score it on the test fold.
+
+    An `embargo` of None is ceil(0.01 T) rows."""
     x = returns.to_numpy(dtype=np.float64)
     h = default_embargo(len(x)) if embargo is None else embargo
     folds = []
