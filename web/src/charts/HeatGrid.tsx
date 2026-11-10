@@ -1,5 +1,6 @@
-import { useId, useState, type KeyboardEvent } from 'react'
+import { useState } from 'react'
 import type { Heatmap } from '../report.gen.ts'
+import { ChartShell } from './ChartShell.tsx'
 import { colourScale, DIV_HALF, SEQ_STEPS } from './colour.ts'
 import { useWidth } from './useWidth.ts'
 
@@ -12,10 +13,18 @@ interface Props {
 }
 
 const M = { top: 22, right: 8, bottom: 36, left: 52 }
+// Room the tooltip needs right of its cell; with less it goes to the left.
+const TIP_ROOM = 180
+const MOVES: Record<string, [number, number]> = {
+  ArrowRight: [1, 0],
+  ArrowLeft: [-1, 0],
+  ArrowUp: [0, 1],
+  ArrowDown: [0, -1],
+}
+
 export function HeatGrid({ heatmap, label, format, describe }: Props) {
   const [ref, width] = useWidth<HTMLDivElement>()
   const [active, setActive] = useState<{ x: number; y: number } | null>(null)
-  const id = useId()
   const nx = heatmap.x.values.length
   const ny = heatmap.sharpe.length
   const colour = colourScale(heatmap.sharpe.flat())
@@ -25,27 +34,16 @@ export function HeatGrid({ heatmap, label, format, describe }: Props) {
   // Rows run upwards so the y axis increases like a chart's.
   const top = (row: number) => (ny - 1 - row) * cell
 
-  function onKey(event: KeyboardEvent<HTMLDivElement>) {
-    const moves: Record<string, [number, number]> = {
-      ArrowRight: [1, 0],
-      ArrowLeft: [-1, 0],
-      ArrowUp: [0, 1],
-      ArrowDown: [0, -1],
-    }
-    if (event.key === 'Escape') {
-      if (active !== null) event.preventDefault()
-      return setActive(null)
-    }
-    const move = moves[event.key]
-    if (!move) return
-    event.preventDefault()
-    setActive((a) => {
-      const from = a ?? heatmap.best
-      return {
-        x: Math.min(Math.max(from.x + (a ? move[0] : 0), 0), nx - 1),
-        y: Math.min(Math.max(from.y + (a ? move[1] : 0), 0), ny - 1),
-      }
+  // The first arrow key selects the best setting; later ones move from it.
+  function onMove(key: string) {
+    const move = MOVES[key]
+    if (!move) return false
+    const from = active ?? heatmap.best
+    setActive({
+      x: Math.min(Math.max(from.x + (active ? move[0] : 0), 0), nx - 1),
+      y: Math.min(Math.max(from.y + (active ? move[1] : 0), 0), ny - 1),
     })
+    return true
   }
 
   const value = active ? heatmap.sharpe[active.y]?.[active.x] : undefined
@@ -56,131 +54,127 @@ export function HeatGrid({ heatmap, label, format, describe }: Props) {
   const tipLeft = active ? M.left + (active.x + 1) * cell + 8 : 0
 
   return (
-    <div className="chart heat" ref={ref}>
-      <div
-        className="chart-hit"
-        tabIndex={0}
-        role="group"
-        aria-label={`${label}. Arrow keys move between settings.`}
-        aria-describedby={`${id}-readout`}
-        onKeyDown={onKey}
-        onBlur={() => setActive(null)}
-        onPointerLeave={() => setActive(null)}
+    <ChartShell
+      shellRef={ref}
+      className="heat"
+      label={`${label}. Arrow keys move between settings.`}
+      readout={readout}
+      onMove={onMove}
+      onClear={() => setActive(null)}
+      clearOnPointerLeave
+      tooltip={
+        active && (
+          <div
+            className="tooltip"
+            style={{
+              ...(tipLeft + TIP_ROOM > width
+                ? { right: width - M.left - active.x * cell + 8 }
+                : { left: tipLeft }),
+              top: M.top + top(active.y),
+            }}
+          >
+            <div className="tooltip-date">{describe(active.x, active.y)}</div>
+            <strong className="tooltip-value">Sharpe {valueText}</strong>
+          </div>
+        )
+      }
+    >
+      <svg
+        width={M.left + gridWidth + M.right}
+        height={M.top + gridHeight + M.bottom}
+        aria-hidden="true"
       >
-        <svg
-          width={M.left + gridWidth + M.right}
-          height={M.top + gridHeight + M.bottom}
-          aria-hidden="true"
-        >
-          <g transform={`translate(${M.left},${M.top})`}>
-            {heatmap.y && (
-              <text className="axis-label" x={-8} y={-8} textAnchor="end">
-                {heatmap.y.name.replace(/_/g, ' ')}
-              </text>
-            )}
-            {heatmap.sharpe.map((row, y) =>
-              row.map((v, x) => (
-                <rect
-                  key={`${x}-${y}`}
-                  className="cell"
-                  x={x * cell + 1}
-                  y={top(y) + 1}
-                  width={cell - 2}
-                  height={cell - 2}
-                  rx={3}
-                  fill={colour.fill(v)}
-                  onPointerEnter={() => setActive({ x, y })}
-                  onPointerDown={() => setActive({ x, y })}
-                />
-              )),
-            )}
-            {heatmap.neighbours.map((n) => (
-              <circle
-                key={`n${n.x}-${n.y}`}
-                className="mark-dot"
-                cx={n.x * cell + cell / 2}
-                cy={top(n.y) + cell / 2}
-                r={Math.max(Math.min(cell / 10, 4), 2.5)}
-              />
-            ))}
-            <rect
-              className="cell-best"
-              x={heatmap.best.x * cell}
-              y={top(heatmap.best.y)}
-              width={cell}
-              height={cell}
-              rx={4}
-            />
-            <rect
-              className="cell-best-gap"
-              x={heatmap.best.x * cell + 2.5}
-              y={top(heatmap.best.y) + 2.5}
-              width={cell - 5}
-              height={cell - 5}
-              rx={2}
-            />
-            {active && (
+        <g transform={`translate(${M.left},${M.top})`}>
+          {heatmap.y && (
+            <text className="axis-label" x={-8} y={-8} textAnchor="end">
+              {heatmap.y.name.replace(/_/g, ' ')}
+            </text>
+          )}
+          {heatmap.sharpe.map((row, y) =>
+            row.map((v, x) => (
               <rect
-                className="cell-active"
-                x={active.x * cell + 0.5}
-                y={top(active.y) + 0.5}
-                width={cell - 1}
-                height={cell - 1}
-                rx={3.5}
+                key={`${x}-${y}`}
+                className="cell"
+                x={x * cell + 1}
+                y={top(y) + 1}
+                width={cell - 2}
+                height={cell - 2}
+                rx={3}
+                fill={colour.fill(v)}
+                onPointerEnter={() => setActive({ x, y })}
+                onPointerDown={() => setActive({ x, y })}
               />
-            )}
-            {heatmap.y?.values.map((v, y) => (
-              <text
-                key={y}
-                className="tick-label"
-                x={-8}
-                y={top(y) + cell / 2}
-                dy="0.32em"
-                textAnchor="end"
-              >
-                {String(v)}
-              </text>
-            ))}
-            {heatmap.x.values.map((v, x) => (
-              <text
-                key={x}
-                className="tick-label"
-                x={x * cell + cell / 2}
-                y={gridHeight + 14}
-                textAnchor="middle"
-              >
-                {String(v)}
-              </text>
-            ))}
+            )),
+          )}
+          {heatmap.neighbours.map((n) => (
+            <circle
+              key={`n${n.x}-${n.y}`}
+              className="mark-dot"
+              cx={n.x * cell + cell / 2}
+              cy={top(n.y) + cell / 2}
+              r={Math.max(Math.min(cell / 10, 4), 2.5)}
+            />
+          ))}
+          <rect
+            className="cell-best"
+            x={heatmap.best.x * cell}
+            y={top(heatmap.best.y)}
+            width={cell}
+            height={cell}
+            rx={4}
+          />
+          <rect
+            className="cell-best-gap"
+            x={heatmap.best.x * cell + 2.5}
+            y={top(heatmap.best.y) + 2.5}
+            width={cell - 5}
+            height={cell - 5}
+            rx={2}
+          />
+          {active && (
+            <rect
+              className="cell-active"
+              x={active.x * cell + 0.5}
+              y={top(active.y) + 0.5}
+              width={cell - 1}
+              height={cell - 1}
+              rx={3.5}
+            />
+          )}
+          {heatmap.y?.values.map((v, y) => (
             <text
-              className="axis-label"
-              x={gridWidth / 2}
-              y={gridHeight + 32}
+              key={y}
+              className="tick-label"
+              x={-8}
+              y={top(y) + cell / 2}
+              dy="0.32em"
+              textAnchor="end"
+            >
+              {String(v)}
+            </text>
+          ))}
+          {heatmap.x.values.map((v, x) => (
+            <text
+              key={x}
+              className="tick-label"
+              x={x * cell + cell / 2}
+              y={gridHeight + 14}
               textAnchor="middle"
             >
-              {heatmap.x.name.replace(/_/g, ' ')}
+              {String(v)}
             </text>
-          </g>
-        </svg>
-      </div>
-      {active && (
-        <div
-          className="tooltip"
-          style={{
-            ...(tipLeft + 180 > width
-              ? { right: width - M.left - active.x * cell + 8 }
-              : { left: tipLeft }),
-            top: M.top + top(active.y),
-          }}
-        >
-          <div className="tooltip-date">{describe(active.x, active.y)}</div>
-          <strong className="tooltip-value">Sharpe {valueText}</strong>
-        </div>
-      )}
-      <p id={`${id}-readout`} className="visually-hidden" aria-live="polite">
-        {readout}
-      </p>
-    </div>
+          ))}
+          <text
+            className="axis-label"
+            x={gridWidth / 2}
+            y={gridHeight + 32}
+            textAnchor="middle"
+          >
+            {heatmap.x.name.replace(/_/g, ' ')}
+          </text>
+        </g>
+      </svg>
+    </ChartShell>
   )
 }
 
