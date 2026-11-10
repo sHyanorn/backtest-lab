@@ -250,13 +250,32 @@ def test_trials_that_never_trade_do_not_count_towards_the_floor() -> None:
     trials = run_grid("mean_reversion", grid, data, processes=1)
     x = trials.returns.to_numpy()
     assert (x.std(axis=0) > 0).sum() == 1 and x.shape[1] == 11
-    checks = build_report(trials, data, "SPY", SETTINGS).checks
-    assert checks.pbo.verdict == checks.deflated_sharpe.verdict == "not_assessable"
-    assert checks.pbo.summary.startswith("Only about 1.0 of the 11 settings tried")
+    dsr = build_report(trials, data, "SPY", SETTINGS).checks.deflated_sharpe
+    assert dsr.metrics.dsr is not None and dsr.metrics.dsr >= 0.5  # yellow if it were judged
+    assert dsr.verdict == "not_assessable"
+    assert dsr.summary.startswith("Only about 1.0 of the 11 settings tried")
+
+
+def test_a_fail_still_counts_with_too_few_independent_trials() -> None:
+    data = synthetic_market(n=2600, seed=1, drift=0.0005)
+    grid = Grid.of({"fast": [5, 10, 20], "slow": [40, 60, 100]}, {"ticker": "SPY"})
+    report = build_report(run_grid("ma_crossover", grid, data, processes=1), data, "SPY", SETTINGS)
+    checks = report.checks
+    assert checks.pbo.metrics.pbo > 0.30
+    assert checks.pbo.verdict == "red"
+    assert checks.pbo.summary.startswith("In 41% of 12,870 ways")
+    dsr = checks.deflated_sharpe
+    assert dsr.metrics.dsr is not None and dsr.metrics.dsr >= 0.95  # a pass is withheld
+    assert dsr.verdict == "not_assessable"
+    assert "red" not in [c.verdict for key, c in checks if key != "pbo"]
+    assert report.overall.verdict == "red"
+    assert report.overall.summary.startswith(
+        "1 of 8 checks fail (Probability of backtest overfitting):"
+    )
 
 
 def test_the_reported_count_is_not_rounded_up_to_the_floor() -> None:
-    data = synthetic_market(n=8000, seed=3)
+    data = synthetic_market(n=8000, seed=2)  # a PBO under 0.10, which the floor withholds
     grid = Grid.of({"seed": list(range(10))}, {"ticker": "SPY", "hold": 5})
     trials = run_grid("random_signal", grid, data, processes=1)
     report = build_report(trials, data, "SPY", SETTINGS)

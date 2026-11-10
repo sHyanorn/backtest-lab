@@ -1,6 +1,6 @@
 type Value = boolean | number | string
 
-const MISSING = 'n/a'
+export const MISSING = 'n/a'
 
 const MINUS = '\u2212'
 

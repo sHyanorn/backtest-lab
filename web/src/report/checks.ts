@@ -1,4 +1,4 @@
-import { num, pct, prob, years } from '../format.ts'
+import { MISSING, num, pct, prob, years } from '../format.ts'
 import type { CheckVerdict, Checks, Report } from '../report.gen.ts'
 
 export type CheckKey = keyof Checks
@@ -29,7 +29,7 @@ export interface CheckView {
 }
 
 const TOO_FEW_RULE =
-  ' Not assessed when fewer than 10 independent settings were tried.'
+  ' With fewer than 10 independent settings a pass is not assessed; a fail still counts.'
 
 const RETENTION_RULE =
   'Pass when out-of-sample performance is positive and keeps at least half of in-sample; borderline below half; fail when it is not positive.'
@@ -47,7 +47,7 @@ export function checkViews(report: Report): CheckView[] {
   })
   // A figure that is not judged is not shown as a headline (D041).
   const judged = (key: CheckKey, value: string) =>
-    c[key].verdict === 'not_assessable' ? '–' : value
+    c[key].verdict === 'not_assessable' ? MISSING : value
   return [
     {
       ...base('holdout'),

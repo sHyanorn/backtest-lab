@@ -41,7 +41,7 @@ PROBABILITY_GREEN = 0.95
 PROBABILITY_YELLOW = 0.5
 SENSITIVITY_GREEN = 0.75
 SENSITIVITY_YELLOW = 0.5
-# Fewer independent trials than this and PBO and DSR get no verdict (D041)
+# Fewer independent trials than this and a green or yellow PBO or DSR is not a verdict (D041)
 MIN_EFFECTIVE_TRIALS = 10
 
 _SEVERITY: dict[rs.CheckVerdict, int] = {"green": 0, "yellow": 1, "not_assessable": 1, "red": 2}
@@ -114,7 +114,7 @@ def logit_histogram(
 
 
 def enough_trials(*estimates: float) -> bool:
-    """Whether the smallest estimate of the independent trials allows a PBO or DSR verdict."""
+    """Whether the smallest estimate of the independent trials lets PBO or DSR pass."""
     return min(estimates) >= MIN_EFFECTIVE_TRIALS
 
 
@@ -375,8 +375,9 @@ class _TrialCounts:
         return max(self.by_correlation, self.by_eigenvalue)
 
     def judge(self, verdict: rs.Verdict, summary: str) -> tuple[rs.CheckVerdict, str]:
-        """A check's verdict and summary, withheld when these trials are too few to judge it."""
-        if enough_trials(self.fewest):
+        """A check's verdict and summary. With too few trials the check is lenient, so a
+        pass is withheld; a fail still counts."""
+        if verdict == "red" or enough_trials(self.fewest):
             return verdict, summary
         shown = math.floor(10 * self.fewest) / 10  # 9.97 must not read as the 10 required
         return "not_assessable", (

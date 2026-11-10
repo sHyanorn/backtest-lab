@@ -205,7 +205,7 @@ The report also includes two by-products from Section 3.2 of the paper: the OLS 
 **Pitfalls.**
 
 - $N$ is every configuration tried, including the bad ones. The paper (Section 5.2) warns that hiding trials underestimates overfitting and that adding trials doomed to fail, to make one configuration succeed, biases the result as well. The direction depends on which trials are left out: in the demo the long/short half of each grid is the weaker one, and dropping it raises PBO from 0.05 to 0.42 for the moving average (DEMO.md, post hoc). A PBO verdict therefore depends on the composition of the grid, not only on the selected configuration.
-- Small $N$ makes ranks coarse; the paper notes that an investor sensitive to PBO values below 1/10 needs $N \gg 10$. The report gives PBO no verdict when fewer than 10 trials are effectively independent (Section 5, D041).
+- Small $N$ makes ranks coarse; the paper notes that an investor sensitive to PBO values below 1/10 needs $N \gg 10$. With fewer than 10 effectively independent trials the report withholds a green or yellow PBO; a red one still counts (Section 5, D041).
 - PBO evaluates a selection process. It must not be used as the objective to choose a strategy.
 - A high PBO does not mean every configuration is bad: if all configurations have similar real skill, PBO is high too.
 - Sharpe ratios on unions of blocks can be computed exactly from per-block counts, sums and sums of squares, so all $\binom{16}{8}$ combinations are cheap.
@@ -267,7 +267,7 @@ $$
 
 Uncorrelated trials have every $\lambda_i = 1$ and $\hat N_\lambda = N$; identical trials have $\lambda = (N, 0, \dots, 0)$, $\mathbb V[\lambda] = N$ and $\hat N_\lambda = 1$. Because $\sum_i \lambda_i^2 = \sum_{i,j} \rho_{ij}^2$, the ratio $\mathbb V[\lambda] / N$ is the mean squared pairwise correlation $\overline{\rho^2}$, so $\hat N_\lambda = \overline{\rho^2} + (1 - \overline{\rho^2}) N$: the same rule with squared correlations, which is how the code computes it. A negative correlation lowers $\hat N_\lambda$ and raises $\hat N_\rho$.
 
-$\hat N = \max(\hat N_\rho, \hat N_\lambda)$ enters $\widehat{SR}_0$ here and MinBTL in Section 6; the larger count gives the higher threshold and the lower DSR. When $\min(\hat N_\rho, \hat N_\lambda) < 10$, with $N$ counting only the trials whose returns vary, the report gives DSR and PBO no verdict (D041).
+$\hat N = \max(\hat N_\rho, \hat N_\lambda)$ enters $\widehat{SR}_0$ here and MinBTL in Section 6; the larger count gives the higher threshold and the lower DSR. When $\min(\hat N_\rho, \hat N_\lambda) < 10$, with $N$ counting only the trials whose returns vary, the report does not let DSR or PBO pass: a green or yellow value gets no verdict and a red one stays red (D041).
 
 The report flags the strategy as significant when $\widehat{DSR} \ge 0.95$.
 

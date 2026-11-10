@@ -30,7 +30,7 @@ The credibility report is one JSON document per parameter search. It runs every 
 
 ## Checks
 
-Every check has `title`, `verdict` (`green`, `yellow` or `red`), `summary` and `metrics`; some also have `details` for charts. Thresholds are fixed in D022. `pbo` and `deflated_sharpe` have the verdict `not_assessable`, whatever their value, when fewer than 10 trials are effectively independent by the smaller of the two estimates, counted over the trials whose returns vary; their metrics are still reported (D041).
+Every check has `title`, `verdict` (`green`, `yellow` or `red`), `summary` and `metrics`; some also have `details` for charts. Thresholds are fixed in D022. When fewer than 10 trials are effectively independent by the smaller of the two estimates, counted over the trials whose returns vary, a `pbo` or `deflated_sharpe` that would be green or yellow has the verdict `not_assessable`; a red one stays red. Their metrics are reported either way (D041).
 
 | Key | Method | Verdict | `details` |
 |---|---|---|---|

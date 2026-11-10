@@ -130,7 +130,7 @@ describe('check cards', () => {
       name: 'Probability of backtest overfitting',
     }).parentElement as HTMLElement
     expect(card.querySelector('.verdict')?.textContent).toBe('Not assessable')
-    expect(card.querySelector('.figure-value')?.textContent).toBe('–')
+    expect(card.querySelector('.figure-value')?.textContent).toBe('n/a')
     const dsr = screen.getByRole('heading', { name: 'Deflated Sharpe ratio' })
       .parentElement as HTMLElement
     expect(dsr.querySelector('.figure-value')?.textContent).toBe('0.945')
@@ -141,7 +141,7 @@ describe('check cards', () => {
     const rule = (r: Report) => checkViews(r).find((c) => c.key === 'pbo')?.rule
     expect(rule(report)).not.toContain('Not assessed')
     expect(rule({ ...report, schema_version: '1.1' })).toContain(
-      'Not assessed when fewer than 10 independent settings were tried.',
+      'With fewer than 10 independent settings a pass is not assessed; a fail still counts.',
     )
   })
 

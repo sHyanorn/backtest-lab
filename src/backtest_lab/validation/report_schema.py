@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict
 SCHEMA_VERSION: Final = "1.1"
 
 type Verdict = Literal["green", "yellow", "red"]
-# A check with too few independent trials to judge has no colour (D041).
+# A check that would pass on too few independent trials has no colour (D041).
 type CheckVerdict = Verdict | Literal["not_assessable"]
 type Param = bool | int | float | str
 
