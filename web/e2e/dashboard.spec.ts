@@ -9,7 +9,7 @@ const DEMOS = [
   },
   {
     key: 'momentum',
-    title: 'Time-series momentum on SPY',
+    title: 'Simplified time-series momentum on SPY',
     verdict: 'Borderline',
   },
   {
@@ -133,7 +133,7 @@ test('a failed load says so instead of showing the previous search', async ({
   await page.unroute(/momentum-[^/]*\.json$/)
   await page.getByRole('button', { name: 'Retry' }).click()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Time-series momentum on SPY',
+    'Simplified time-series momentum on SPY',
   )
 })
 

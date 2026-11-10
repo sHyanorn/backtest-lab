@@ -51,7 +51,7 @@ export function years(value: number | null | undefined): string {
 
 const TITLES: Record<string, string> = {
   ma_crossover: 'Moving-average crossover',
-  momentum: 'Time-series momentum',
+  momentum: 'Simplified time-series momentum',
   random_signal: 'Random-signal control',
   mean_reversion: 'Mean reversion',
   rate_rotation: 'Rate rotation',
