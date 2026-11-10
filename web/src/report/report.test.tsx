@@ -6,6 +6,7 @@ import { asPostHoc, asReport, type Report } from '../data.ts'
 import { colourScale } from '../charts/colour.ts'
 import { num, pct, signed, trialParams } from '../format.ts'
 import { CheckCards } from './CheckCards.tsx'
+import { DetailsButton } from './CheckDetails.tsx'
 import { checkViews } from './checks.ts'
 import { Overview } from './Overview.tsx'
 import { PostHoc } from './PostHoc.tsx'
@@ -149,6 +150,38 @@ describe('check cards', () => {
     render(<CheckCards report={load('random_signal')} />)
     expect(screen.getByText(/Neighbouring seeds are unrelated/)).toBeTruthy()
   })
+})
+
+describe('check details', () => {
+  // np.linspace(-ln N, ln N, 21), as the report builds the edges: the centre edge is
+  // -2.2e-16 for N = 5 and 4.4e-16 for N = 14.
+  it.each([5, 14])(
+    'splits the PBO histogram at its middle when the centre edge of %i trials is not exactly zero',
+    (nTrials) => {
+      const report = load('ma_crossover')
+      const limit = Math.log(nTrials)
+      const edges = Array.from(
+        { length: 21 },
+        (_, i) => -limit + i * ((2 * limit) / 20),
+      )
+      expect(edges[10]).not.toBe(0)
+      const pbo = {
+        ...report.checks.pbo,
+        details: { logits: { ...report.checks.pbo.details.logits, edges } },
+      }
+      const { container } = render(
+        <DetailsButton
+          report={{ ...report, checks: { ...report.checks, pbo } }}
+          check="pbo"
+        />,
+      )
+      expect(container.querySelectorAll('.column.accent')).toHaveLength(10)
+      const hits = container.querySelectorAll('.column .hit')
+      expect(container.querySelector('.marker line')?.getAttribute('x1')).toBe(
+        hits[10]?.getAttribute('x'),
+      )
+    },
+  )
 })
 
 describe('format', () => {

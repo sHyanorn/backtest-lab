@@ -160,7 +160,8 @@ function Body({ report, check }: { report: Report; check: CheckKey }) {
     case 'pbo': {
       const { metrics, details } = report.checks.pbo
       const { edges, counts } = details.logits
-      const zero = edges.findIndex((e) => e >= 0)
+      // The edges are symmetric about zero, but the centre one can be off by an ulp.
+      const half = counts.length / 2
       return (
         <>
           <p className="note">
@@ -171,7 +172,7 @@ function Body({ report, check }: { report: Report; check: CheckKey }) {
           <Columns
             label="Histogram of the out-of-sample rank logits"
             format={(v) => count(Math.round(v))}
-            marker={zero > 0 ? { before: zero, label: '0' } : undefined}
+            marker={{ before: half, label: '0' }}
             columns={counts.map((c, i) => {
               const from = edges[i] ?? 0
               const to = edges[i + 1] ?? 0
@@ -179,7 +180,7 @@ function Body({ report, check }: { report: Report; check: CheckKey }) {
                 label: num((from + to) / 2, 1),
                 value: c,
                 detail: `Logit ${num(from, 2)} to ${num(to, 2)}`,
-                tone: to <= 0 ? 'accent' : 'ref',
+                tone: i < half ? 'accent' : 'ref',
               }
             })}
           />
