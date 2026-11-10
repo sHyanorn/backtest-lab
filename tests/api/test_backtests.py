@@ -5,8 +5,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backtest_lab.api.main import create_app
-from backtest_lab.data.store import connect, price_panel
-from backtest_lab.engine.backtest import Prices, run
+from backtest_lab.data.store import connect, load_prices
+from backtest_lab.engine.backtest import run
 from backtest_lab.engine.metrics import sharpe
 from backtest_lab.strategies import MarketData, MovingAverageCrossover
 from tests.api.conftest import local_client
@@ -37,9 +37,7 @@ def test_backtest_matches_the_engine(client: TestClient, data_dir: Path) -> None
     assert r.status_code == 200, r.text
     body = r.json()
 
-    con = connect(data_dir / "raw")
-    raw = {f: price_panel(con, ["SPY", "IEF"], f) for f in ("open", "close", "adj_close")}
-    prices = Prices.from_raw(raw["open"], raw["close"], raw["adj_close"])
+    prices = load_prices(connect(data_dir / "raw"), ["SPY", "IEF"])
     result = run(MovingAverageCrossover(**params).weights(MarketData(prices)), prices)  # type: ignore[arg-type]
     assert result.start is not None
     net = result.returns.loc[result.start :].to_numpy(dtype=np.float64)

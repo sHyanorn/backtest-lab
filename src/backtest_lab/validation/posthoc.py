@@ -20,7 +20,7 @@ import numpy.typing as npt
 from backtest_lab.engine.backtest import run
 from backtest_lab.engine.metrics import ANNUALIZATION, drawdown_curve, summarize
 from backtest_lab.strategies import STRATEGIES, MarketData
-from backtest_lab.validation.demo import SEARCHES, SETTINGS, TICKER, Search, load_market
+from backtest_lab.validation.demo import SEARCHES, SETTINGS, TICKER, Search, load_sample
 from backtest_lab.validation.pbo import cscv
 from backtest_lab.validation.report import buy_and_hold, finite
 from backtest_lab.validation.search import Trials, run_grid
@@ -182,7 +182,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--processes", type=int, default=None)
     args = parser.parse_args(argv)
 
-    data = load_market(args.data_dir)
+    data = load_sample(args.data_dir)
     runs = {s.name: run_grid(s.strategy, s.grid, data, processes=args.processes) for s in SEARCHES}
     args.out.mkdir(parents=True, exist_ok=True)
     _write(

@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from backtest_lab.data.prices import COLUMNS
+from backtest_lab.data.store import PRICE_COLUMNS
 from backtest_lab.engine.backtest import Prices
 from backtest_lab.strategies import MarketData
 
@@ -37,7 +37,7 @@ def price_frame(
         },
         index=dates,
     )
-    return df[COLUMNS]
+    return df[PRICE_COLUMNS]
 
 
 def synthetic_market(

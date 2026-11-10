@@ -165,7 +165,7 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        app.state.market = load_market(root / "raw")
+        app.state.market = load_market(root)
         store = JobStore(root / "jobs")
         store.fail_running("the server restarted before this sweep finished")
         runner = Runner(store, processes)

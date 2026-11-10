@@ -11,10 +11,9 @@ import pandas as pd
 import yfinance as yf
 
 from backtest_lab.data.fetch import FetchError, with_retries
-from backtest_lab.data.storage import write_parquet_atomic
+from backtest_lab.data.store import PRICE_COLUMNS, price_file, write_parquet_atomic
 
 EXCHANGE_TZ = ZoneInfo("America/New_York")
-COLUMNS = ["open", "high", "low", "close", "adj_close", "volume", "dividends", "splits"]
 _YF_COLUMNS = {
     "Open": "open",
     "High": "high",
@@ -76,7 +75,7 @@ def read_cached(path: Path) -> pd.DataFrame | None:
     if not path.exists():
         return None
     df = pd.read_parquet(path)
-    return df.set_index("date")[COLUMNS]
+    return df.set_index("date")[PRICE_COLUMNS]
 
 
 def _consistent(a: pd.DataFrame, b: pd.DataFrame) -> bool:
@@ -92,9 +91,9 @@ def update_ticker(
     end: date | None = None,
     full: bool = False,
 ) -> UpdateKind:
-    """Bring `<root>/prices/<ticker>.parquet` up to date."""
+    """Bring the ticker's file under the raw directory `root` up to date."""
     end = end or exchange_today()
-    path = root / "prices" / f"{ticker}.parquet"
+    path = price_file(root, ticker)
     cached = None if full else read_cached(path)
     kind = UpdateKind.FULL
     if cached is None or len(cached) < OVERLAP_ROWS:

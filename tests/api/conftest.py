@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from backtest_lab.api.main import create_app
 from backtest_lab.data.macro import Frequency, available_dates
-from backtest_lab.data.storage import write_parquet_atomic
+from backtest_lab.data.store import write_parquet_atomic
 from tests.factories import price_frame
 
 N_DAYS = 1800  # more than the 1,512 aligned days a report needs plus warm-up

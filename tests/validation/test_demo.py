@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from backtest_lab.data.storage import write_parquet_atomic
-from backtest_lab.validation.demo import END, SEARCHES, SETTINGS, START, load_market
+from backtest_lab.data.store import write_parquet_atomic
+from backtest_lab.validation.demo import END, SEARCHES, SETTINGS, START, load_sample
 from backtest_lab.validation.report import Settings
 from tests.factories import price_frame
 
@@ -33,10 +33,10 @@ def _store(root: Path, n: int, start: str) -> pd.DataFrame:
     return df
 
 
-def test_load_market_slices_and_adjusts(tmp_path: Path) -> None:
+def test_load_sample_slices_and_adjusts(tmp_path: Path) -> None:
     df = _store(tmp_path, n=40, start="2024-01-02")
     start, end = df.index[5], df.index[30]
-    data = load_market(tmp_path, "SPY", start, end)
+    data = load_sample(tmp_path, "SPY", start, end)
     close = data.prices.close["SPY"]
     assert close.index[0] == start and close.index[-1] == end
     np.testing.assert_allclose(close.to_numpy(), df["adj_close"].loc[start:end].to_numpy())
@@ -46,7 +46,7 @@ def test_load_market_slices_and_adjusts(tmp_path: Path) -> None:
     )
 
 
-def test_load_market_needs_the_whole_sample(tmp_path: Path) -> None:
+def test_load_sample_needs_the_whole_sample(tmp_path: Path) -> None:
     df = _store(tmp_path, n=40, start="2024-01-02")
     with pytest.raises(ValueError, match="does not cover"):
-        load_market(tmp_path, "SPY", df.index[0] - pd.Timedelta(days=1), df.index[-1])
+        load_sample(tmp_path, "SPY", df.index[0] - pd.Timedelta(days=1), df.index[-1])

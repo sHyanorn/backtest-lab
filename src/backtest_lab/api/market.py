@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from backtest_lab.data.store import connect, macro_series, price_panel
+from backtest_lab.data.store import connect, load_prices, macro_series, raw_dir
 from backtest_lab.engine.backtest import Prices
 from backtest_lab.strategies import MarketData
 
@@ -52,17 +52,15 @@ class Market:
         )
 
 
-def load_market(raw_dir: Path) -> Market | None:
+def load_market(data_dir: Path) -> Market | None:
     """Every ticker and macro series in the cache, or None when there is no price data."""
-    con = connect(raw_dir)
+    con = connect(raw_dir(data_dir))
     tables = {row[0] for row in con.execute("SELECT view_name FROM duckdb_views()").fetchall()}
     if "prices" not in tables:
         return None
     tickers = sorted(r[0] for r in con.execute("SELECT DISTINCT ticker FROM prices").fetchall())
-    raw = {f: price_panel(con, tickers, f) for f in ("open", "close", "adj_close")}
-    prices = Prices.from_raw(raw["open"], raw["close"], raw["adj_close"])
     macro: dict[str, pd.DataFrame] = {}
     if "macro" in tables:
         for (series_id,) in con.execute("SELECT DISTINCT series FROM macro ORDER BY 1").fetchall():
             macro[series_id] = macro_series(con, series_id)
-    return Market(MarketData(prices=prices, macro=macro))
+    return Market(MarketData(prices=load_prices(con, tickers), macro=macro))

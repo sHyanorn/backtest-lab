@@ -10,7 +10,7 @@ import pandas as pd
 from pandas.tseries.holiday import USFederalHolidayCalendar
 
 from backtest_lab.data.fetch import with_retries
-from backtest_lab.data.storage import write_parquet_atomic
+from backtest_lab.data.store import macro_file, write_parquet_atomic
 
 FREDGRAPH_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={}"
 
@@ -89,5 +89,5 @@ def download(series_id: str) -> pd.DataFrame:
 
 
 def update_series(series_id: str, root: Path) -> None:
-    """Refetch the full series into `<root>/macro/<series_id>.parquet`; it is small."""
-    write_parquet_atomic(download(series_id), root / "macro" / f"{series_id}.parquet")
+    """Refetch the full series into the raw directory `root`; it is small."""
+    write_parquet_atomic(download(series_id), macro_file(root, series_id))

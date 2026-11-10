@@ -6,7 +6,7 @@ import pytest
 
 from backtest_lab.data import update
 from backtest_lab.data.fetch import FetchError
-from backtest_lab.data.storage import write_parquet_atomic
+from backtest_lab.data.store import write_parquet_atomic
 from tests.factories import price_frame
 
 

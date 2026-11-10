@@ -18,6 +18,7 @@ import pandas as pd
 from backtest_lab.data import macro, prices
 from backtest_lab.data.fetch import FetchError
 from backtest_lab.data.quality import build_report, check_macro, check_prices
+from backtest_lab.data.store import macro_file, price_file, raw_dir
 from backtest_lab.data.universe import TICKERS
 
 PAUSE_SECONDS = 1.0  # between Yahoo requests, to stay under its rate limit
@@ -43,7 +44,7 @@ def run(
     update_macro: Callable[[str, Path], None] = macro.update_series,
     sleep: Callable[[float], None] = time.sleep,
 ) -> dict[str, Any]:
-    raw = data_dir / "raw"
+    raw = raw_dir(data_dir)
     failures: dict[str, str] = {}
     for i, ticker in enumerate(tickers):
         if i:
@@ -65,13 +66,13 @@ def run(
     price_frames: dict[str, pd.DataFrame] = {}
     for ticker in tickers:
         try:
-            if (df := prices.read_cached(raw / "prices" / f"{ticker}.parquet")) is not None:
+            if (df := prices.read_cached(price_file(raw, ticker))) is not None:
                 price_frames[ticker] = df
         except Exception as exc:
             failures.setdefault(ticker, _reason(exc))
     macro_frames: dict[str, pd.DataFrame] = {}
     for series_id in series:
-        path = raw / "macro" / f"{series_id}.parquet"
+        path = macro_file(raw, series_id)
         try:
             if path.exists():
                 macro_frames[series_id] = pd.read_parquet(path)

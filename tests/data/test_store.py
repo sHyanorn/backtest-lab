@@ -4,8 +4,7 @@ import pandas as pd
 import pytest
 
 from backtest_lab.data.macro import Frequency, parse
-from backtest_lab.data.storage import write_parquet_atomic
-from backtest_lab.data.store import connect, macro_series, price_panel
+from backtest_lab.data.store import connect, macro_series, price_panel, write_parquet_atomic
 from tests.factories import price_frame
 
 

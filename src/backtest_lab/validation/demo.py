@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from backtest_lab.data.store import connect, price_panel
+from backtest_lab.data.store import connect, load_prices, raw_dir
 from backtest_lab.engine.backtest import Prices
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation.report import Settings, build_report
@@ -58,13 +58,11 @@ SEARCHES = (
 )
 
 
-def load_market(
+def load_sample(
     data_dir: Path, ticker: str = TICKER, start: pd.Timestamp = START, end: pd.Timestamp = END
 ) -> MarketData:
     """Total-return adjusted prices of one ticker between `start` and `end` inclusive."""
-    con = connect(data_dir / "raw")
-    raw = {field: price_panel(con, [ticker], field) for field in ("open", "close", "adj_close")}
-    prices = Prices.from_raw(raw["open"], raw["close"], raw["adj_close"])
+    prices = load_prices(connect(raw_dir(data_dir)), [ticker])
     dates = prices.close.index
     keep = (dates >= start) & (dates <= end)
     if not keep.any() or dates[keep][0] != start or dates[keep][-1] != end:
@@ -79,7 +77,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--processes", type=int, default=None)
     args = parser.parse_args(argv)
 
-    data = load_market(args.data_dir)
+    data = load_sample(args.data_dir)
     args.out.mkdir(parents=True, exist_ok=True)
     for search in SEARCHES:
         trials = run_grid(search.strategy, search.grid, data, processes=args.processes)

@@ -11,8 +11,7 @@ from fastapi.testclient import TestClient
 from backtest_lab.api import jobs, main
 from backtest_lab.api.jobs import STOPPED, JobStore
 from backtest_lab.api.main import create_app
-from backtest_lab.data.storage import write_parquet_atomic
-from backtest_lab.data.store import connect, macro_series, price_panel
+from backtest_lab.data.store import connect, load_prices, macro_series, write_parquet_atomic
 from backtest_lab.engine.backtest import Prices
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation.report import Settings, build_report
@@ -51,10 +50,8 @@ def wait(client: TestClient, job_id: str, timeout: float = 120.0) -> dict[str, A
 def direct_report(data_dir: Path, grid: Grid, strategy: str, benchmark: str) -> bytes:
     """The report computed without the API, as the demo runner does."""
     con = connect(data_dir / "raw")
-    tickers = [benchmark]
-    raw = {f: price_panel(con, tickers, f) for f in ("open", "close", "adj_close")}
     data = MarketData(
-        prices=Prices.from_raw(raw["open"], raw["close"], raw["adj_close"]),
+        prices=load_prices(con, [benchmark]),
         macro={s: macro_series(con, s) for s in ("DGS10", "DGS3MO")},
     )
     trials = run_grid(strategy, grid, data, processes=1)
@@ -119,9 +116,7 @@ def test_a_gap_in_the_traded_ticker_keeps_the_traded_dates(tmp_path: Path) -> No
         assert status["status"] == "done", status
         report = client.get(f"/api/sweeps/{status['id']}/report")
 
-    con = connect(tmp_path / "raw")
-    raw = {f: price_panel(con, ["QQQ", "SPY"], f) for f in ("open", "close", "adj_close")}
-    prices = Prices.from_raw(raw["open"], raw["close"], raw["adj_close"])
+    prices = load_prices(connect(tmp_path / "raw"), ["QQQ", "SPY"])
     traded = prices.close["QQQ"].notna()
     data = MarketData(prices=Prices(open=prices.open[traded], close=prices.close[traded]))
     grid = Grid.of(SWEEP["axes"], {"ticker": "QQQ", "allow_short": False})  # type: ignore[arg-type]
