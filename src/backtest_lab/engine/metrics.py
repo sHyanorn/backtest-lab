@@ -63,10 +63,19 @@ def sortino(returns: Returns, target: float = 0.0) -> float:
     return _ratio(ANNUALIZATION * float(np.mean(r - target)), downside_deviation(r, target))
 
 
+def drawdown_curve(
+    returns: Returns,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    """Wealth after each return and its drawdown from the highest wealth so far; the
+    starting wealth of 1 is a peak."""
+    wealth = np.cumprod(1 + _array(returns))
+    peak = np.maximum.accumulate(np.concatenate([[1.0], wealth]))[1:]
+    return wealth, wealth / peak - 1
+
+
 def max_drawdown(returns: Returns) -> float:
-    r = _array(returns)
-    wealth = np.concatenate([[1.0], np.cumprod(1 + r)])  # W0 = 1 is a peak
-    return float(np.min(wealth / np.maximum.accumulate(wealth) - 1))
+    _, drawdown = drawdown_curve(returns)
+    return float(np.min(drawdown, initial=0.0))
 
 
 def calmar(returns: Returns) -> float:

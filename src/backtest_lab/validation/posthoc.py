@@ -19,7 +19,7 @@ import numpy as np
 import numpy.typing as npt
 
 from backtest_lab.engine.backtest import run
-from backtest_lab.engine.metrics import ANNUALIZATION, summarize
+from backtest_lab.engine.metrics import ANNUALIZATION, drawdown_curve, summarize
 from backtest_lab.strategies import STRATEGIES, MarketData
 from backtest_lab.validation.demo import SEARCHES, SETTINGS, TICKER, Search, load_market
 from backtest_lab.validation.pbo import cscv
@@ -49,9 +49,8 @@ class Episode:
 
 def drawdown_episodes(returns: Returns, top: int = 3) -> list[Episode]:
     """The `top` deepest drawdown episodes, deepest first."""
-    wealth = np.cumprod(1 + np.asarray(returns, dtype=np.float64))
-    peak = np.maximum.accumulate(np.concatenate([[1.0], wealth]))[1:]
-    under = wealth < peak
+    wealth, drawdown = drawdown_curve(returns)
+    under = drawdown < 0
     episodes = []
     t = 0
     while t < len(wealth):
@@ -62,7 +61,7 @@ def drawdown_episodes(returns: Returns, top: int = 3) -> list[Episode]:
         while end < len(wealth) and under[end]:
             end += 1
         trough = t + int(np.argmin(wealth[t:end]))
-        episodes.append(Episode(peak=t - 1, trough=trough, depth=wealth[trough] / peak[t] - 1))
+        episodes.append(Episode(peak=t - 1, trough=trough, depth=drawdown[trough]))
         t = end
     return sorted(episodes, key=lambda e: e.depth)[:top]
 

@@ -64,15 +64,6 @@ class Result:
     weights: pd.DataFrame  # positions held from each day's open
     start: pd.Timestamp | None  # first date whose return follows a valid signal
 
-    @property
-    def equity(self) -> pd.Series:
-        return (1 + self.returns).cumprod()
-
-    @property
-    def drawdown(self) -> pd.Series:
-        equity = self.equity
-        return equity / equity.cummax().clip(lower=1.0) - 1  # W0 = 1 is a peak
-
 
 def _targets(weights: pd.DataFrame, prices: Prices) -> pd.DataFrame:
     unknown = weights.columns.difference(prices.close.columns)

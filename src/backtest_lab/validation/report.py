@@ -9,7 +9,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from backtest_lab.engine.backtest import Costs, run
-from backtest_lab.engine.metrics import ANNUALIZATION, sharpe, summarize
+from backtest_lab.engine.metrics import ANNUALIZATION, drawdown_curve, sharpe, summarize
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation import report_schema as rs
 from backtest_lab.validation.pbo import cscv, n_combinations
@@ -157,9 +157,8 @@ def buy_and_hold(ticker: str, data: MarketData, costs: Costs) -> pd.Series:
 def weekly_curve(
     dates: pd.DatetimeIndex, returns: npt.NDArray[np.float64]
 ) -> tuple[list[str], rs.Curve]:
-    equity = np.cumprod(1 + returns)
-    peak = np.maximum.accumulate(np.concatenate([[1.0], equity]))[1:]
-    frame = pd.DataFrame({"date": dates, "equity": equity, "drawdown": equity / peak - 1})
+    equity, drawdown = drawdown_curve(returns)
+    frame = pd.DataFrame({"date": dates, "equity": equity, "drawdown": drawdown})
     weeks = frame.groupby(dates.to_period("W"))
     last = weeks.last()
     curve = rs.Curve(
