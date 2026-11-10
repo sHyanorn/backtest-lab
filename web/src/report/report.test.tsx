@@ -147,8 +147,13 @@ describe('check cards', () => {
   })
 
   it('notes that the seed sensitivity verdict is uninformative', () => {
-    render(<CheckCards report={load('random_signal')} />)
+    const report = load('random_signal')
+    const { unmount } = render(<CheckCards report={report} />)
     expect(screen.getByText(/Neighbouring seeds are unrelated/)).toBeTruthy()
+    unmount()
+    // Only the registered report sweeps seeds as an ordered axis (D019).
+    render(<CheckCards report={{ ...report, schema_version: '1.1' }} />)
+    expect(screen.queryByText(/Neighbouring seeds are unrelated/)).toBeNull()
   })
 })
 

@@ -2,18 +2,26 @@ import { describe, expect, it } from 'vitest'
 import type { ParamInfo, StrategyInfo } from './api.ts'
 import { buildRequest, parseValues, type FormState } from './form.ts'
 
-const int: ParamInfo = { name: 'fast', type: 'int', default: 50, symbol: null }
+const int: ParamInfo = {
+  name: 'fast',
+  type: 'int',
+  default: 50,
+  symbol: null,
+  categorical: false,
+}
 const ticker: ParamInfo = {
   name: 'ticker',
   type: 'str',
   default: 'SPY',
   symbol: 'ticker',
+  categorical: false,
 }
 const flag: ParamInfo = {
   name: 'allow_short',
   type: 'bool',
   default: false,
   symbol: null,
+  categorical: false,
 }
 const strategy: StrategyInfo = {
   name: 'ma_crossover',
@@ -78,6 +86,26 @@ describe('buildRequest', () => {
         costs: { fee_bps: 1, slippage_bps: 5 },
       },
     })
+  })
+
+  it('lists as categorical the axes the API marks so', () => {
+    const seed = { ...int, name: 'seed', default: 0, categorical: true }
+    const random: StrategyInfo = {
+      name: 'random_signal',
+      description: '',
+      params: [ticker, seed, { ...int, name: 'hold', default: 5 }],
+    }
+    const texts = { ticker: 'SPY', seed: '0, 1, 2', hold: '5' }
+    expect(
+      buildRequest({ ...form({}), strategy: random, texts }),
+    ).toMatchObject({
+      ok: true,
+      request: { axes: { seed: [0, 1, 2] }, categorical: ['seed'] },
+    })
+    const fixedSeed = { ...texts, seed: '7', hold: '5, 10' }
+    expect(
+      buildRequest({ ...form({}), strategy: random, texts: fixedSeed }),
+    ).toMatchObject({ ok: true, request: { categorical: [] } })
   })
 
   it('needs at least one axis and at most 500 settings', () => {

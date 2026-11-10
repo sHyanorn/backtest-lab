@@ -6,7 +6,11 @@ import { Verdict } from './Verdict.tsx'
 
 export function CheckCards({ report }: { report: Report }) {
   const heatmap = report.checks.sensitivity.details.heatmap
-  const seedAxis = heatmap?.x.name === 'seed' || heatmap?.y?.name === 'seed'
+  // The registered control sweeps seeds as an ordered axis (D019). The sweep form now
+  // sends them as categorical, which leaves sensitivity without neighbours to judge.
+  const seedAxis =
+    report.schema_version === '1.0' &&
+    (heatmap?.x.name === 'seed' || heatmap?.y?.name === 'seed')
   return (
     <section aria-labelledby="cards-title">
       <h2 className="section-title" id="cards-title">

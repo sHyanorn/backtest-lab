@@ -23,12 +23,20 @@ def test_lists_every_strategy_with_typed_parameters(client: TestClient) -> None:
         "rate_rotation",
     }
     ma = {p["name"]: p for p in by_name["ma_crossover"]["params"]}
-    assert ma["fast"] == {"name": "fast", "type": "int", "default": 50, "symbol": None}
+    assert ma["fast"] == {
+        "name": "fast",
+        "type": "int",
+        "default": 50,
+        "symbol": None,
+        "categorical": False,
+    }
     assert ma["ticker"]["symbol"] == "ticker"
     rotation = {p["name"]: p["symbol"] for p in by_name["rate_rotation"]["params"]}
     assert rotation["risk_off"] == "ticker" and rotation["long_rate"] == "series"
     assert ma["allow_short"]["type"] == "bool"
     assert by_name["ma_crossover"]["description"].startswith("Long when")
+    random = {p["name"]: p["categorical"] for p in by_name["random_signal"]["params"]}
+    assert random == {"ticker": False, "seed": True, "hold": False}  # D019
 
 
 def test_backtest_matches_the_engine(client: TestClient, data_dir: Path) -> None:

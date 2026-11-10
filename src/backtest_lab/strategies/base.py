@@ -8,7 +8,9 @@ import pandas as pd
 
 from backtest_lab.engine.backtest import Prices
 
-SYMBOL = "symbol"  # dataclass field metadata key: what a string parameter names
+# dataclass field metadata keys
+SYMBOL = "symbol"  # what a string parameter names
+CATEGORICAL = "categorical"  # a number whose order means nothing (D019)
 
 
 def ticker_field(default: str) -> str:
@@ -20,6 +22,12 @@ def ticker_field(default: str) -> str:
 def series_field(default: str) -> str:
     """A strategy field that names a macro series."""
     value: str = field(default=default, metadata={SYMBOL: "series"})
+    return value
+
+
+def categorical_field(default: int) -> int:
+    """A numeric strategy field whose neighbouring values are unrelated, such as a seed."""
+    value: int = field(default=default, metadata={CATEGORICAL: True})
     return value
 
 

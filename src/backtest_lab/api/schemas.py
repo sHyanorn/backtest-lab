@@ -45,6 +45,7 @@ class ParamInfo(_Response):
     type: TypeName
     default: Value
     symbol: SymbolKind | None  # for a string parameter: names a ticker or a macro series
+    categorical: bool  # for a number: sweep it as a categorical axis (D019)
 
 
 class StrategyInfo(_Response):

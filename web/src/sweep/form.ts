@@ -68,6 +68,9 @@ export function buildRequest(form: FormState): Built {
     else if (parsed.values.length > 1) axes[param.name] = parsed.values
     else fixed[param.name] = parsed.values[0] as Value
   }
+  const categorical = form.strategy.params
+    .filter((p) => p.categorical && p.name in axes)
+    .map((p) => p.name)
   const trials = Object.values(axes).reduce((n, v) => n * v.length, 1)
   const fee = Number(form.fee)
   const slippage = Number(form.slippage)
@@ -89,6 +92,7 @@ export function buildRequest(form: FormState): Built {
       strategy: form.strategy.name,
       axes,
       fixed,
+      categorical,
       ...(form.start ? { start: form.start } : {}),
       ...(form.end ? { end: form.end } : {}),
       costs: { fee_bps: fee, slippage_bps: slippage },

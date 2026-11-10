@@ -191,7 +191,13 @@ def create_app(data_dir: Path | None = None, processes: int | None = None) -> Fa
                 name=name,
                 description=(cls.__doc__ or "").strip().split("\n\n")[0].replace("\n", " "),
                 params=[
-                    ParamInfo(name=s.name, type=s.type, default=s.default, symbol=s.symbol)
+                    ParamInfo(
+                        name=s.name,
+                        type=s.type,
+                        default=s.default,
+                        symbol=s.symbol,
+                        categorical=s.categorical,
+                    )
                     for s in specs(name)
                 ],
             )

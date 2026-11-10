@@ -106,6 +106,7 @@
 - A grid can list numeric axes as categorical, such as a random seed. Their values need not be ordered, and sensitivity compares a trial only with neighbours along ordered axes, so a categorical axis never supplies neighbours
 - `trials.json` writes the list only when it is not empty, so files saved before this change load unchanged. The pre-registered demo (D021) keeps its configuration, in which `seed` is an ordered axis
 - Rationale: adjacent seeds are unrelated, so treating them as neighbours gives a sensitivity verdict with no meaning
+- A strategy marks such a parameter in its definition (the random-signal `seed`), `/api/strategies` reports it, and the dashboard's sweep form lists it under `categorical` when it is an axis. The dashboard's note that the seed sensitivity verdict is uninformative is shown for the registered 1.0 report only
 
 ## D020 Metrics return NaN in degenerate cases
 - Date: 2026-11-08

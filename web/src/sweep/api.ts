@@ -11,6 +11,8 @@ export interface ParamInfo {
   type: 'str' | 'int' | 'float' | 'bool'
   default: Value
   symbol: 'ticker' | 'series' | null
+  /** A number whose order means nothing, such as a seed (D019). */
+  categorical: boolean
 }
 
 export interface StrategyInfo {
@@ -23,6 +25,7 @@ export interface SweepRequest {
   strategy: string
   axes: Record<string, Value[]>
   fixed: Record<string, Value>
+  categorical: string[]
   start?: string
   end?: string
   costs: { fee_bps: number; slippage_bps: number }

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from backtest_lab.strategies.base import MarketData, ticker_field
+from backtest_lab.strategies.base import MarketData, categorical_field, ticker_field
 
 
 @dataclass(frozen=True)
@@ -17,7 +17,7 @@ class RandomSignal:
     """
 
     ticker: str = ticker_field("SPY")
-    seed: int = 0
+    seed: int = categorical_field(0)
     hold: int = 5
 
     def __post_init__(self) -> None:

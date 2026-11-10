@@ -6,7 +6,7 @@ from collections.abc import Iterable, Mapping
 from typing import Literal
 
 from backtest_lab.strategies import STRATEGIES, Strategy
-from backtest_lab.strategies.base import SYMBOL
+from backtest_lab.strategies.base import CATEGORICAL, SYMBOL
 from backtest_lab.validation.search import Param, Params
 
 type TypeName = Literal["str", "int", "float", "bool"]
@@ -27,6 +27,7 @@ class ParamSpec:
     type: TypeName
     default: Param
     symbol: SymbolKind | None  # what a string parameter names
+    categorical: bool  # a number whose order means nothing (D019)
 
 
 def specs(strategy: str) -> list[ParamSpec]:
@@ -35,7 +36,13 @@ def specs(strategy: str) -> list[ParamSpec]:
     cls = STRATEGIES[strategy]
     assert dataclasses.is_dataclass(cls)
     return [
-        ParamSpec(f.name, _TYPE_NAMES[f.type], f.default, f.metadata.get(SYMBOL))
+        ParamSpec(
+            f.name,
+            _TYPE_NAMES[f.type],
+            f.default,
+            f.metadata.get(SYMBOL),
+            f.metadata.get(CATEGORICAL, False),
+        )
         for f in dataclasses.fields(cls)
     ]
 
