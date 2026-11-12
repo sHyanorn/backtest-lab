@@ -43,7 +43,7 @@ Not pre-registered. These questions were chosen after seeing the results above, 
 | PBO, whole grid (registered) | 0.05 | 0.12 |
 | PBO, long-only half | 0.42 (64 settings) | 0.72 (17 settings) |
 
-An in-sample winner that is always long-only ranks in the top half out of sample because the long/short half is worse, so the whole-grid PBO is low. Within the long-only half, which setting wins is no better than chance. The best long-only setting still has a significant deflated Sharpe ratio within that half (about 1.00 for both, with 10.5 and 3.8 effectively independent settings).
+An in-sample winner that is always long-only ranks in the top half out of sample because the long/short half is worse, so the whole-grid PBO is low. Within the long-only half, picking the winner is not shown to beat chance. The best long-only setting still has a significant deflated Sharpe ratio within that half (about 1.00 for both, with 10.5 and 3.8 effectively independent settings).
 
 Counting every setting of the grid, as METHODS.md Section 5 requires, the deflated Sharpe ratios of the same two settings are the registered 0.945 and 0.988; the values near 1.00 hold only when the long/short half is left out.
 

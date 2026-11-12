@@ -19,7 +19,7 @@ Three searches on SPY from 1993 to 2026, fixed in advance (D021): a moving-avera
 
 1. A search with no skill still finds a winner: the best random-signal setting has a positive Sharpe ratio, and the platform rates it red on six of eight checks (one of them parameter sensitivity, which is uninformative for random seeds).
 2. Post hoc analysis shows that, for both real strategies, the main finding of the search is that long-only beats long/short, because shorting SPY works against the equity premium: the in-sample winner is long-only in all 12,870 CSCV splits for the moving average and in all but one for momentum, which keeps their registered PBO well below 0.5 (0.05 and 0.12). Both are rated yellow overall: the moving average narrowly misses a significant deflated Sharpe ratio (0.945 against 0.95), and the momentum PBO is above the green band.
-3. Among the long-only settings, picking the best is no better than a coin flip (post hoc: PBO 0.42 for the moving average and 0.72 for momentum).
+3. Among the long-only settings, picking the best is not shown to beat picking at random (post hoc: PBO 0.42 for the moving average and 0.72 for momentum).
 4. The selected moving-average setting has a higher Sharpe ratio than buy and hold (0.80 against 0.64) because its volatility is lower, 12.5% against 18.7%. Its maximum drawdown is -21% against -55%, while its CAGR is lower, 9.7% against 10.8%.
 5. Takeaway: passing the overfitting checks says a result is unlikely to come from the search alone. Whether it beats the market is a separate question, and the report answers the two separately.
 
