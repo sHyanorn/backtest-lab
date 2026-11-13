@@ -389,7 +389,7 @@ $s$ uses the population form because the neighbourhood is the whole set of inter
 **Pitfalls.**
 
 - This is a descriptive diagnostic with no sampling distribution; it complements PBO and DSR and does not replace them.
-- Grid spacing matters: a neighbourhood on a very coarse grid is not local, and on a very fine grid it is trivially smooth. Spacing is fixed per strategy in its parameter definition.
+- Grid spacing matters: a neighbourhood on a very coarse grid is not local, and on a very fine grid it is trivially smooth. The registered grids fix their spacing (D021); in a custom sweep the spacing is whatever values the caller lists, and the sensitivity result depends on it.
 - Categorical parameters have no neighbours: they stay fixed at their values in $\mathbf i^*$ and the neighbourhood moves only along ordered parameters.
 
 **References.** No single source defines this statistic; it is a project convention. Pardo (2008) discusses the related idea of preferring robust parameter regions over isolated optima.
