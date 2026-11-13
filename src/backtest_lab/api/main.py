@@ -96,6 +96,9 @@ def _prepare(body: SweepRequest, market: Market, job_id: str | None = None) -> S
         unknown = (set(body.axes) | set(body.fixed)) - set(spec)
         if unknown:
             raise ParamError(f"{body.strategy} has no parameter {sorted(unknown)}")
+        both = set(body.axes) & set(body.fixed)
+        if both:
+            raise ParamError(f"{sorted(both)} given both as an axis and fixed")
         axes: dict[str, list[Param]] = {
             name: [check_value(spec[name], v) for v in values] for name, values in body.axes.items()
         }
@@ -104,6 +107,8 @@ def _prepare(body: SweepRequest, market: Market, job_id: str | None = None) -> S
         given = check_params(body.strategy, body.fixed)
         fixed = {n: given.get(n, s.default) for n, s in spec.items() if n not in axes}
         grid = Grid.of(axes, fixed, body.categorical)
+        if grid.size < 2:
+            raise ParamError("the grid has 1 trial; a report needs at least two")
         if grid.size > MAX_TRIALS:  # before the trials are listed
             raise ParamError(f"the grid has {grid.size} trials; the limit is {MAX_TRIALS}")
         params = grid.params()
