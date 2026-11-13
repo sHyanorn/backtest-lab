@@ -25,6 +25,9 @@ class RateRotation:
     def __post_init__(self) -> None:
         if self.smoothing < 1:
             raise ValueError("smoothing must be positive")
+        # One ticker for both would collapse the weights into one column, the risk-off one.
+        if self.risk_on == self.risk_off:
+            raise ValueError("risk_on and risk_off must differ")
 
     @property
     def warmup(self) -> int:

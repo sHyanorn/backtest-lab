@@ -200,6 +200,7 @@ def test_rotation_uses_a_rate_only_once_published() -> None:
         lambda: TimeSeriesMomentum(lookback=0),
         lambda: MeanReversion(lookback=1),
         lambda: RateRotation(smoothing=0),
+        lambda: RateRotation(risk_off="SPY"),  # would hold one ticker, the inverse
         lambda: RandomSignal(hold=0),
         lambda: RandomSignal(seed=-1),
     ],

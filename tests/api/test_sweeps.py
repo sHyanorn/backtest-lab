@@ -154,6 +154,10 @@ def test_categorical_axis_reaches_the_report(client: TestClient) -> None:
         ({"start": "2015-01-01"}, "at least 1512"),
         ({"benchmark": "DGS10"}, "not a ticker"),
         ({"axes": {"ticker": ["SPY", "IEF"]}, "fixed": {}}, "set a benchmark"),
+        (
+            {"strategy": "rate_rotation", "axes": {"risk_off": ["IEF", "SPY"]}, "fixed": {}},
+            "risk_on and risk_off must differ",
+        ),
         ({"surprise": True}, "Extra inputs"),
     ],
 )

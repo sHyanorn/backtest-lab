@@ -100,6 +100,13 @@ def test_invalid_requests_are_422(client: TestClient, body: dict[str, object]) -
     assert r.status_code == 422, r.text
 
 
+def test_rotation_between_one_ticker_is_422(client: TestClient) -> None:
+    body = {"strategy": "rate_rotation", "params": {"risk_off": "SPY"}}
+    r = client.post("/api/backtests", json=body)
+    assert r.status_code == 422
+    assert "risk_on and risk_off must differ" in r.text
+
+
 def test_float_parameter_accepts_an_integer(client: TestClient) -> None:
     r = client.post("/api/backtests", json={"strategy": "mean_reversion", "params": {"entry_z": 2}})
     assert r.status_code == 200
