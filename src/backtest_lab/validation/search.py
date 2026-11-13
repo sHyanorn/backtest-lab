@@ -5,6 +5,7 @@ Trials are aligned on the dates where all of them are live (METHODS.md, Conventi
 
 import itertools
 import json
+import math
 import multiprocessing
 import os
 import signal
@@ -91,8 +92,13 @@ class Grid:
             _is_ordered(values) and name not in self.categorical for name, values in self.axes
         )
 
+    @property
+    def size(self) -> int:
+        """The number of trials, exact for any grid; len() raises above sys.maxsize."""
+        return math.prod(self.shape)
+
     def __len__(self) -> int:
-        return int(np.prod(self.shape))
+        return self.size
 
     def params(self) -> list[Params]:
         fixed = dict(self.fixed)

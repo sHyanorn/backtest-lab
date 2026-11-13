@@ -104,8 +104,8 @@ def _prepare(body: SweepRequest, market: Market, job_id: str | None = None) -> S
         given = check_params(body.strategy, body.fixed)
         fixed = {n: given.get(n, s.default) for n, s in spec.items() if n not in axes}
         grid = Grid.of(axes, fixed, body.categorical)
-        if len(grid) > MAX_TRIALS:
-            raise ParamError(f"the grid has {len(grid)} trials; the limit is {MAX_TRIALS}")
+        if grid.size > MAX_TRIALS:  # before the trials are listed
+            raise ParamError(f"the grid has {grid.size} trials; the limit is {MAX_TRIALS}")
         params = grid.params()
         warmup = max(build(body.strategy, p).warmup for p in params)
         _check_symbols(market, body.strategy, params)

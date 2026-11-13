@@ -150,3 +150,12 @@ def test_cancel_stops_the_search_and_its_workers(processes: int) -> None:
         )
     assert len(seen) < len(grid)
     assert multiprocessing.active_children() == []
+
+
+def test_grid_size_is_exact_without_listing_the_trials() -> None:
+    # 2**64 points, which a 64-bit product wraps to 0; params() is never called on it
+    axis = tuple(range(2**16))
+    grid = Grid(axes=tuple((name, axis) for name in ("a", "b", "c", "d")))
+    assert grid.size == 2**64
+    with pytest.raises(OverflowError):
+        len(grid)  # beyond what len() can return, so it cannot wrap either

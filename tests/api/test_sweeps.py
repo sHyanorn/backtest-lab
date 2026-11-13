@@ -169,6 +169,19 @@ def test_invalid_sweeps_are_rejected_before_queueing(
     assert message in r.text
 
 
+def test_the_trial_limit_is_checked_before_the_trials_are_listed(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def unlisted(self: Grid) -> None:
+        raise AssertionError("the trials were listed")
+
+    monkeypatch.setattr(Grid, "size", property(lambda self: 2**64))
+    monkeypatch.setattr(Grid, "params", unlisted)
+    r = client.post("/api/sweeps", json=SWEEP)
+    assert r.status_code == 422
+    assert f"the grid has {2**64} trials; the limit is 500" in r.text
+
+
 @pytest.mark.parametrize("job_id", ["nope", "..%2F..%2Fjobs.sqlite3", "A" * 32, "0" * 33])
 def test_malformed_ids_are_404_without_a_lookup(
     client: TestClient, monkeypatch: pytest.MonkeyPatch, job_id: str
