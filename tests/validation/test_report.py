@@ -1,5 +1,6 @@
 import json
 import math
+import re
 from collections.abc import Callable
 from dataclasses import replace
 from functools import cache
@@ -14,11 +15,13 @@ from backtest_lab.engine.metrics import ANNUALIZATION, max_drawdown, summarize
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation import report as report_module
 from backtest_lab.validation.pbo import cscv
+from backtest_lab.validation.purged_kfold import purged_cv
 from backtest_lab.validation.report import (
     EFFICIENCY_LINES,
     PBO_LINES,
     PROBABILITY_LINES,
     SENSITIVITY_LINES,
+    SHARPE_LINES,
     Settings,
     build_report,
     buy_and_hold,
@@ -47,7 +50,7 @@ from backtest_lab.validation.sharpe_stats import (
     probabilistic_sharpe_ratio,
     sharpe_moments,
 )
-from backtest_lab.validation.walk_forward import walk_forward
+from backtest_lab.validation.walk_forward import holdout, walk_forward
 from tests.factories import synthetic_market
 
 SCHEMA = Path(__file__).parents[2] / "docs" / "report.schema.json"
@@ -420,18 +423,28 @@ def _side(x: float, line: float) -> int:
 
 
 @pytest.mark.parametrize(
-    "lines", [PBO_LINES, PROBABILITY_LINES, EFFICIENCY_LINES, SENSITIVITY_LINES]
+    ("lines", "spec"),
+    [
+        (PBO_LINES, ".0%"),
+        (PROBABILITY_LINES, ".0%"),
+        (EFFICIENCY_LINES, ".0%"),
+        (SENSITIVITY_LINES, ".0%"),
+        (SHARPE_LINES, ".2f"),
+        ((8.04,), ".1f"),
+    ],
 )
-def test_a_stated_value_keeps_its_side_of_every_line(lines: tuple[float, ...]) -> None:
+def test_a_stated_value_keeps_its_side_of_every_line(lines: tuple[float, ...], spec: str) -> None:
+    scale = 100 if spec.endswith("%") else 1
+    step = 1 / scale / 10 ** int(spec[1:-1])  # one unit of the last digit shown
     for line in lines:
-        for offset in (-4e-3, -4e-4, -4e-6, 0.0, 4e-6, 4e-4, 4e-3):
-            x = line + offset
-            text = stated(x, lines)
+        for offset in (-0.4, -0.04, -4e-4, 0.0, 4e-4, 0.04, 0.4):
+            x = line + offset * step
+            text = stated(x, lines, spec)
             if text.startswith("just "):
                 word, value = text.split()[1:]
-                assert value == f"{line:.0%}" and word == ("under" if x < line else "over")
+                assert value == format(line, spec) and word == ("under" if x < line else "over")
                 continue
-            shown = float(text.removesuffix("%")) / 100
+            shown = float(text.removesuffix("%")) / scale
             assert [_side(shown, c) for c in lines] == [_side(x, c) for c in lines], text
 
 
@@ -451,6 +464,14 @@ def test_a_stated_value_keeps_its_side_of_every_line(lines: tuple[float, ...]) -
 )
 def test_stated_examples(x: float | None, lines: tuple[float, ...], text: str) -> None:
     assert stated(x, lines) == text
+
+
+@pytest.mark.parametrize(
+    ("x", "text"),
+    [(0.79, "0.79"), (0.004, "0.004"), (-0.004, "-0.004"), (4e-4, "just over 0.00"), (0.0, "0.00")],
+)
+def test_sharpe_ratios_near_zero_keep_their_sign(x: float, text: str) -> None:
+    assert stated(x, SHARPE_LINES, ".2f") == text
 
 
 @cache
@@ -476,6 +497,11 @@ def _replacing(
 def _scale_to_efficiency(wf: Any) -> dict[str, Any]:
     assert wf.is_return > 0
     return {"returns": wf.returns * (0.4996 * wf.is_return / wf.oos_return)}
+
+
+def _shift_to_sharpe(wf: Any) -> dict[str, Any]:
+    r = wf.returns
+    return {"returns": r - r.mean() + 0.004 * r.std() / math.sqrt(ANNUALIZATION)}
 
 
 @pytest.mark.parametrize(
@@ -510,6 +536,44 @@ def _scale_to_efficiency(wf: Any) -> dict[str, Any]:
             "keep just under 75% of",
             "yellow",
         ),
+        (
+            "holdout",
+            _replacing(holdout, lambda h: {"oos_sharpe": 0.004}),
+            "holdout",
+            "to 0.004 over",
+            "yellow",
+        ),
+        (
+            "holdout",
+            _replacing(holdout, lambda h: {"oos_sharpe": -0.004}),
+            "holdout",
+            "to -0.004 over",
+            "red",
+        ),
+        (
+            "walk_forward",
+            _replacing(walk_forward, _shift_to_sharpe),
+            "walk_forward",
+            "Sharpe ratio was 0.004.",
+            "yellow",
+        ),
+        (
+            "purged_cv",
+            _replacing(
+                purged_cv,
+                lambda cv: {"folds": tuple(replace(f, test_sharpe=0.004) for f in cv.folds)},
+            ),
+            "purged_cv",
+            "Sharpe ratio of 0.004 on",
+            "yellow",
+        ),
+        (
+            "sensitivity",
+            _replacing(sensitivity, lambda s: {"best_sharpe": 0.004, "mean": 0.004}),
+            "sensitivity",
+            "Sharpe ratio of 0.004 on",
+            "green",
+        ),
     ],
 )
 def test_summaries_do_not_round_onto_a_threshold(
@@ -525,3 +589,25 @@ def test_summaries_do_not_round_onto_a_threshold(
     result = getattr(build_report(trials, data, "SPY", SETTINGS).checks, check)
     assert words in result.summary
     assert result.verdict == verdict
+
+
+def _figure(text: str) -> float:
+    """A stated figure, with "just under" or "just over" as a nudge below or above it."""
+    nudge = {"under": -1e-9, "over": 1e-9}
+    words = text.split()
+    return float(words[-1]) + (nudge[words[1]] if words[0] == "just" else 0.0)
+
+
+@pytest.mark.parametrize("gap", [-0.08, -0.03, -0.001, 0.0, 0.001, 0.03, 0.08])
+def test_minimum_backtest_length_and_sample_compare_as_the_verdict_does(
+    monkeypatch: pytest.MonkeyPatch, gap: float
+) -> None:
+    trials, data = _judged_case()
+    years = len(trials.returns) / ANNUALIZATION
+    monkeypatch.setattr(report_module, "min_backtest_length", lambda *_: years + gap)
+    check = build_report(trials, data, "SPY", SETTINGS).checks.min_backtest_length
+    found = re.search(r"shorter than (.+) years; this backtest covers (.+)\.$", check.summary)
+    assert found is not None
+    needed, covers = (_figure(g) for g in found.groups())
+    assert check.verdict == ("red" if gap > 0 else "green")
+    assert needed > covers if gap > 0 else needed <= covers

@@ -51,6 +51,7 @@ PBO_LINES = (0.0, PBO_GREEN, PBO_RED, 1.0)
 PROBABILITY_LINES = (0.0, PROBABILITY_YELLOW, PROBABILITY_GREEN, 1.0)
 EFFICIENCY_LINES = (0.0, RETENTION_GREEN)  # positive OOS return, then the ratio
 SENSITIVITY_LINES = (SENSITIVITY_YELLOW, SENSITIVITY_GREEN)
+SHARPE_LINES = (0.0,)  # the verdicts ask only whether a Sharpe ratio is positive
 
 _SEVERITY: dict[rs.CheckVerdict, int] = {"green": 0, "yellow": 1, "not_assessable": 1, "red": 2}
 _OVERALL: tuple[rs.Verdict, ...] = ("green", "yellow", "red")
@@ -187,6 +188,10 @@ def stated(x: float | None, lines: Sequence[float], spec: str = ".0%") -> str:
     return f"just {'under' if x < line else 'over'} {format(line, spec)}"
 
 
+def _sharpe(x: float | None) -> str:
+    return stated(finite(x), SHARPE_LINES, ".2f")
+
+
 def buy_and_hold(ticker: str, data: MarketData, costs: Costs) -> pd.Series:
     """Net returns of a constant weight of 1 in `ticker`, flat before it lists."""
     close = data.prices.close[ticker]
@@ -300,8 +305,8 @@ def _holdout_check(trials: Trials, s: Settings) -> rs.HoldoutCheck:
     retention = finite(h.retention)
     summary = (
         f"Picked on the first {s.holdout_fraction:.0%} of the history, the best setting's "
-        f"Sharpe ratio went from {_fmt(finite(h.is_sharpe))} to {_fmt(finite(h.oos_sharpe))} "
-        f"over the remaining {oos_years:.1f} years."
+        f"Sharpe ratio went from {_sharpe(h.is_sharpe)} to {_sharpe(h.oos_sharpe)} over the "
+        f"remaining {oos_years:.1f} years."
     )
     return rs.HoldoutCheck(
         title="Holdout split",
@@ -330,7 +335,7 @@ def _walk_forward_check(trials: Trials, data: MarketData, s: Settings) -> rs.Wal
         kept = f"it kept {stated(efficiency, EFFICIENCY_LINES)} of the in-sample return rate"
     summary = (
         f"Re-picking the best setting every {s.oos_days} days on {window} and trading it on "
-        f"the next period, {kept}; the out-of-sample Sharpe ratio was {_fmt(oos_sharpe)}."
+        f"the next period, {kept}; the out-of-sample Sharpe ratio was {_sharpe(oos_sharpe)}."
     )
     return rs.WalkForwardCheck(
         title="Walk-forward analysis",
@@ -367,8 +372,8 @@ def _purged_cv_check(trials: Trials, s: Settings) -> rs.PurgedCVCheck:
     retention = finite(cv.retention)
     summary = (
         f"Picking the best setting on {s.folds - 1} of {s.folds} folds, with overlapping and "
-        f"embargoed days removed, gave an average Sharpe ratio of {cv.score:.2f} on the "
-        f"held-out fold, against {cv.train_score:.2f} on the folds it was picked on."
+        f"embargoed days removed, gave an average Sharpe ratio of {_sharpe(cv.score)} on the "
+        f"held-out fold, against {_sharpe(cv.train_score)} on the folds it was picked on."
     )
     return rs.PurgedCVCheck(
         title="Purged cross-validation",
@@ -523,10 +528,14 @@ def _min_backtest_check(n_eff: float, target: float, years: float) -> rs.MinBack
             "The selected setting's Sharpe ratio is not positive, so no length of data supports it."
         )
     else:
+        covers = stated(years, (min_years,), ".1f")
+        # Stated on the same side of the stated length as of the sample, so the two
+        # figures compare as the verdict does (D042).
+        sample = (years,) if covers.startswith("just") else (float(covers),)
         summary = (
             f"With about {n_eff:.0f} independent settings tried, luck alone produces a best "
-            f"Sharpe ratio of {target:.2f} in samples shorter than {min_years:.1f} years; "
-            f"this backtest covers {years:.1f}."
+            f"Sharpe ratio of {_sharpe(target)} in samples shorter than "
+            f"{stated(min_years, sample, '.1f')} years; this backtest covers {covers}."
         )
     return rs.MinBacktestCheck(
         title="Minimum backtest length",
@@ -566,7 +575,7 @@ def _sensitivity_check(
     else:
         summary = (
             f"Settings next to the best one keep {stated(retention, SENSITIVITY_LINES)} of its "
-            f"Sharpe ratio of {result.best_sharpe:.2f} on average."
+            f"Sharpe ratio of {_sharpe(result.best_sharpe)} on average."
         )
     return rs.SensitivityCheck(
         title="Parameter sensitivity",
