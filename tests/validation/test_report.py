@@ -40,6 +40,7 @@ from backtest_lab.validation.sharpe_stats import (
 from tests.factories import synthetic_market
 
 SCHEMA = Path(__file__).parents[2] / "docs" / "report.schema.json"
+DEMO = Path(__file__).parents[2] / "results" / "demo"
 SETTINGS = Settings(is_days=500, oos_days=250)
 
 
@@ -98,6 +99,34 @@ def test_logit_histogram_counts_every_combination(n: int) -> None:
     counts, edges = logit_histogram(result.logits, n)
     assert counts.sum() == len(result.logits) == 12_870
     assert edges[0] == -edges[-1] == pytest.approx(-math.log(n))
+
+
+def test_bins_left_of_zero_hold_the_logits_pbo_counts() -> None:
+    # Every averaged rank from 1 to N, as in selection_logits; rank (N + 1) / 2 gives a
+    # logit of exactly 0, which PBO counts as overfit.
+    for n in range(2, 201):
+        omega = np.arange(2, 2 * n + 1) / 2 / (n + 1)
+        logits = np.log(omega / (1 - omega))
+        counts, edges = logit_histogram(logits, n)
+        half = len(counts) // 2
+        assert edges[half] == 0.0, n
+        assert counts[:half].sum() == (logits <= 0).sum(), n
+        assert counts.sum() == len(logits), n
+
+
+@pytest.mark.parametrize("name", ["ma_crossover", "momentum", "random_signal"])
+def test_registered_histograms_are_unchanged(name: str) -> None:
+    # With the same edges, the counts differ from the earlier rule (bins closed on the
+    # left, so a logit of 0 fell right of the centre) only for logits equal to 0. The bins
+    # left of the centre of each registered histogram already hold every logit PBO counts,
+    # so none was 0 and the counts are the same.
+    report = json.loads((DEMO / f"{name}.json").read_text(encoding="utf-8"))
+    pbo = report["checks"]["pbo"]
+    histogram = pbo["details"]["logits"]
+    _, edges = logit_histogram(np.zeros(0), report["strategy"]["n_trials"])
+    assert histogram["edges"] == [float(e) for e in edges]
+    overfit = round(pbo["metrics"]["pbo"] * pbo["metrics"]["n_combinations"])
+    assert sum(histogram["counts"][: len(edges) // 2]) == overfit
 
 
 def test_worst() -> None:

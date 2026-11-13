@@ -104,15 +104,24 @@ def sensitivity_verdict(best: float, retention: float | None, assessable: bool) 
 def logit_histogram(
     logits: npt.NDArray[np.float64], n_trials: int, bins: int = _LOGIT_BINS
 ) -> tuple[npt.NDArray[np.intp], npt.NDArray[np.float64]]:
-    """Counts and edges of equal bins on [-ln N, ln N], the range of the logits.
+    """Counts and edges of an even number of equal bins on [-ln N, ln N], the range of
+    the logits.
 
-    The extreme logits are +-ln N in exact arithmetic but can round one ulp outside
-    it, where np.histogram would drop them, so they are clipped first.
+    The centre edge is exactly 0, and the bins left of it hold the logits at or below 0,
+    which PBO counts: a logit of 0 falls in the last of them. The extreme logits are
+    +-ln N in exact arithmetic but can round one ulp outside it, where np.histogram
+    would drop them, so they are clipped first.
     """
+    if bins % 2:
+        raise ValueError("need an even number of bins")
+    half = bins // 2
     limit = math.log(n_trials)
     edges = np.linspace(-limit, limit, bins + 1)
-    counts, _ = np.histogram(np.clip(logits, -limit, limit), edges)
-    return counts, edges
+    edges[half] = 0.0
+    clipped = np.clip(logits, -limit, limit)
+    below, _ = np.histogram(clipped[clipped <= 0], edges[: half + 1])
+    above, _ = np.histogram(clipped[clipped > 0], edges[half:])
+    return np.concatenate([below, above]), edges
 
 
 def enough_trials(fewest: float) -> bool:

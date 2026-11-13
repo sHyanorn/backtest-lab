@@ -37,7 +37,7 @@ Every check has `title`, `verdict` (`green`, `yellow` or `red`), `summary` and `
 | `holdout` | Section 2.1, first 70% IS | Retention rule on OOS/IS Sharpe | Fraction, selected trial and parameters |
 | `walk_forward` | Section 2.2, rolling 1260/252 days | Retention rule on walk-forward efficiency, OOS return positive | Each window: dates, selected trial, IS and OOS Sharpe |
 | `purged_cv` | Section 3, K = 10, h = ceil(0.01 T) | Retention rule on test/train Sharpe | Each fold: dates, training size, selected trial, train and test Sharpe |
-| `pbo` | Section 4, S = 16 | Green up to 0.10, yellow up to 0.30, red above | Histogram of the logits: 20 equal bins on $[-\ln N, \ln N]$ |
+| `pbo` | Section 4, S = 16 | Green up to 0.10, yellow up to 0.30, red above | Histogram of the logits: 20 equal bins on $[-\ln N, \ln N]$; the ten left of 0 hold the logits at or below 0, which PBO counts |
 | `deflated_sharpe` | Section 5 | Green from 0.95, yellow from 0.5, red below | none |
 | `track_record` | Section 6, PSR(0) and MinTRL at $\alpha$ = 0.05 | Green from 0.95, yellow from 0.5, red below | none |
 | `min_backtest_length` | Section 6, MinBTL with $\hat N$ | Green when the sample is at least MinBTL, else red | none |

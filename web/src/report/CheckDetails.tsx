@@ -160,7 +160,7 @@ function Body({ report, check }: { report: Report; check: CheckKey }) {
     case 'pbo': {
       const { metrics, details } = report.checks.pbo
       const { edges, counts } = details.logits
-      // The edges are symmetric about zero, but the centre one can be off by an ulp.
+      // The first half of the bins holds the logits at or below zero, which PBO counts.
       const half = counts.length / 2
       return (
         <>
