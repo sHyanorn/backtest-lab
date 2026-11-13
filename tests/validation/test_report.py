@@ -1,7 +1,10 @@
 import json
 import math
+from collections.abc import Callable
+from dataclasses import replace
 from functools import cache
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -9,8 +12,13 @@ import pytest
 
 from backtest_lab.engine.metrics import ANNUALIZATION, max_drawdown, summarize
 from backtest_lab.strategies import MarketData
+from backtest_lab.validation import report as report_module
 from backtest_lab.validation.pbo import cscv
 from backtest_lab.validation.report import (
+    EFFICIENCY_LINES,
+    PBO_LINES,
+    PROBABILITY_LINES,
+    SENSITIVITY_LINES,
     Settings,
     build_report,
     buy_and_hold,
@@ -22,11 +30,13 @@ from backtest_lab.validation.report import (
     probability_verdict,
     retention_verdict,
     sensitivity_verdict,
+    stated,
     worst,
 )
 from backtest_lab.validation.report_schema import CheckVerdict, Report, json_schema
 from backtest_lab.validation.search import Grid, Trials, run_grid
 from backtest_lab.validation.selection import best_trial, ranking_daily_sharpe
+from backtest_lab.validation.sensitivity import sensitivity
 from backtest_lab.validation.sharpe_stats import (
     average_correlation,
     deflated_sharpe_ratio,
@@ -37,6 +47,7 @@ from backtest_lab.validation.sharpe_stats import (
     probabilistic_sharpe_ratio,
     sharpe_moments,
 )
+from backtest_lab.validation.walk_forward import walk_forward
 from tests.factories import synthetic_market
 
 SCHEMA = Path(__file__).parents[2] / "docs" / "report.schema.json"
@@ -402,3 +413,115 @@ def test_json_keeps_check_order_for_the_dashboard() -> None:
         "min_backtest_length",
         "sensitivity",
     ]
+
+
+def _side(x: float, line: float) -> int:
+    return (x > line) - (x < line)
+
+
+@pytest.mark.parametrize(
+    "lines", [PBO_LINES, PROBABILITY_LINES, EFFICIENCY_LINES, SENSITIVITY_LINES]
+)
+def test_a_stated_value_keeps_its_side_of_every_line(lines: tuple[float, ...]) -> None:
+    for line in lines:
+        for offset in (-4e-3, -4e-4, -4e-6, 0.0, 4e-6, 4e-4, 4e-3):
+            x = line + offset
+            text = stated(x, lines)
+            if text.startswith("just "):
+                word, value = text.split()[1:]
+                assert value == f"{line:.0%}" and word == ("under" if x < line else "over")
+                continue
+            shown = float(text.removesuffix("%")) / 100
+            assert [_side(shown, c) for c in lines] == [_side(x, c) for c in lines], text
+
+
+@pytest.mark.parametrize(
+    ("x", "lines", "text"),
+    [
+        (0.9451495, PROBABILITY_LINES, "94.5%"),  # the registered moving-average DSR
+        (0.9999965, PROBABILITY_LINES, "just under 100%"),  # its PSR
+        (0.996, PROBABILITY_LINES, "99.6%"),
+        (0.95, PROBABILITY_LINES, "95%"),
+        (0.62, PROBABILITY_LINES, "62%"),
+        (3_853 / 12_870, PBO_LINES, "29.9%"),  # the registered random-signal PBO
+        (0.104, PBO_LINES, "10.4%"),
+        (-0.004, EFFICIENCY_LINES, "-0.4%"),
+        (None, PROBABILITY_LINES, "undefined"),
+    ],
+)
+def test_stated_examples(x: float | None, lines: tuple[float, ...], text: str) -> None:
+    assert stated(x, lines) == text
+
+
+@cache
+def _judged_case() -> tuple[Trials, MarketData]:
+    # 20 unrelated settings, enough to judge PBO and DSR (D041), along an ordered axis
+    data = synthetic_market(n=2600, seed=3)
+    grid = Grid.of({"seed": list(range(20))}, {"ticker": "SPY", "hold": 5})
+    return run_grid("random_signal", grid, data, processes=1), data
+
+
+def _replacing(
+    make: Callable[..., Any], change: Callable[[Any], dict[str, Any]]
+) -> Callable[..., Any]:
+    """`make` with some fields of its result changed."""
+
+    def patched(*args: Any, **kwargs: Any) -> Any:
+        out = make(*args, **kwargs)
+        return replace(out, **change(out))
+
+    return patched
+
+
+def _scale_to_efficiency(wf: Any) -> dict[str, Any]:
+    assert wf.is_return > 0
+    return {"returns": wf.returns * (0.4996 * wf.is_return / wf.oos_return)}
+
+
+@pytest.mark.parametrize(
+    ("name", "patch", "check", "words", "verdict"),
+    [
+        ("deflated_sharpe_ratio", lambda *_: 0.9451495, "deflated_sharpe", "is 94.5%.", "yellow"),
+        (
+            "probabilistic_sharpe_ratio",
+            lambda *_: 0.9999965,
+            "track_record",
+            "is just under 100%;",
+            "green",
+        ),
+        (
+            "cscv",
+            _replacing(cscv, lambda r: {"logits": np.where(np.arange(12_870) < 1_292, -1.0, 1.0)}),
+            "pbo",
+            "In just over 10% of",
+            "yellow",
+        ),
+        (
+            "walk_forward",
+            _replacing(walk_forward, _scale_to_efficiency),
+            "walk_forward",
+            "it kept just under 50% of",
+            "yellow",
+        ),
+        (
+            "sensitivity",
+            _replacing(sensitivity, lambda s: {"mean": 0.7496 * s.best_sharpe}),
+            "sensitivity",
+            "keep just under 75% of",
+            "yellow",
+        ),
+    ],
+)
+def test_summaries_do_not_round_onto_a_threshold(
+    monkeypatch: pytest.MonkeyPatch,
+    name: str,
+    patch: Callable[..., Any],
+    check: str,
+    words: str,
+    verdict: str,
+) -> None:
+    monkeypatch.setattr(report_module, name, patch)
+    trials, data = _judged_case()
+    result = getattr(build_report(trials, data, "SPY", SETTINGS).checks, check)
+    assert words in result.summary
+    assert result.verdict == verdict

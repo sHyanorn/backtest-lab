@@ -12,6 +12,7 @@ The credibility report is one JSON document per parameter search. It runs every 
 - `null` means undefined (a zero denominator, or a ratio that `METHODS.md` reports only for a positive denominator). The document never contains `NaN` or `Infinity`.
 - Dates are ISO `YYYY-MM-DD`. Trial numbers index the grid in enumeration order, last axis fastest (D023).
 - The same inputs give byte-identical JSON; there is no timestamp.
+- A summary states each percentage on the same side of its check's verdict thresholds as the value, and a probability as 0% or 100% only when it is 0 or 1 (D042).
 - `schema_version` changes whenever a field is added, removed or changes meaning.
 
 ## Top level

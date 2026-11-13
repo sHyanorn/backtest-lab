@@ -25,6 +25,8 @@ The configuration (D021) and the verdict thresholds (D022) were fixed before any
 
 The random-signal PBO of 0.299 sits just below the red line of 0.30; about one search in ten with no skill scores 0.30 or less (D022).
 
+The registered summary sentences round percentages to whole numbers, so the moving-average deflated Sharpe ratio of 0.945 reads 95% and both probabilistic Sharpe ratios, just under 1, read 100%. Reports built since D042 do not round a figure onto or across a verdict threshold.
+
 The random-signal grid varies `seed`, a number, so the grid search treats it as an ordered axis (D023) and the sensitivity check compares adjacent seeds. Neighbouring seeds are unrelated, so that verdict carries no information about the control. A grid can now declare such an axis categorical (D019); the registered configuration is kept as it was run.
 
 **Rerun with re-fetched prices.** On 2026-11-08 the three searches were run again into a separate directory, with the registered configuration and dates, the code at commit a8bbfc3, and prices fetched from Yahoo that day. The overall and per-check verdicts, the selected settings, every summary sentence and the PBO values were identical to the registered files. The other numbers were not: of the 21,246 non-integer values in the three files, 98% differed by less than 0.00001 and all by less than 0.001, because Yahoo had revised its adjusted prices slightly, so the files are not byte-identical. The registered result is the frozen files in `results/demo/` (D032).

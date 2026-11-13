@@ -264,3 +264,9 @@
 - The rule was adopted after the registered results were seen. The reports in `results/demo` are 1.0, are not rewritten (D032) and keep their registered verdicts. `results/posthoc/effective_trials.json` holds a rerun of the three searches on prices fetched on 2026-11-10: the eigenvalue estimates are 72.6, 20.2 and 99.7 against 47.9, 14.0 and 100.0, the deflated Sharpe ratios with the larger estimate are 0.919, 0.979 and 0.147 against the registered 0.945, 0.988 and 0.147, and every DSR and MinBTL verdict is the same. The smaller estimates are 47.9, 14.0 and 99.7, so the floor does not apply. A test checks this against the registered reports
 - Not changed: a sensitivity check without neighbours stays yellow (D028)
 
+## D042 Summaries do not round across a verdict threshold
+- Date: 2026-11-13
+- A percentage in a check's summary is a whole number, or has one decimal when the whole number would land on or cross a line its verdict uses, or read 0% or 100% for a probability strictly between 0 and 1. A value too close to a line for one decimal reads "just under" or "just over" it. A stated figure is therefore on the same side of every line as the value, and on a line only when the value is
+- Lines: PBO 0.10 and 0.30, DSR and PSR(0) 0.5 and 0.95, each with 0 and 1; walk-forward efficiency 0 and 0.5; sensitivity retention 0.5 and 0.75 (D022)
+- Rationale: whole-number rounding stated a yellow DSR of 0.945 as 95%, its green line, and a PSR of 0.999997 as 100%. The floor message of D041 already avoids rounding onto its threshold
+- The registered reports keep their sentences (D032): the moving-average DSR reads 95% for 0.945, both real strategies' PSR read 100%, and the random-signal PBO reads 30% for 0.299, which a new report states as 29.9%. No verdict depends on these sentences

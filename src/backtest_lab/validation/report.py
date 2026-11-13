@@ -2,6 +2,7 @@
 plain-language summary (docs/REPORT.md; thresholds in D022)."""
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 
@@ -44,6 +45,12 @@ SENSITIVITY_GREEN = 0.75
 SENSITIVITY_YELLOW = 0.5
 # Fewer independent trials than this and a green or yellow PBO or DSR is not a verdict (D041)
 MIN_EFFECTIVE_TRIALS = 10
+# The lines each verdict compares a percentage with; a summary keeps the percentage on
+# the same side of each, and a probability off 0% and 100% unless it is 0 or 1 (D042)
+PBO_LINES = (0.0, PBO_GREEN, PBO_RED, 1.0)
+PROBABILITY_LINES = (0.0, PROBABILITY_YELLOW, PROBABILITY_GREEN, 1.0)
+EFFICIENCY_LINES = (0.0, RETENTION_GREEN)  # positive OOS return, then the ratio
+SENSITIVITY_LINES = (SENSITIVITY_YELLOW, SENSITIVITY_GREEN)
 
 _SEVERITY: dict[rs.CheckVerdict, int] = {"green": 0, "yellow": 1, "not_assessable": 1, "red": 2}
 _OVERALL: tuple[rs.Verdict, ...] = ("green", "yellow", "red")
@@ -157,6 +164,27 @@ def _diff(a: float | None, b: float | None) -> float | None:
 
 def _fmt(x: float | None, spec: str = ".2f") -> str:
     return "undefined" if x is None else format(x, spec)
+
+
+def _side(x: float, line: float) -> int:
+    return (x > line) - (x < line)
+
+
+def stated(x: float | None, lines: Sequence[float], spec: str = ".0%") -> str:
+    """`x` formatted with `spec`, or with one more decimal, so that the figure lies on the
+    same side of every line as `x` and on a line only when `x` is (D042). A value too
+    close to a line for that reads as just under or just over it."""
+    if x is None:
+        return "undefined"
+    kind, digits = spec[-1], int(spec[1:-1])
+    scale = 100 if kind == "%" else 1
+    for d in (digits, digits + 1):
+        text = format(x, f".{d}{kind}")
+        shown = float(text.removesuffix("%")) / scale
+        if all(_side(shown, line) == _side(x, line) for line in lines):
+            return text
+    line = min(lines, key=lambda c: abs(x - c))
+    return f"just {'under' if x < line else 'over'} {format(line, spec)}"
 
 
 def buy_and_hold(ticker: str, data: MarketData, costs: Costs) -> pd.Series:
@@ -299,7 +327,7 @@ def _walk_forward_check(trials: Trials, data: MarketData, s: Settings) -> rs.Wal
     if efficiency is None:
         kept = "the in-sample return was not positive, so efficiency is undefined"
     else:
-        kept = f"it kept {efficiency:.0%} of the in-sample return rate"
+        kept = f"it kept {stated(efficiency, EFFICIENCY_LINES)} of the in-sample return rate"
     summary = (
         f"Re-picking the best setting every {s.oos_days} days on {window} and trading it on "
         f"the next period, {kept}; the out-of-sample Sharpe ratio was {_fmt(oos_sharpe)}."
@@ -401,8 +429,9 @@ def _pbo_check(x: npt.NDArray[np.float64], s: Settings, trials: _TrialCounts) ->
     counts, edges = logit_histogram(result.logits, result.n_trials)
     combos = n_combinations(s.blocks)
     summary = (
-        f"In {result.pbo:.0%} of {combos:,} ways to split the history into two halves, the "
-        f"best of {result.n_trials} settings on one half ranked in the bottom half on the other."
+        f"In {stated(result.pbo, PBO_LINES)} of {combos:,} ways to split the history into two "
+        f"halves, the best of {result.n_trials} settings on one half ranked in the bottom half "
+        "on the other."
     )
     verdict, summary = trials.judge(pbo_verdict(result.pbo), summary)
     return rs.PBOCheck(
@@ -436,7 +465,8 @@ def _dsr_check(
     summary = (
         f"With {trials.n_trials} settings tried ({low:.0f} to {high:.0f} independent by two "
         f"estimates; the larger is used), the chance that the best one's true Sharpe ratio "
-        f"beats the {sr0:.2f} expected from the luckiest of them by chance is {_fmt(dsr, '.0%')}."
+        f"beats the {sr0:.2f} expected from the luckiest of them by chance is "
+        f"{stated(dsr, PROBABILITY_LINES)}."
     )
     verdict, summary = trials.judge(probability_verdict(dsr), summary)
     return rs.DeflatedSharpeCheck(
@@ -469,7 +499,7 @@ def _track_record_check(m: SharpeMoments, years: float, alpha: float) -> rs.Trac
         need = f"{trl_years:.1f} years would be enough for {1 - alpha:.0%} confidence"
     summary = (
         f"Ignoring how many settings were tried, the chance that the selected setting's true "
-        f"Sharpe ratio is above zero is {_fmt(psr, '.0%')}; {need}."
+        f"Sharpe ratio is above zero is {stated(psr, PROBABILITY_LINES)}; {need}."
     )
     return rs.TrackRecordCheck(
         title="Probabilistic Sharpe ratio",
@@ -535,8 +565,8 @@ def _sensitivity_check(
         summary = "The best setting's Sharpe ratio is not positive."
     else:
         summary = (
-            f"Settings next to the best one keep {_fmt(retention, '.0%')} of its Sharpe ratio "
-            f"of {result.best_sharpe:.2f} on average."
+            f"Settings next to the best one keep {stated(retention, SENSITIVITY_LINES)} of its "
+            f"Sharpe ratio of {result.best_sharpe:.2f} on average."
         )
     return rs.SensitivityCheck(
         title="Parameter sensitivity",
