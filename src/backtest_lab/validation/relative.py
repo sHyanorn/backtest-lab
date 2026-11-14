@@ -279,7 +279,7 @@ def french_sample(data_dir: Path) -> tuple[Sample, dict[str, Any]]:
         "first": f"{used.index[0]:%Y-%m-%d}",
         "last": f"{used.index[-1]:%Y-%m-%d}",
         "rows": len(used),
-        "saturday_rows": int((pd.DatetimeIndex(used.index).dayofweek == 5).sum()),
+        "saturday_rows": int((pd.DatetimeIndex(used.index).day_of_week == 5).sum()),
     }
     return sample, meta
 

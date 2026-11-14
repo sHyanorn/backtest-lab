@@ -218,3 +218,19 @@ def test_french_digest_stops_a_changed_row(tmp_path: Path, monkeypatch: pytest.M
     path.write_bytes(french_zip([rows[0], rows[1].replace("-0.30", "-0.31")]))
     with pytest.raises(ValueError, match="differ from those registered"):
         french_sample(tmp_path)
+
+
+def test_french_sample_counts_saturday_rows(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    rows = [  # a Friday, a Saturday and a Monday
+        "19260709,    0.10,    0.20,   -0.10,    0.010",
+        "19260710,   -0.30,    0.10,    0.00,    0.010",
+        "19260712,    0.20,    0.00,    0.10,    0.010",
+    ]
+    path = french.zip_file(raw_dir(tmp_path))
+    path.parent.mkdir(parents=True)
+    path.write_bytes(french_zip(rows))
+    digest = french.rows_sha256(path.read_bytes(), relative.FRENCH_END)
+    monkeypatch.setattr(relative, "FRENCH_ROWS_SHA256", digest)
+    assert french_sample(tmp_path)[1]["saturday_rows"] == 1
