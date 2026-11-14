@@ -46,3 +46,12 @@
 - [x] Demo notebook tells the core story
 - [x] English README and screenshots
 - [x] Tidy up DECISIONS.md
+
+## M7 Tests against buy and hold on new samples
+- [x] Register the tests (D043) and their formulas (METHODS.md Section 8)
+- [ ] Returns-only market with next-close fills
+- [ ] Fama/French daily factors
+- [ ] Reality Check, SPA and StepM
+- [ ] Registered study runner
+- [ ] Run the registered tests and commit the results
+- [ ] Report them in README and DEMO.md

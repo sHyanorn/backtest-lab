@@ -405,15 +405,94 @@ $s$ uses the population form because the neighbourhood is the whole set of inter
 
 ---
 
+## 8. Data-snooping tests against a benchmark: Reality Check, SPA and StepM
+
+**Problem.** Sections 4 to 6 judge the selected setting and the selection: whether the in-sample winner keeps its rank out of sample, and whether its Sharpe ratio is above zero, with the search counted or not. None asks whether any setting beats a benchmark such as buy and hold. The best of $N$ settings beats the benchmark in sample by luck as well as by skill; these tests bootstrap the maximum over all $N$ settings to separate the two (D043).
+
+**Setup.** $X$ is the $T \times N$ matrix of net daily returns of the grid on its aligned days and $b$ the benchmark's net returns on the same days. A criterion gives each setting a statistic $\hat f_k$, with $f_k > 0$ meaning that setting $k$ beats the benchmark, and an influence series $\psi_{k,t}$ with $\hat f_k - f_k \approx T^{-1} \sum_t \psi_{k,t}$:
+
+- Sharpe difference: $\hat f_k = \widehat{SR}(x_k) - \widehat{SR}(b)$, daily Sharpe ratios with $r_f = 0$ and the standard deviation $s$ over $T - 1$, as in the Conventions (Romano and Wolf, 2005, Example 2.2). By the delta method $\psi_{k,t} = \phi_t(x_k) - \phi_t(b)$ with
+$$\phi_t(y) = \frac{y_t - \bar y}{s_y} - \frac{\bar y}{2 s_y^3}\Big[(y_t - \bar y)^2 - s_y^2\Big].$$
+- Mean difference: $\hat f_k = \overline{x_k - b}$ and $\psi_{k,t} = x_{k,t} - b_t - \hat f_k$.
+
+A series whose standard deviation is below $10^{-12}$ has Sharpe ratio 0, as in rankings (Conventions), in the data and in every resample, and $\phi_t = 0$.
+
+The family's null hypothesis is $H_0: \max_k f_k \le 0$; StepM tests each $H_{0,k}: f_k \le 0$.
+
+**Stationary bootstrap** (Politis and Romano, 1994; the algorithm of Sullivan, Timmermann and White, 1999, Appendix C, and Hansen, 2005, Section 3). A resample is a sequence of $T$ days: the first is drawn uniformly; each later one is a new uniform draw with probability $q = 1/L$ and otherwise the day after the previous one, with the last day followed by the first. Whole days are drawn, so the settings and the benchmark keep their joint dependence. $\hat f^*_{k,j}$ is the statistic on resample $j = 1, \dots, B$. Both criteria are functions of the means of $x$ and $x^2$, so a resample enters only through the number of times it draws each day.
+
+**Variance.** The studentized tests divide by $\hat\omega_k$, the standard deviation of $\sqrt T \hat f_k$ implied by the stationary bootstrap (Hansen, 2005, Section 3):
+$$\hat\omega_k^2 = \hat\gamma_{0,k} + 2 \sum_{i=1}^{T-1} \kappa(T, i)\,\hat\gamma_{i,k}, \qquad \kappa(T, i) = \frac{T - i}{T}(1-q)^i + \frac{i}{T}(1-q)^{T-i},$$
+with $\hat\gamma_{i,k} = T^{-1} \sum_{t=1}^{T-i} (\psi_{k,t} - \bar\psi_k)(\psi_{k,t+i} - \bar\psi_k)$. Hansen prefers this closed form to the variance across resamples, which needs a large $B$. A setting with $\hat\omega_k < 10^{-12}$ has an influence series that does not vary: under the mean difference its returns differ from the benchmark's by a constant, and under the Sharpe difference they are a positive multiple of them; in practice it holds the benchmark. It stays in the Reality Check, is left out of the studentized tests and is listed in the results.
+
+**Reality Check** (White, 2000; Sullivan, Timmermann and White, 1999, Eq. 5 and 6):
+$$V = \max_k \sqrt T\,\hat f_k, \qquad V^*_j = \max_k \sqrt T\,(\hat f^*_{k,j} - \hat f_k), \qquad p_{RC} = \frac1B \sum_j \mathbf 1[V^*_j > V].$$
+
+White (2000, Section 2.c) covers smooth functions of means and names the Sharpe ratio, so the Reality Check applies to both criteria as it stands.
+
+**SPA** (Hansen, 2005). With $t_k = \sqrt T\,\hat f_k / \hat\omega_k$,
+$$T^{SPA} = \max\Big(0, \max_k t_k\Big), \qquad T^{SPA*}_j = \max\Big(0, \max_k \frac{\sqrt T\,(\hat f^*_{k,j} - \hat f_k + \hat\mu_k)}{\hat\omega_k}\Big), \qquad p = \frac1B \sum_j \mathbf 1[T^{SPA*}_j > T^{SPA}].$$
+The same $\hat\omega_k$ enters $T^{SPA}$ and every resample. The resamples are centred at $\hat\mu_k$, one of
+$$\hat\mu^l_k = \min(\hat f_k, 0), \qquad \hat\mu^c_k = \hat f_k\,\mathbf 1\big[t_k < -\sqrt{2 \ln \ln T}\big], \qquad \hat\mu^u_k = 0,$$
+which give the lower, consistent and upper p-values. The consistent one decides (D043). The upper one is a studentized Reality Check: it treats every setting as if it were exactly as good as the benchmark, the least favourable case. The consistent one keeps a setting at its own mean only when it is clearly worse, so that settings far below the benchmark cannot raise the p-value.
+
+**StepM** (Romano and Wolf, 2005, Algorithms 4.1 and 4.2), studentized, at familywise error rate $\alpha$ (D043 sets it). With every setting active:
+
+1. $d$ is the $1 - \alpha$ empirical quantile, $\inf\{x : B^{-1} \sum_j \mathbf 1[M^*_j \le x] \ge 1 - \alpha\}$, of $M^*_j = \max_{k \text{ active}} \sqrt T\,(\hat f^*_{k,j} - \hat f_k) / \hat\omega_k$.
+2. Every active setting with $t_k > d$ is rejected and leaves the active set.
+3. Steps 1 and 2 repeat until a step rejects nothing.
+
+Romano and Wolf estimate the standard error again in each resample (their footnote 22, p. 1252). Here each resample uses $\hat\omega_k$ from the data, as the SPA does. Their Assumption 4.1 adds to Assumption 3.1 that $\sqrt T$ times either standard error converge to the same constant, which a fixed $\hat\omega_k$ satisfies, and footnote 22 notes that Hansen's fixed standard error gives first-order consistency. So the familywise error control of their Theorem 4.1 holds asymptotically; the refinements that re-estimating in each resample may bring are not claimed.
+
+A rejection at level $\alpha$ implies that the upper, and so the consistent, SPA p-value is at most $\alpha$: some $t_k$ exceeds the $1 - \alpha$ quantile of the maxima $M^*_j$ of the first step, which are the upper SPA's resampled maxima, and $\hat\mu^c_k \le 0$ makes the consistent maxima no larger. So StepM at $\alpha/m$ names settings only in families whose Holm-adjusted p-value is at most $\alpha$.
+
+**Several families.** Holm (1979): with the $m$ family p-values sorted, $p_{(1)} \le \dots \le p_{(m)}$, the adjusted values are $\tilde p_{(i)} = \max_{j \le i} \min\{1, (m - j + 1)\,p_{(j)}\}$. Rejecting the families with $\tilde p \le \alpha$ controls the familywise error rate over them under any dependence.
+
+**Intuition.** The bootstrap rebuilds the luck of the search: each resample centres every setting so that it has no edge, and the maximum over the grid is the advantage the best setting shows without one. The Reality Check centres every setting at exactly the benchmark, so a grid with many settings far below the benchmark makes it conservative; half of each registered grid is long/short. The SPA lets those settings drop out and studentizes so that the noisiest settings do not decide the maximum. StepM names the settings that beat the benchmark and steps down, since each rejection leaves fewer settings in the maximum.
+
+**Pitfalls.**
+
+- All settings and the benchmark must be resampled on the same days; resampling them separately destroys the correlation the maximum depends on.
+- The Sharpe criterion depends on volatility through $x^2$, and short blocks break volatility clustering. The decision uses $L = 10$ and the results show 5 to 50.
+- The tests assume stationary, weakly dependent returns. A sample dominated by one episode, such as 1929 to 1932, strains that assumption.
+- Hansen's SPA and Romano and Wolf's studentization are stated for means; for the Sharpe difference the studentization rests on the delta method and is first-order.
+- Not rejecting does not show that no setting beats the benchmark, only that none is shown to.
+- With $r_f = 0$ and cash earning nothing (D015) a setting that is often out of the market is compared on unfavourable terms.
+
+**References.** White (2000); Hansen (2005); Romano and Wolf (2005); Politis and Romano (1994); Sullivan, Timmermann and White (1999); Holm (1979); Memmel (2003) for the variance of a Sharpe difference.
+
+**Code.** `src/backtest_lab/validation/snooping.py`; the registered study in `src/backtest_lab/validation/relative.py`.
+
+**Tests.** `tests/validation/test_snooping.py`, `tests/validation/test_relative.py`
+
+- Resamples: the indices built from blocks equal those of Sullivan, Timmermann and White's day-by-day algorithm, wrapping included; over 100,000 days the block lengths have mean $L = 10$ within three standard errors; means from day counts equal the means of the drawn rows to 1e-12.
+- Variance: for $T = 40$ and $L = 5$, $\hat\omega^2$ equals $T$ times the variance of the mean over 200,000 resamples within 2%; with $L = 1$ it is the variance with divisor $T$.
+- Sharpe difference: for 400,000 iid normal days with $\rho = 0.5$ and daily Sharpe ratios 0.5 and 0.2, $\hat\omega^2$ equals $2 - 2\rho + \tfrac12(SR_1^2 + SR_2^2 - 2\,SR_1 SR_2\,\rho^2) = 1.12$ (Memmel, 2003) within 1%.
+- By hand, from fixed resampled statistics: a Reality Check p-value of 0.5; SPA p-values of 0.25, 0.75 and 1 that move as the definition says when a setting crosses $-\sqrt{2 \ln \ln T}$, and that do not change when one setting and its $\hat\omega_k$ are scaled by 10; a StepM case whose second step rejects a setting the first did not.
+- Poor settings: adding 50 settings far below the benchmark to 10 as good as it raises the Reality Check p-value by more than 0.1 and leaves the consistent SPA p-value unchanged.
+- Size and power, $T = 500$, 20 settings, $B = 500$, $L = 5$, 200 samples: with every setting as good as the benchmark the consistent SPA p-value is at most 0.05 in at most 8% of samples (observed 4.5% for the Sharpe difference and 6% for the mean difference); with 0.0013 a day added to one setting, about 4.6 standard errors, StepM names it in at least 90% (observed 93.5% and 95%). StepM at a level never names a setting in a family whose upper SPA p-value exceeds that level.
+- Holm: p-values (0.01, 0.04, 0.03, 0.005) adjust to (0.03, 0.06, 0.06, 0.02).
+- Against arch 9.0.0 on the mean difference, 15 settings over 2,000 days with $B = 20{,}000$: the non-studentized Reality Check p-value equals arch's within four bootstrap standard errors (observed difference 0.0009); the lower, consistent and upper SPA p-values equal arch's within 0.02 (observed 0.007 at most), on data where five poor settings separate the consistent p-value from the upper one; StepM names the same three settings. arch studentizes inside every resample, which Hansen's SPA does not, and that accounts for most of the SPA difference.
+- The study: the cash rule earns the rate on the days a position is out of the market, entry and exit days included; with a rate of 0 every family is unchanged; a rerun reads every family from the cache; Holm adjusts the four deciding families of a sample.
+
+---
+
 ## References
 
 1. Bailey, D. H., & López de Prado, M. (2012). The Sharpe ratio efficient frontier. *Journal of Risk*, 15(2), 3–44. https://doi.org/10.21314/JOR.2012.255. SSRN 1821643.
 2. Bailey, D. H., & López de Prado, M. (2014). The deflated Sharpe ratio: Correcting for selection bias, backtest overfitting, and non-normality. *Journal of Portfolio Management*, 40(5), 94–107. https://doi.org/10.3905/jpm.2014.40.5.094. SSRN 2460551.
 3. Bailey, D. H., Borwein, J. M., López de Prado, M., & Zhu, Q. J. (2014). Pseudo-mathematics and financial charlatanism: The effects of backtest overfitting on out-of-sample performance. *Notices of the American Mathematical Society*, 61(5), 458–471. https://doi.org/10.1090/noti1105. SSRN 2308659.
 4. Bailey, D. H., Borwein, J. M., López de Prado, M., & Zhu, Q. J. (2017). The probability of backtest overfitting. *Journal of Computational Finance*, 20(4), 39–69. https://doi.org/10.21314/JCF.2016.322. SSRN 2326253.
-5. Lo, A. W. (2002). The statistics of Sharpe ratios. *Financial Analysts Journal*, 58(4), 36–52. https://doi.org/10.2469/faj.v58.n4.2453.
-6. López de Prado, M. (2018). *Advances in Financial Machine Learning*. Wiley. ISBN 978-1-119-48208-6.
-7. Nyholt, D. R. (2004). A simple correction for multiple testing for single-nucleotide polymorphisms in linkage disequilibrium with each other. *American Journal of Human Genetics*, 74(4), 765–769. https://doi.org/10.1086/383251.
-8. Pardo, R. (2008). *The Evaluation and Optimization of Trading Strategies* (2nd ed.). Wiley. ISBN 978-0-470-12801-5. https://doi.org/10.1002/9781119196969.
-9. Sharpe, W. F. (1994). The Sharpe ratio. *Journal of Portfolio Management*, 21(1), 49–58. https://doi.org/10.3905/jpm.1994.409501.
-10. Sortino, F. A., & Price, L. N. (1994). Performance measurement in a downside risk framework. *Journal of Investing*, 3(3), 59–64. https://doi.org/10.3905/joi.3.3.59.
+5. Hansen, P. R. (2005). A test for superior predictive ability. *Journal of Business & Economic Statistics*, 23(4), 365-380. https://doi.org/10.1198/073500105000000063.
+6. Holm, S. (1979). A simple sequentially rejective multiple test procedure. *Scandinavian Journal of Statistics*, 6(2), 65-70.
+7. Lo, A. W. (2002). The statistics of Sharpe ratios. *Financial Analysts Journal*, 58(4), 36–52. https://doi.org/10.2469/faj.v58.n4.2453.
+8. López de Prado, M. (2018). *Advances in Financial Machine Learning*. Wiley. ISBN 978-1-119-48208-6.
+9. Memmel, C. (2003). Performance hypothesis testing with the Sharpe ratio. *Finance Letters*, 1(1), 21-23.
+10. Nyholt, D. R. (2004). A simple correction for multiple testing for single-nucleotide polymorphisms in linkage disequilibrium with each other. *American Journal of Human Genetics*, 74(4), 765–769. https://doi.org/10.1086/383251.
+11. Pardo, R. (2008). *The Evaluation and Optimization of Trading Strategies* (2nd ed.). Wiley. ISBN 978-0-470-12801-5. https://doi.org/10.1002/9781119196969.
+12. Politis, D. N., & Romano, J. P. (1994). The stationary bootstrap. *Journal of the American Statistical Association*, 89(428), 1303-1313. https://doi.org/10.1080/01621459.1994.10476870.
+13. Romano, J. P., & Wolf, M. (2005). Stepwise multiple testing as formalized data snooping. *Econometrica*, 73(4), 1237-1282. https://doi.org/10.1111/j.1468-0262.2005.00615.x.
+14. Sharpe, W. F. (1994). The Sharpe ratio. *Journal of Portfolio Management*, 21(1), 49–58. https://doi.org/10.3905/jpm.1994.409501.
+15. Sortino, F. A., & Price, L. N. (1994). Performance measurement in a downside risk framework. *Journal of Investing*, 3(3), 59–64. https://doi.org/10.3905/joi.3.3.59.
+16. Sullivan, R., Timmermann, A., & White, H. (1999). Data-snooping, technical trading rule performance, and the bootstrap. *Journal of Finance*, 54(5), 1647-1691. https://doi.org/10.1111/0022-1082.00163.
+17. White, H. (2000). A reality check for data snooping. *Econometrica*, 68(5), 1097-1126. https://doi.org/10.1111/1468-0262.00152.
