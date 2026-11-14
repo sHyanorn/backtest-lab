@@ -436,6 +436,8 @@ The same $\hat\omega_k$ enters $T^{SPA}$ and every resample. The resamples are c
 $$\hat\mu^l_k = \min(\hat f_k, 0), \qquad \hat\mu^c_k = \hat f_k\,\mathbf 1\big[t_k < -\sqrt{2 \ln \ln T}\big], \qquad \hat\mu^u_k = 0,$$
 which give the lower, consistent and upper p-values. The consistent one decides (D043). The upper one is a studentized Reality Check: it treats every setting as if it were exactly as good as the benchmark, the least favourable case. The consistent one keeps a setting at its own mean only when it is clearly worse, so that settings far below the benchmark cannot raise the p-value.
 
+**Update** (2026-11-14). D046, made before D043's run, counts $\mathbf 1[T^{SPA*}_j \ge T^{SPA}]$ in $p$ for all three p-values, so that $p = 1$ when $T^{SPA} = 0$; it also corrects two test descriptions at the end of this section.
+
 **StepM** (Romano and Wolf, 2005, Algorithms 4.1 and 4.2), studentized, at familywise error rate $\alpha$ (D043 sets it). With every setting active:
 
 1. $d$ is the $1 - \alpha$ empirical quantile, $\inf\{x : B^{-1} \sum_j \mathbf 1[M^*_j \le x] \ge 1 - \alpha\}$, of $M^*_j = \max_{k \text{ active}} \sqrt T\,(\hat f^*_{k,j} - \hat f_k) / \hat\omega_k$.

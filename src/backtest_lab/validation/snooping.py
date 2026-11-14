@@ -123,7 +123,9 @@ class SpaPValues:
 def spa(f: Vector, fb: Matrix, omega: Vector, t: int) -> tuple[float, SpaPValues]:
     """Hansen's (2005) statistic and its lower, consistent and upper p-values.
 
-    Every resample is studentized with the same `omega` as the statistic.
+    Every resample is studentized with the same `omega` as the statistic. A p-value counts
+    the resampled statistics at least as large as the statistic, so it is 1 when no setting
+    is above the benchmark (D046).
     """
     rt = math.sqrt(t)
     z = rt * f / omega
@@ -133,7 +135,7 @@ def spa(f: Vector, fb: Matrix, omega: Vector, t: int) -> tuple[float, SpaPValues
 
     def p(mu: Vector) -> float:
         tb = np.maximum((centred + rt * mu / omega).max(axis=1), 0.0)
-        return float(np.mean(tb > statistic))
+        return float(np.mean(tb >= statistic))
 
     return statistic, SpaPValues(p(np.minimum(f, 0.0)), p(consistent), p(np.zeros_like(f)))
 
