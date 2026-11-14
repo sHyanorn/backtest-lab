@@ -1,5 +1,7 @@
 # backtest-lab
 
+[![CI](https://github.com/sHyanorn/backtest-lab/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sHyanorn/backtest-lab/actions/workflows/ci.yml?query=branch%3Amain)
+
 A backtesting platform that tests whether a strategy is probably overfit: it runs a parameter search, then judges the winner with walk-forward analysis, purged cross-validation, the probability of backtest overfitting (PBO) and the deflated Sharpe ratio (DSR).
 
 **Dashboard: [shyanorn.github.io/backtest-lab](https://shyanorn.github.io/backtest-lab/)**
