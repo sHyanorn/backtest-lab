@@ -1,5 +1,8 @@
 """Synthetic market data for tests."""
 
+import io
+import zipfile
+
 import numpy as np
 import pandas as pd
 
@@ -57,3 +60,23 @@ def synthetic_market(
     )
     open_ = (close.shift(1) * np.exp(rng.normal(0.0, 0.003, (n, k)))).fillna(close)
     return MarketData(prices=Prices(open=open_, close=close))
+
+
+def french_zip(rows: list[str], header: str = ",Mkt-RF,SMB,HML,RF", files: int = 1) -> bytes:
+    """A daily Fama/French factors zip laid out like the library's."""
+    text = "\n".join(
+        [
+            "This file was created by using the 202609 CRSP database.",
+            "The Tbill return is the simple daily rate.",
+            "",
+            header,
+            *rows,
+            "",
+            "Copyright 2026 Eugene F. Fama and Kenneth R. French",
+        ]
+    )
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        for i in range(files):
+            z.writestr(f"F-F_Research_Data_Factors_daily{i or ''}.csv", text + "\n")
+    return buf.getvalue()

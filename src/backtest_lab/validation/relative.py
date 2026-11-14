@@ -305,6 +305,19 @@ def yahoo_sample(data_dir: Path, ticker: str, name: str, stepm_alpha: float) -> 
     return Sample(name, ticker, data, YAHOO_VARIANTS, stepm_alpha)
 
 
+def etfs(data_dir: Path, cache: Path, code: str, processes: int | None) -> dict[str, Any]:
+    """(iii): the eight ETFs answer one question, so StepM runs at ALPHA / 32 in each family
+    and Holm adjusts their 32 deciding families together."""
+    records = [
+        r
+        for t in ETFS
+        for r in run_sample(
+            yahoo_sample(data_dir, t, "etf", ALPHA / (4 * len(ETFS))), cache, code, processes
+        )
+    ]
+    return {"decision": decision(records), "families": records}
+
+
 def bridge(data_dir: Path) -> dict[str, Any]:
     """Data check: SPY's daily total return against the Fama/French market where both exist."""
     frame = french.parse(french.zip_file(raw_dir(data_dir)).read_bytes())
@@ -364,19 +377,13 @@ def main(argv: list[str] | None = None) -> None:
             "families": records,
         },
     )
-    records = [
-        r
-        for t in ETFS
-        for r in run_sample(
-            yahoo_sample(args.data_dir, t, "etf", ALPHA / (4 * len(ETFS))),
-            args.cache,
-            version,
-            args.processes,
-        )
-    ]
     _write(
         args.out / "etfs.json",
-        {**head, "sample": "(iii) eight ETFs", "decision": decision(records), "families": records},
+        {
+            **head,
+            "sample": "(iii) eight ETFs",
+            **etfs(args.data_dir, args.cache, version, args.processes),
+        },
     )
     spy = yahoo_sample(args.data_dir, "SPY", "spy", ALPHA / 4)
     records = run_sample(spy, args.cache, version, args.processes)

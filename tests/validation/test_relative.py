@@ -3,28 +3,35 @@
 import hashlib
 from dataclasses import replace
 from pathlib import Path
-from typing import NoReturn
+from typing import Any, NoReturn
 
 import numpy as np
 import pandas as pd
 import pytest
 
+from backtest_lab.data import french
 from backtest_lab.data.store import price_file, raw_dir, write_parquet_atomic
 from backtest_lab.engine.backtest import Costs, Prices, run
 from backtest_lab.strategies import MarketData
 from backtest_lab.validation import relative
 from backtest_lab.validation.relative import (
+    ETFS,
     FRENCH_VARIANTS,
+    GRIDS,
     MARKET,
     SELECTED,
+    YAHOO_VARIANTS,
     Sample,
     cash_returns,
     decision,
+    etfs,
+    french_sample,
     prices_sha256,
     run_sample,
     yahoo_sample,
 )
-from tests.factories import price_frame
+from backtest_lab.validation.snooping import Criterion
+from tests.factories import french_zip, price_frame
 
 CODE = "commit a"
 
@@ -148,6 +155,30 @@ def test_decision_adjusts_the_deciding_families_with_holm(tmp_path: Path) -> Non
     assert all(d["finding"] == (d["holm"] <= 0.05) for d in out)
 
 
+def test_the_eight_etfs_share_one_holm_adjustment_and_stepm_level(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    market = _sample(rf=0.0).data
+    monkeypatch.setattr(
+        relative,
+        "yahoo_sample",
+        lambda data_dir, ticker, name, alpha: Sample(name, ticker, market, YAHOO_VARIANTS, alpha),
+    )
+    levels = {}
+
+    def run(sample: Sample, cache: Path, code: str, processes: int | None) -> list[dict[str, Any]]:
+        levels[sample.instrument] = sample.stepm_alpha
+        family = {"instrument": sample.instrument, "variant": "decision", "mean_block": 10.0}
+        p = {c.value: {"spa": {"consistent": 0.001}} for c in Criterion}
+        return [{**family, "strategy": s, **p} for s in GRIDS]
+
+    monkeypatch.setattr(relative, "run_sample", run)
+    out = etfs(tmp_path, tmp_path, CODE, processes=1)
+    assert levels == dict.fromkeys(ETFS, 0.05 / 32)
+    # Holm over all 32 deciding families: 32 p; separately per ETF it would be 4 p.
+    assert [d["holm"] for d in out["decision"]] == pytest.approx([0.032] * 32)
+
+
 def test_price_digest_covers_the_rows_used_and_stops_a_changed_cache(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -171,3 +202,19 @@ def test_price_digest_covers_the_rows_used_and_stops_a_changed_cache(
     monkeypatch.setitem(relative.ETF_ROWS_SHA256, "QQQ", digest)
     with pytest.raises(ValueError, match="differ from those registered"):
         yahoo_sample(tmp_path, "QQQ", "etf", 0.05)
+
+
+def test_french_digest_stops_a_changed_row(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    rows = [
+        "19930127,    0.10,    0.20,   -0.10,    0.010",
+        "19930128,   -0.30,    0.10,    0.00,    0.010",
+    ]
+    path = french.zip_file(raw_dir(tmp_path))
+    path.parent.mkdir(parents=True)
+    path.write_bytes(french_zip(rows))
+    digest = french.rows_sha256(path.read_bytes(), relative.FRENCH_END)
+    monkeypatch.setattr(relative, "FRENCH_ROWS_SHA256", digest)
+    assert french_sample(tmp_path)[1]["rows"] == 2
+    path.write_bytes(french_zip([rows[0], rows[1].replace("-0.30", "-0.31")]))
+    with pytest.raises(ValueError, match="differ from those registered"):
+        french_sample(tmp_path)

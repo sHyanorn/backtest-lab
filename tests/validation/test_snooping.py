@@ -84,6 +84,17 @@ def test_sharpe_difference_variance_matches_memmel() -> None:
     assert abs(out.omega[0] ** 2 - (2 - 2 * rho)) > 0.1  # the Sharpe terms matter here
 
 
+def test_sharpe_variance_has_the_skewness_term() -> None:
+    # iid, sd 1, skewness 2, kurtosis 9: Var(sqrt(T) SR) = 1 - SR skew + SR^2 (kurt - 1) / 4
+    # = 1 - 0.6 + 0.18 = 0.58 for SR = 0.3. The benchmark is independent with Sharpe 0: + 1.
+    rng = np.random.default_rng(11)
+    t, sr = 400_000, 0.3
+    x = sr + rng.exponential(1.0, t) - 1.0
+    b = rng.standard_normal(t)
+    out = compare(x[:, None], b, mean_block=1.0, reps=1, seed=0)[Criterion.SHARPE]
+    assert out.omega[0] ** 2 == pytest.approx(1.58, rel=0.03)
+
+
 def test_reality_check_by_hand() -> None:
     t = 4
     f = np.array([0.1, -0.2])
@@ -124,6 +135,16 @@ def test_stepm_steps_down() -> None:
     centred = np.array([[3.0, 1.0, 0.5], [2.5, 1.5, 0.4], [2.2, 1.8, 0.3], [0.4, 0.2, 0.1]])
     f = np.array([5.0, 2.0, 0.0]) / 10
     assert stepm(f, f + centred / 10, np.ones(3), 100, alpha=0.25) == [0, 1]
+
+
+def test_stepm_critical_value_is_the_inverted_cdf_quantile() -> None:
+    # B = 5 and alpha = 0.3: the smallest x with F(x) >= 0.7 is the 4th of 5 maxima, 0.4.
+    # numpy's default (linear) gives 0.38 and would reject z = 0.39.
+    centred = np.array([[0.1], [0.2], [0.3], [0.4], [0.5]])
+    f = np.array([0.039])
+    assert stepm(f, f + centred / 10, np.ones(1), 100, alpha=0.3) == []
+    f = np.array([0.041])
+    assert stepm(f, f + centred / 10, np.ones(1), 100, alpha=0.3) == [0]
 
 
 def test_holm_by_hand() -> None:
