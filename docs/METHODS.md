@@ -2,6 +2,19 @@
 
 Each method lists the problem it solves, the formula, the intuition, references, where it lives in the code, and how it is tested. Implementations must match this document; any deviation goes into `DECISIONS.md` first.
 
+## Overview of the checks
+
+| Check | Question | Reference |
+|---|---|---|
+| [Holdout split](#21-holdout-split) | Does out-of-sample performance fall apart? | |
+| [Walk-forward analysis](#22-walk-forward-analysis) | With the setting re-picked every year, how does the next year go? | Pardo (2008) |
+| [Purged cross-validation](#3-purged-and-embargoed-k-fold-cross-validation) | Does the pick hold on held-out folds once overlapping days are removed? | López de Prado (2018) |
+| [PBO](#4-combinatorially-symmetric-cross-validation-cscv-and-the-probability-of-backtest-overfitting-pbo) | How often does the in-sample winner rank in the bottom half out of sample? | Bailey, Borwein, López de Prado & Zhu (2017) |
+| [Deflated Sharpe ratio](#5-deflated-sharpe-ratio-dsr) | Is the Sharpe ratio significant given how many settings were tried? | Bailey & López de Prado (2014) |
+| [Probabilistic Sharpe ratio](#6-probabilistic-sharpe-ratio-psr-minimum-track-record-length-mintrl-and-minimum-backtest-length-minbtl) | Is it above zero, ignoring the search? | Bailey & López de Prado (2012) |
+| [Minimum backtest length](#6-probabilistic-sharpe-ratio-psr-minimum-track-record-length-mintrl-and-minimum-backtest-length-minbtl) | Is the history long enough for that many trials? | Bailey, Borwein, López de Prado & Zhu (2014) |
+| [Parameter sensitivity](#7-parameter-sensitivity) | Do neighbouring settings keep the Sharpe ratio? | |
+
 ## Conventions
 
 - $r_t$, $t = 1, \dots, T$: daily simple returns of a strategy, **net of transaction costs and slippage**. Every metric and test below is computed on net returns.
