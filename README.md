@@ -25,6 +25,24 @@ Three searches on SPY from 1993 to October 2026, fixed before any strategy was r
 
 Passing the overfitting checks says the selected Sharpe ratio is above zero and unlikely to be a product of the search alone. The checks do not test timing ability: in a market that rose over the sample, a long-only setting with no timing ability often comes out borderline or passing. Whether a result beats buy and hold is a separate question that no check tests; each report shows that comparison as descriptive figures, outside the verdict. [DEMO.md](docs/DEMO.md) has every check and the post hoc analysis, labelled as such; [the notebook](notebooks/demo.ipynb) re-derives each report's statistics from the inputs stored in it and applies the thresholds again.
 
+## Tests against buy and hold
+
+On the US market from 1926 to 1993, no setting of either grid is shown to beat buy and hold in Sharpe ratio or in mean return after correcting for the grids and for the 4 families (smallest Holm-adjusted p 1.0). On the eight ETFs, no setting of either grid is shown to beat buy and hold in Sharpe ratio or in mean return after correcting for the grids and for the 32 families (smallest Holm-adjusted p 0.928).
+
+The question, registered in [D043](docs/DECISIONS.md#d043-registered-tests-against-buy-and-hold-on-samples-the-grids-never-saw) before any strategy was run on these samples: does any setting of the moving-average and momentum grids above beat buy and hold of the same instrument on data the grids never saw? The samples are the value-weighted US stock market from 1926 to 1993, from the daily Fama/French factors, at 84 bps per side, the average one-way cost of trading NYSE stocks over 1925 to 2000 in Jones (2002), and QQQ, IWM, EFA, EEM, TLT, IEF, SHY and GLD from their first bar to October 2026, at 6 bps per side. A family is one sample, one grid and one criterion. Its p-value is Hansen's SPA consistent p-value on a stationary bootstrap, Holm's adjustment corrects for the families of each question, and a finding needs an adjusted p-value of at most 0.05 ([METHODS.md](docs/METHODS.md#8-data-snooping-tests-against-a-benchmark-reality-check-spa-and-stepm)).
+
+| Question | Families | Smallest Holm-adjusted p-value | Smallest p-value before Holm | Findings |
+|---|---|---|---|---|
+| US market, 1926 to 1993 | 4 | 1.0 | 0.6826 (moving average, Sharpe ratio) | 0 |
+| Eight ETFs | 32 | 0.928 | 0.029 (SHY, momentum, Sharpe ratio) | 0 |
+
+- Limit: D043 estimated, for orientation only, that a finding needs an annualized Sharpe difference of about 0.25 to 0.28 on the US market and 0.45 to 0.55 on an ETF for a long-only setting whose daily returns correlate about 0.8 with buy and hold and with independent returns, so smaller true differences are unlikely to be found.
+- Limit: the ETFs cover SPY's years, and the grids hold conventional values, such as a 200-day average, whose popularity owes something to long US histories that include 1926 to 1993 (D043).
+- Post hoc: SPY over D021's sample was known before D043 and was rerun with D043's code. The smallest p-value of its 4 families is 0.3934 (momentum, Sharpe ratio). D021's two selected settings, tested alone, have p-values of 0.1065 (moving average) and 0.1158 (momentum) on the Sharpe ratio and 1.0 for both on the mean return.
+- Interpretation: the best settings' annualized Sharpe differences, 0.07 on the US market and at most 0.26 on an ETF (SHY, momentum), are below the sizes D043 estimated a finding needs.
+
+[DEMO.md](docs/DEMO.md#tests-against-buy-and-hold) has every family, the variants reported beside the decision (other costs, block lengths and subperiods) and how to rerun the study.
+
 ## Methods
 
 | Check | Question | Reference |

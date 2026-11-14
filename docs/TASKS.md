@@ -53,5 +53,5 @@
 - [x] Fama/French daily factors
 - [x] Reality Check, SPA and StepM
 - [x] Registered study runner
-- [ ] Run the registered tests and commit the results
-- [ ] Report them in README and DEMO.md
+- [x] Run the registered tests and commit the results
+- [x] Report them in README and DEMO.md

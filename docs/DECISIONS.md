@@ -206,6 +206,7 @@
 - Rationale: rerunning on newer data changes the sample, and so the numbers, after the conclusions were drawn from them. A pre-registered result has to stay the one that was registered; an analysis of newer data would be a new, separately labelled result
 - Not done: a weekly rerun over the registered dates to detect revisions in Yahoo's history. It would need the raw data that is not committed (D003), and a difference would only say that the data changed
 - Limitation: a rerun with D021's configuration differs from `results/demo` for two reasons at once, the prices the source serves today and the 1.1 report format (D041). The repository has no rerun of the full reports on the registered data that would separate the two
+- Update (2026-11-14): `results/relative` is checked the same way, against `results/relative/SHA256SUMS`, and `results/posthoc/SHA256SUMS` also covers `relative_spy.json` (D043)
 
 ## D033 Dashboard types generated from the report schema
 - Date: 2026-11-08
