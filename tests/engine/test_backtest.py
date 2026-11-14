@@ -204,3 +204,31 @@ def test_ruin_is_detected_in_any_leg(
     assert np.isfinite(result.turnover).all()
     assert result.turnover.iloc[-1] == 0.0
     assert (result.weights.iloc[-1] == 0.0).all()
+
+
+RETURNS = pd.DataFrame(
+    {"M": [0.01, 0.02, -0.03, 0.04, 0.05]},
+    index=pd.bdate_range("2024-01-02", periods=5).as_unit("us"),
+)
+
+
+def test_returns_only_market_fills_at_the_next_close() -> None:
+    # Decided at close 1, traded at close 2, so it earns days 3 and 4. A fill at the
+    # signal's own close (an open equal to the previous close) would earn days 2 and 3.
+    prices = Prices.from_returns(RETURNS)
+    weights = pd.DataFrame({"M": [0.0, 1.0, 1.0, 0.0, 0.0]}, index=RETURNS.index)
+    r = RETURNS["M"].to_numpy()
+    assert list(run(weights, prices, ZERO).returns) == pytest.approx([0, 0, r[3], r[4]], abs=1e-15)
+    # Costs are paid at the closes where the position is entered and left.
+    c = Costs().rate
+    assert list(run(weights, prices).returns) == pytest.approx(
+        [0, -c, r[3], (1 + r[4]) * (1 - c) - 1], abs=1e-15
+    )
+
+
+@pytest.mark.parametrize("bad", [np.nan, np.inf, -1.0])
+def test_returns_only_market_rejects_invalid_returns(bad: float) -> None:
+    returns = RETURNS.copy()
+    returns.iloc[2, 0] = bad
+    with pytest.raises(ValueError, match="finite and above -1"):
+        Prices.from_returns(returns)

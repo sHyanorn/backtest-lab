@@ -86,3 +86,38 @@ def test_new_target_does_not_earn_the_overnight_gap(cut: int) -> None:
     a = run(weights, flat_day, zero).returns.loc[nxt]
     b = run(changed, flat_day, zero).returns.loc[nxt]
     assert a == pytest.approx(b, abs=1e-15)
+
+
+def _returns(weights: pd.DataFrame, seed: int) -> pd.DataFrame:
+    rng = np.random.default_rng(seed)
+    return pd.DataFrame(rng.normal(0, 0.01, weights.shape), index=weights.index)
+
+
+@pytest.mark.parametrize("cut", CUTS)
+def test_returns_only_market_ignores_later_returns(cut: int) -> None:
+    weights, _ = _market(seed=cut)
+    returns = _returns(weights, cut)
+    t = weights.index[cut]
+    later = returns.index > t
+    order = np.random.default_rng(cut).permutation(int(later.sum()))
+    shuffled = returns.copy()
+    shuffled.loc[later] = returns.loc[later].to_numpy()[order] * 1.5
+    a = run(weights, Prices.from_returns(returns))
+    b = run(weights, Prices.from_returns(shuffled))
+    pd.testing.assert_frame_equal(_upto(a, t), _upto(b, t))
+
+
+@pytest.mark.parametrize("cut", CUTS[:-1])
+def test_returns_only_target_does_not_earn_the_next_day(cut: int) -> None:
+    # Fills at the next close (D044): without costs, nothing up to day t+1 depends on
+    # the target decided at close t. With next-open fills its intraday leg would.
+    weights, _ = _market(seed=cut)
+    prices = Prices.from_returns(_returns(weights, cut))
+    t, nxt = weights.index[cut], weights.index[cut + 1]
+    changed = weights.copy()
+    changed.loc[t] = -changed.loc[t]
+    zero = Costs(fee_bps=0.0, slippage_bps=0.0)
+    a = run(weights, prices, zero).returns.loc[:nxt]
+    b = run(changed, prices, zero).returns.loc[:nxt]
+    pd.testing.assert_series_equal(a, b)
+    assert not run(weights, prices, zero).returns.equals(run(changed, prices, zero).returns)

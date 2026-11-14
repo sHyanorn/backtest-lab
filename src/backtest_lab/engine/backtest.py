@@ -49,6 +49,21 @@ class Prices:
         """Apply the close's adjustment factor to the open of the same day."""
         return cls(open=open_ * (adj_close / close), close=adj_close)
 
+    @classmethod
+    def from_returns(cls, returns: pd.DataFrame) -> Prices:
+        """A market known only by its close-to-close total returns (D044).
+
+        The close is wealth compounded from 1 and each open is the same day's close,
+        so a target decided at close t-1 is traded at close t: the next close.
+        """
+        r = returns.to_numpy(dtype=np.float64)
+        if not (np.isfinite(r).all() and (r > -1).all()):
+            raise ValueError("returns must be finite and above -1")
+        close = pd.DataFrame(
+            np.cumprod(1 + r, axis=0), index=returns.index, columns=returns.columns
+        )
+        return cls(open=close.copy(), close=close)
+
 
 @dataclass(frozen=True)
 class Result:

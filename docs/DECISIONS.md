@@ -313,3 +313,9 @@
 - Sources outside METHODS.md: Jones, C. M. (2002), A century of stock market liquidity and trading costs, working paper, Columbia Business School, version of 2002-05-22; Bajgrowicz, P., and Scaillet, O. (2012), Technical trading revisited: False discoveries, persistence tests, and transaction costs, Journal of Financial Economics, 106(3), 473-491; Hsu, P.-H., and Kuan, C.-M. (2005), Reexamining the profitability of technical analysis with data snooping checks, Journal of Financial Econometrics, 3(4), 606-628
 - Data: the French zip is downloaded over HTTPS into `data/raw/`, not committed (D003). The library shows a copyright line and no other terms; only statistics are committed
 - Results: `results/relative/french.json` and `etfs.json`, and (i) in `results/posthoc/relative_spy.json`, each directory checked by CI against its `SHA256SUMS` (D032). The report format does not change: these tests are not checks of a credibility report, and buy and hold stays outside its verdicts (D021)
+
+## D044 A market known only by its returns fills at the next close
+- Date: 2026-11-14
+- `Prices.from_returns` builds a market from close-to-close total returns, the only prices the Fama/French files give (D043): the close is wealth compounded from 1, and each day's open is set to that day's close. The engine is unchanged, so a target decided at close t is traded at the open of t + 1, which is close t + 1, pays its costs there and earns the moves after it. That is one day later than D013's next open and the earliest fill such data allow without trading at the close that formed the signal
+- Opens equal to the same day's close come from this construction; they are not the stale opens of D038, whose check runs on fetched prices only
+- Rationale: one construction keeps the engine's costs, drift, ruin rule and look-ahead tests for both kinds of market. D013's remark that a next-close fill adds delay for no realism holds for data with opens

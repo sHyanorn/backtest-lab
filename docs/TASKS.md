@@ -49,7 +49,7 @@
 
 ## M7 Tests against buy and hold on new samples
 - [x] Register the tests (D043) and their formulas (METHODS.md Section 8)
-- [ ] Returns-only market with next-close fills
+- [x] Returns-only market with next-close fills
 - [ ] Fama/French daily factors
 - [ ] Reality Check, SPA and StepM
 - [ ] Registered study runner
