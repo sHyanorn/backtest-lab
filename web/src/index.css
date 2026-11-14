@@ -516,6 +516,7 @@ tbody th {
   font-weight: 400;
   line-height: 1.45;
   text-align: left;
+  white-space: normal;
   display: none;
 }
 

@@ -120,6 +120,22 @@ test('the static build has no live sweeps and the page fits its width', async ({
   expect(overflow).toBe(0)
 })
 
+test('the mode tip wraps inside its box and the page', async ({ page }) => {
+  await open(page, 'random_signal')
+  await page.getByRole('button', { name: 'About this mode' }).focus()
+  const tip = page.getByRole('tooltip').filter({ hasText: 'Pre-registered' })
+  await expect(tip).toBeVisible()
+  expect(
+    await tip.evaluate((el) => el.scrollWidth - el.clientWidth),
+  ).toBeLessThanOrEqual(0)
+  const overflow = await page.evaluate(
+    () =>
+      document.documentElement.scrollWidth -
+      document.documentElement.clientWidth,
+  )
+  expect(overflow).toBe(0)
+})
+
 test('a failed load says so instead of showing the previous search', async ({
   page,
 }) => {
