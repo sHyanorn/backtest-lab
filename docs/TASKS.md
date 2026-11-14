@@ -52,6 +52,6 @@
 - [x] Returns-only market with next-close fills
 - [x] Fama/French daily factors
 - [x] Reality Check, SPA and StepM
-- [ ] Registered study runner
+- [x] Registered study runner
 - [ ] Run the registered tests and commit the results
 - [ ] Report them in README and DEMO.md
