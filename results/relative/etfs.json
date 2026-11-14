@@ -1,0 +1,3957 @@
+{
+  "registered": "D043",
+  "commit": "8bf4b450ffd7d9eeea3efbd1c6642f4cf35a9ac6",
+  "uncommitted_changes": false,
+  "reps": 10000,
+  "seed": 0,
+  "alpha": 0.05,
+  "sample": "(iii) eight ETFs",
+  "decision": [
+    {
+      "instrument": "QQQ",
+      "strategy": "ma_crossover",
+      "criterion": "sharpe_difference",
+      "p": 0.3299,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "ma_crossover",
+      "criterion": "mean_difference",
+      "p": 0.7348,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "momentum",
+      "criterion": "sharpe_difference",
+      "p": 0.2751,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "momentum",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "ma_crossover",
+      "criterion": "sharpe_difference",
+      "p": 0.9112,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "ma_crossover",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "momentum",
+      "criterion": "sharpe_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "momentum",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "ma_crossover",
+      "criterion": "sharpe_difference",
+      "p": 0.442,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "ma_crossover",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "momentum",
+      "criterion": "sharpe_difference",
+      "p": 0.4951,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "momentum",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "ma_crossover",
+      "criterion": "sharpe_difference",
+      "p": 0.6082,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "ma_crossover",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "momentum",
+      "criterion": "sharpe_difference",
+      "p": 0.6006,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "momentum",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "ma_crossover",
+      "criterion": "sharpe_difference",
+      "p": 0.4928,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "ma_crossover",
+      "criterion": "mean_difference",
+      "p": 0.7087,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "momentum",
+      "criterion": "sharpe_difference",
+      "p": 0.84,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "momentum",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "ma_crossover",
+      "criterion": "sharpe_difference",
+      "p": 0.7692,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "ma_crossover",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "momentum",
+      "criterion": "sharpe_difference",
+      "p": 0.7857,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "momentum",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "ma_crossover",
+      "criterion": "sharpe_difference",
+      "p": 0.1867,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "ma_crossover",
+      "criterion": "mean_difference",
+      "p": 0.7189,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "momentum",
+      "criterion": "sharpe_difference",
+      "p": 0.029,
+      "holm": 0.928,
+      "finding": false
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "momentum",
+      "criterion": "mean_difference",
+      "p": 0.4462,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "ma_crossover",
+      "criterion": "sharpe_difference",
+      "p": 0.6693,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "ma_crossover",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "momentum",
+      "criterion": "sharpe_difference",
+      "p": 0.8919,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "momentum",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    }
+  ],
+  "families": [
+    {
+      "instrument": "QQQ",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2000-03-06",
+      "last": "2026-10-30",
+      "days": 6705,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 124,
+          "params": {
+            "ticker": "QQQ",
+            "fast": 50,
+            "slow": 200,
+            "allow_short": false
+          },
+          "annualized": 0.21427812404537985
+        },
+        "reality_check": 0.4955,
+        "spa": {
+          "statistic": 1.4711980193774357,
+          "lower": 0.2934,
+          "consistent": 0.3299,
+          "upper": 0.3299
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 125,
+          "params": {
+            "ticker": "QQQ",
+            "fast": 50,
+            "slow": 200,
+            "allow_short": true
+          },
+          "annualized": 0.006074237625323627
+        },
+        "reality_check": 0.7517,
+        "spa": {
+          "statistic": 0.14298354131672408,
+          "lower": 0.5646,
+          "consistent": 0.7348,
+          "upper": 0.7348
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "QQQ",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 0.3035
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2000-03-06",
+      "last": "2026-10-30",
+      "days": 6705,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 124,
+          "params": {
+            "ticker": "QQQ",
+            "fast": 50,
+            "slow": 200,
+            "allow_short": false
+          },
+          "annualized": 0.21427812404537985
+        },
+        "reality_check": 0.5147,
+        "spa": {
+          "statistic": 1.4857115063525907,
+          "lower": 0.3028,
+          "consistent": 0.3405,
+          "upper": 0.3405
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 125,
+          "params": {
+            "ticker": "QQQ",
+            "fast": 50,
+            "slow": 200,
+            "allow_short": true
+          },
+          "annualized": 0.006074237625323627
+        },
+        "reality_check": 0.7571,
+        "spa": {
+          "statistic": 0.14149236271851756,
+          "lower": 0.5807,
+          "consistent": 0.7415,
+          "upper": 0.7415
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2000-03-06",
+      "last": "2026-10-30",
+      "days": 6705,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 124,
+          "params": {
+            "ticker": "QQQ",
+            "fast": 50,
+            "slow": 200,
+            "allow_short": false
+          },
+          "annualized": 0.21427812404537985
+        },
+        "reality_check": 0.4919,
+        "spa": {
+          "statistic": 1.426159500385323,
+          "lower": 0.3014,
+          "consistent": 0.3421,
+          "upper": 0.3421
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 125,
+          "params": {
+            "ticker": "QQQ",
+            "fast": 50,
+            "slow": 200,
+            "allow_short": true
+          },
+          "annualized": 0.006074237625323627
+        },
+        "reality_check": 0.7532,
+        "spa": {
+          "statistic": 0.14347585672238397,
+          "lower": 0.5541,
+          "consistent": 0.7376,
+          "upper": 0.7376
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2000-03-06",
+      "last": "2026-10-30",
+      "days": 6705,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 124,
+          "params": {
+            "ticker": "QQQ",
+            "fast": 50,
+            "slow": 200,
+            "allow_short": false
+          },
+          "annualized": 0.21427812404537985
+        },
+        "reality_check": 0.4647,
+        "spa": {
+          "statistic": 1.3519828566889285,
+          "lower": 0.2996,
+          "consistent": 0.3378,
+          "upper": 0.3378
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 125,
+          "params": {
+            "ticker": "QQQ",
+            "fast": 50,
+            "slow": 200,
+            "allow_short": true
+          },
+          "annualized": 0.006074237625323627
+        },
+        "reality_check": 0.7485,
+        "spa": {
+          "statistic": 0.14399204973112614,
+          "lower": 0.5286,
+          "consistent": 0.7322,
+          "upper": 0.7322
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2000-09-07",
+      "last": "2026-10-30",
+      "days": 6576,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 8,
+          "params": {
+            "ticker": "QQQ",
+            "lookback": 126,
+            "allow_short": false
+          },
+          "annualized": 0.24744405953575382
+        },
+        "reality_check": 0.4204,
+        "spa": {
+          "statistic": 1.5695746828358852,
+          "lower": 0.2474,
+          "consistent": 0.2751,
+          "upper": 0.2751
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "QQQ",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": -0.0050819175951464035
+        },
+        "reality_check": 0.8201,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "QQQ",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 0.206
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2000-09-07",
+      "last": "2026-10-30",
+      "days": 6576,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 8,
+          "params": {
+            "ticker": "QQQ",
+            "lookback": 126,
+            "allow_short": false
+          },
+          "annualized": 0.24744405953575382
+        },
+        "reality_check": 0.4276,
+        "spa": {
+          "statistic": 1.554898706607248,
+          "lower": 0.2536,
+          "consistent": 0.2822,
+          "upper": 0.2822
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "QQQ",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": -0.0050819175951464035
+        },
+        "reality_check": 0.8179,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2000-09-07",
+      "last": "2026-10-30",
+      "days": 6576,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 8,
+          "params": {
+            "ticker": "QQQ",
+            "lookback": 126,
+            "allow_short": false
+          },
+          "annualized": 0.24744405953575382
+        },
+        "reality_check": 0.4062,
+        "spa": {
+          "statistic": 1.5809176362408464,
+          "lower": 0.2269,
+          "consistent": 0.2574,
+          "upper": 0.2574
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "QQQ",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": -0.0050819175951464035
+        },
+        "reality_check": 0.8305,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "QQQ",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2000-09-07",
+      "last": "2026-10-30",
+      "days": 6576,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 8,
+          "params": {
+            "ticker": "QQQ",
+            "lookback": 126,
+            "allow_short": false
+          },
+          "annualized": 0.24744405953575382
+        },
+        "reality_check": 0.39,
+        "spa": {
+          "statistic": 1.6002560087011966,
+          "lower": 0.2184,
+          "consistent": 0.2454,
+          "upper": 0.2454
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "QQQ",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": -0.0050819175951464035
+        },
+        "reality_check": 0.8328,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2001-05-24",
+      "last": "2026-10-30",
+      "days": 6397,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 34,
+          "params": {
+            "ticker": "IWM",
+            "fast": 15,
+            "slow": 80,
+            "allow_short": false
+          },
+          "annualized": 0.008884004233340988
+        },
+        "reality_check": 0.913,
+        "spa": {
+          "statistic": 0.058087316657413124,
+          "lower": 0.7369,
+          "consistent": 0.9112,
+          "upper": 0.9122
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 34,
+          "params": {
+            "ticker": "IWM",
+            "fast": 15,
+            "slow": 80,
+            "allow_short": false
+          },
+          "annualized": -0.036725256587745565
+        },
+        "reality_check": 0.9883,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "IWM",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2001-05-24",
+      "last": "2026-10-30",
+      "days": 6397,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 34,
+          "params": {
+            "ticker": "IWM",
+            "fast": 15,
+            "slow": 80,
+            "allow_short": false
+          },
+          "annualized": 0.008884004233340988
+        },
+        "reality_check": 0.9055,
+        "spa": {
+          "statistic": 0.0563877286898398,
+          "lower": 0.7381,
+          "consistent": 0.9042,
+          "upper": 0.9053
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 34,
+          "params": {
+            "ticker": "IWM",
+            "fast": 15,
+            "slow": 80,
+            "allow_short": false
+          },
+          "annualized": -0.036725256587745565
+        },
+        "reality_check": 0.9837,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2001-05-24",
+      "last": "2026-10-30",
+      "days": 6397,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 34,
+          "params": {
+            "ticker": "IWM",
+            "fast": 15,
+            "slow": 80,
+            "allow_short": false
+          },
+          "annualized": 0.008884004233340988
+        },
+        "reality_check": 0.9265,
+        "spa": {
+          "statistic": 0.06041631442860611,
+          "lower": 0.7389,
+          "consistent": 0.9256,
+          "upper": 0.9261
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 34,
+          "params": {
+            "ticker": "IWM",
+            "fast": 15,
+            "slow": 80,
+            "allow_short": false
+          },
+          "annualized": -0.036725256587745565
+        },
+        "reality_check": 0.9926,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2001-05-24",
+      "last": "2026-10-30",
+      "days": 6397,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 34,
+          "params": {
+            "ticker": "IWM",
+            "fast": 15,
+            "slow": 80,
+            "allow_short": false
+          },
+          "annualized": 0.008884004233340988
+        },
+        "reality_check": 0.94,
+        "spa": {
+          "statistic": 0.06456911029049599,
+          "lower": 0.7448,
+          "consistent": 0.9372,
+          "upper": 0.9395
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 34,
+          "params": {
+            "ticker": "IWM",
+            "fast": 15,
+            "slow": 80,
+            "allow_short": false
+          },
+          "annualized": -0.036725256587745565
+        },
+        "reality_check": 0.998,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2001-12-03",
+      "last": "2026-10-30",
+      "days": 6268,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IWM",
+            "lookback": 252,
+            "allow_short": false
+          },
+          "annualized": -0.01090151394353812
+        },
+        "reality_check": 0.9072,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IWM",
+            "lookback": 252,
+            "allow_short": false
+          },
+          "annualized": -0.03870407141557169
+        },
+        "reality_check": 0.9868,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "IWM",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2001-12-03",
+      "last": "2026-10-30",
+      "days": 6268,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IWM",
+            "lookback": 252,
+            "allow_short": false
+          },
+          "annualized": -0.01090151394353812
+        },
+        "reality_check": 0.9046,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IWM",
+            "lookback": 252,
+            "allow_short": false
+          },
+          "annualized": -0.03870407141557169
+        },
+        "reality_check": 0.9839,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2001-12-03",
+      "last": "2026-10-30",
+      "days": 6268,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IWM",
+            "lookback": 252,
+            "allow_short": false
+          },
+          "annualized": -0.01090151394353812
+        },
+        "reality_check": 0.9112,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IWM",
+            "lookback": 252,
+            "allow_short": false
+          },
+          "annualized": -0.03870407141557169
+        },
+        "reality_check": 0.9923,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IWM",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2001-12-03",
+      "last": "2026-10-30",
+      "days": 6268,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IWM",
+            "lookback": 252,
+            "allow_short": false
+          },
+          "annualized": -0.01090151394353812
+        },
+        "reality_check": 0.924,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IWM",
+            "lookback": 252,
+            "allow_short": false
+          },
+          "annualized": -0.03870407141557169
+        },
+        "reality_check": 0.9957,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2002-08-29",
+      "last": "2026-10-30",
+      "days": 6082,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "EFA",
+            "fast": 10,
+            "slow": 180,
+            "allow_short": false
+          },
+          "annualized": 0.1966070655688401
+        },
+        "reality_check": 0.5477,
+        "spa": {
+          "statistic": 1.2325891185564652,
+          "lower": 0.3984,
+          "consistent": 0.442,
+          "upper": 0.442
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "EFA",
+            "fast": 10,
+            "slow": 180,
+            "allow_short": false
+          },
+          "annualized": -0.01056742012710485
+        },
+        "reality_check": 0.8909,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "EFA",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 0.1465
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2002-08-29",
+      "last": "2026-10-30",
+      "days": 6082,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "EFA",
+            "fast": 10,
+            "slow": 180,
+            "allow_short": false
+          },
+          "annualized": 0.1966070655688401
+        },
+        "reality_check": 0.5497,
+        "spa": {
+          "statistic": 1.2087221527129504,
+          "lower": 0.4111,
+          "consistent": 0.4516,
+          "upper": 0.4516
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "EFA",
+            "fast": 10,
+            "slow": 180,
+            "allow_short": false
+          },
+          "annualized": -0.01056742012710485
+        },
+        "reality_check": 0.8812,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2002-08-29",
+      "last": "2026-10-30",
+      "days": 6082,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "EFA",
+            "fast": 10,
+            "slow": 180,
+            "allow_short": false
+          },
+          "annualized": 0.1966070655688401
+        },
+        "reality_check": 0.5407,
+        "spa": {
+          "statistic": 1.2452545683847687,
+          "lower": 0.3745,
+          "consistent": 0.4172,
+          "upper": 0.4172
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "EFA",
+            "fast": 10,
+            "slow": 180,
+            "allow_short": false
+          },
+          "annualized": -0.01056742012710485
+        },
+        "reality_check": 0.9001,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2002-08-29",
+      "last": "2026-10-30",
+      "days": 6082,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "EFA",
+            "fast": 10,
+            "slow": 180,
+            "allow_short": false
+          },
+          "annualized": 0.1966070655688401
+        },
+        "reality_check": 0.5246,
+        "spa": {
+          "statistic": 1.2413595161678388,
+          "lower": 0.3563,
+          "consistent": 0.3978,
+          "upper": 0.3978
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "EFA",
+            "fast": 10,
+            "slow": 180,
+            "allow_short": false
+          },
+          "annualized": -0.01056742012710485
+        },
+        "reality_check": 0.9162,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-03-06",
+      "last": "2026-10-30",
+      "days": 5953,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "EFA",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": 0.16674975851557436
+        },
+        "reality_check": 0.5936,
+        "spa": {
+          "statistic": 1.034710036358222,
+          "lower": 0.372,
+          "consistent": 0.4951,
+          "upper": 0.4951
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "EFA",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": -0.018477946356291772
+        },
+        "reality_check": 0.9332,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "EFA",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-03-06",
+      "last": "2026-10-30",
+      "days": 5953,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "EFA",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": 0.16674975851557436
+        },
+        "reality_check": 0.5991,
+        "spa": {
+          "statistic": 1.018900399137566,
+          "lower": 0.3918,
+          "consistent": 0.5132,
+          "upper": 0.5132
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "EFA",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": -0.018477946356291772
+        },
+        "reality_check": 0.9283,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-03-06",
+      "last": "2026-10-30",
+      "days": 5953,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "EFA",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": 0.16674975851557436
+        },
+        "reality_check": 0.5737,
+        "spa": {
+          "statistic": 1.023127969750625,
+          "lower": 0.3551,
+          "consistent": 0.4702,
+          "upper": 0.4702
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "EFA",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": -0.018477946356291772
+        },
+        "reality_check": 0.9381,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EFA",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-03-06",
+      "last": "2026-10-30",
+      "days": 5953,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "EFA",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": 0.16674975851557436
+        },
+        "reality_check": 0.5604,
+        "spa": {
+          "statistic": 0.9857913391940489,
+          "lower": 0.3401,
+          "consistent": 0.4503,
+          "upper": 0.4503
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 10,
+          "params": {
+            "ticker": "EFA",
+            "lookback": 147,
+            "allow_short": false
+          },
+          "annualized": -0.018477946356291772
+        },
+        "reality_check": 0.9509,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-04-12",
+      "last": "2026-10-30",
+      "days": 5676,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 48,
+          "params": {
+            "ticker": "EEM",
+            "fast": 20,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": 0.13271602052891748
+        },
+        "reality_check": 0.6661,
+        "spa": {
+          "statistic": 0.8630797162247923,
+          "lower": 0.5226,
+          "consistent": 0.6082,
+          "upper": 0.6082
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 48,
+          "params": {
+            "ticker": "EEM",
+            "fast": 20,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": -0.01943443739670314
+        },
+        "reality_check": 0.9265,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "EEM",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-04-12",
+      "last": "2026-10-30",
+      "days": 5676,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 48,
+          "params": {
+            "ticker": "EEM",
+            "fast": 20,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": 0.13271602052891748
+        },
+        "reality_check": 0.68,
+        "spa": {
+          "statistic": 0.8322441502367184,
+          "lower": 0.5488,
+          "consistent": 0.6294,
+          "upper": 0.6294
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 48,
+          "params": {
+            "ticker": "EEM",
+            "fast": 20,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": -0.01943443739670314
+        },
+        "reality_check": 0.9168,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-04-12",
+      "last": "2026-10-30",
+      "days": 5676,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 48,
+          "params": {
+            "ticker": "EEM",
+            "fast": 20,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": 0.13271602052891748
+        },
+        "reality_check": 0.6541,
+        "spa": {
+          "statistic": 0.875067084723772,
+          "lower": 0.4913,
+          "consistent": 0.5801,
+          "upper": 0.5801
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 48,
+          "params": {
+            "ticker": "EEM",
+            "fast": 20,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": -0.01943443739670314
+        },
+        "reality_check": 0.9427,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-04-12",
+      "last": "2026-10-30",
+      "days": 5676,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 48,
+          "params": {
+            "ticker": "EEM",
+            "fast": 20,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": 0.13271602052891748
+        },
+        "reality_check": 0.6433,
+        "spa": {
+          "statistic": 0.8867236490323764,
+          "lower": 0.4682,
+          "consistent": 0.5656,
+          "upper": 0.5656
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 48,
+          "params": {
+            "ticker": "EEM",
+            "fast": 20,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": -0.01943443739670314
+        },
+        "reality_check": 0.9551,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-10-14",
+      "last": "2026-10-30",
+      "days": 5547,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 16,
+          "params": {
+            "ticker": "EEM",
+            "lookback": 210,
+            "allow_short": false
+          },
+          "annualized": 0.12029747043194897
+        },
+        "reality_check": 0.6674,
+        "spa": {
+          "statistic": 0.7953358833025598,
+          "lower": 0.4759,
+          "consistent": 0.6006,
+          "upper": 0.6006
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 16,
+          "params": {
+            "ticker": "EEM",
+            "lookback": 210,
+            "allow_short": false
+          },
+          "annualized": -0.018204107816700288
+        },
+        "reality_check": 0.9149,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "EEM",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 0.4625
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-10-14",
+      "last": "2026-10-30",
+      "days": 5547,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 16,
+          "params": {
+            "ticker": "EEM",
+            "lookback": 210,
+            "allow_short": false
+          },
+          "annualized": 0.12029747043194897
+        },
+        "reality_check": 0.6713,
+        "spa": {
+          "statistic": 0.7775906349854498,
+          "lower": 0.4899,
+          "consistent": 0.6065,
+          "upper": 0.6065
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 16,
+          "params": {
+            "ticker": "EEM",
+            "lookback": 210,
+            "allow_short": false
+          },
+          "annualized": -0.018204107816700288
+        },
+        "reality_check": 0.9012,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-10-14",
+      "last": "2026-10-30",
+      "days": 5547,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 16,
+          "params": {
+            "ticker": "EEM",
+            "lookback": 210,
+            "allow_short": false
+          },
+          "annualized": 0.12029747043194897
+        },
+        "reality_check": 0.6679,
+        "spa": {
+          "statistic": 0.7975576810480919,
+          "lower": 0.4699,
+          "consistent": 0.6001,
+          "upper": 0.6001
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 16,
+          "params": {
+            "ticker": "EEM",
+            "lookback": 210,
+            "allow_short": false
+          },
+          "annualized": -0.018204107816700288
+        },
+        "reality_check": 0.9263,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "EEM",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-10-14",
+      "last": "2026-10-30",
+      "days": 5547,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 16,
+          "params": {
+            "ticker": "EEM",
+            "lookback": 210,
+            "allow_short": false
+          },
+          "annualized": 0.12029747043194897
+        },
+        "reality_check": 0.6627,
+        "spa": {
+          "statistic": 0.8089400049773864,
+          "lower": 0.4434,
+          "consistent": 0.5797,
+          "upper": 0.5812
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 16,
+          "params": {
+            "ticker": "EEM",
+            "lookback": 210,
+            "allow_short": false
+          },
+          "annualized": -0.018204107816700288
+        },
+        "reality_check": 0.9492,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 96,
+          "params": {
+            "ticker": "TLT",
+            "fast": 40,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": 0.14916949298887344
+        },
+        "reality_check": 0.6213,
+        "spa": {
+          "statistic": 1.1405558140870875,
+          "lower": 0.4188,
+          "consistent": 0.4928,
+          "upper": 0.4928
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 97,
+          "params": {
+            "ticker": "TLT",
+            "fast": 40,
+            "slow": 60,
+            "allow_short": true
+          },
+          "annualized": 0.01253486669770733
+        },
+        "reality_check": 0.7087,
+        "spa": {
+          "statistic": 0.3592304548878554,
+          "lower": 0.57,
+          "consistent": 0.7087,
+          "upper": 0.7087
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "TLT",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 96,
+          "params": {
+            "ticker": "TLT",
+            "fast": 40,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": 0.14916949298887344
+        },
+        "reality_check": 0.6376,
+        "spa": {
+          "statistic": 1.1323864641917942,
+          "lower": 0.4329,
+          "consistent": 0.5066,
+          "upper": 0.5066
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 97,
+          "params": {
+            "ticker": "TLT",
+            "fast": 40,
+            "slow": 60,
+            "allow_short": true
+          },
+          "annualized": 0.01253486669770733
+        },
+        "reality_check": 0.7206,
+        "spa": {
+          "statistic": 0.35700792965452205,
+          "lower": 0.5799,
+          "consistent": 0.7206,
+          "upper": 0.7206
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 96,
+          "params": {
+            "ticker": "TLT",
+            "fast": 40,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": 0.14916949298887344
+        },
+        "reality_check": 0.6172,
+        "spa": {
+          "statistic": 1.150677848604315,
+          "lower": 0.4067,
+          "consistent": 0.4732,
+          "upper": 0.4732
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 97,
+          "params": {
+            "ticker": "TLT",
+            "fast": 40,
+            "slow": 60,
+            "allow_short": true
+          },
+          "annualized": 0.01253486669770733
+        },
+        "reality_check": 0.7047,
+        "spa": {
+          "statistic": 0.3618197109147296,
+          "lower": 0.571,
+          "consistent": 0.704,
+          "upper": 0.704
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 96,
+          "params": {
+            "ticker": "TLT",
+            "fast": 40,
+            "slow": 60,
+            "allow_short": false
+          },
+          "annualized": 0.14916949298887344
+        },
+        "reality_check": 0.5999,
+        "spa": {
+          "statistic": 1.223145955167723,
+          "lower": 0.3646,
+          "consistent": 0.4284,
+          "upper": 0.4284
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 97,
+          "params": {
+            "ticker": "TLT",
+            "fast": 40,
+            "slow": 60,
+            "allow_short": true
+          },
+          "annualized": 0.01253486669770733
+        },
+        "reality_check": 0.699,
+        "spa": {
+          "statistic": 0.38485754785403486,
+          "lower": 0.5588,
+          "consistent": 0.6957,
+          "upper": 0.6957
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "TLT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": 0.04220193445995054
+        },
+        "reality_check": 0.8489,
+        "spa": {
+          "statistic": 0.3110664153168242,
+          "lower": 0.6586,
+          "consistent": 0.84,
+          "upper": 0.8404
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "TLT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": -0.0055858298498978115
+        },
+        "reality_check": 0.92,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "TLT",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "TLT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": 0.04220193445995054
+        },
+        "reality_check": 0.8514,
+        "spa": {
+          "statistic": 0.3077287833236185,
+          "lower": 0.6714,
+          "consistent": 0.8425,
+          "upper": 0.8427
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "TLT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": -0.0055858298498978115
+        },
+        "reality_check": 0.9213,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "TLT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": 0.04220193445995054
+        },
+        "reality_check": 0.8462,
+        "spa": {
+          "statistic": 0.3156901439816531,
+          "lower": 0.6521,
+          "consistent": 0.8308,
+          "upper": 0.8308
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "TLT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": -0.0055858298498978115
+        },
+        "reality_check": 0.925,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "TLT",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "TLT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": 0.04220193445995054
+        },
+        "reality_check": 0.8416,
+        "spa": {
+          "statistic": 0.3345498244332449,
+          "lower": 0.6372,
+          "consistent": 0.8228,
+          "upper": 0.8228
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "TLT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": -0.0055858298498978115
+        },
+        "reality_check": 0.9297,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IEF",
+            "fast": 10,
+            "slow": 100,
+            "allow_short": false
+          },
+          "annualized": 0.06847371191191376
+        },
+        "reality_check": 0.8016,
+        "spa": {
+          "statistic": 0.5167756220638794,
+          "lower": 0.607,
+          "consistent": 0.7692,
+          "upper": 0.7697
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IEF",
+            "fast": 10,
+            "slow": 100,
+            "allow_short": false
+          },
+          "annualized": -0.004345387036688007
+        },
+        "reality_check": 0.9504,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "IEF",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IEF",
+            "fast": 10,
+            "slow": 100,
+            "allow_short": false
+          },
+          "annualized": 0.06847371191191376
+        },
+        "reality_check": 0.8089,
+        "spa": {
+          "statistic": 0.5167900228284229,
+          "lower": 0.6119,
+          "consistent": 0.7775,
+          "upper": 0.7777
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IEF",
+            "fast": 10,
+            "slow": 100,
+            "allow_short": false
+          },
+          "annualized": -0.004345387036688007
+        },
+        "reality_check": 0.9511,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IEF",
+            "fast": 10,
+            "slow": 100,
+            "allow_short": false
+          },
+          "annualized": 0.06847371191191376
+        },
+        "reality_check": 0.7971,
+        "spa": {
+          "statistic": 0.5183698387992196,
+          "lower": 0.6022,
+          "consistent": 0.7623,
+          "upper": 0.7627
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IEF",
+            "fast": 10,
+            "slow": 100,
+            "allow_short": false
+          },
+          "annualized": -0.004345387036688007
+        },
+        "reality_check": 0.9485,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IEF",
+            "fast": 10,
+            "slow": 100,
+            "allow_short": false
+          },
+          "annualized": 0.06847371191191376
+        },
+        "reality_check": 0.7902,
+        "spa": {
+          "statistic": 0.5433533909603002,
+          "lower": 0.5842,
+          "consistent": 0.7455,
+          "upper": 0.7459
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 20,
+          "params": {
+            "ticker": "IEF",
+            "fast": 10,
+            "slow": 100,
+            "allow_short": false
+          },
+          "annualized": -0.004345387036688007
+        },
+        "reality_check": 0.9575,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 24,
+          "params": {
+            "ticker": "IEF",
+            "lookback": 294,
+            "allow_short": false
+          },
+          "annualized": 0.04395714439835787
+        },
+        "reality_check": 0.8243,
+        "spa": {
+          "statistic": 0.39176616063967534,
+          "lower": 0.6542,
+          "consistent": 0.7857,
+          "upper": 0.7873
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 30,
+          "params": {
+            "ticker": "IEF",
+            "lookback": 357,
+            "allow_short": false
+          },
+          "annualized": -0.002619660403637725
+        },
+        "reality_check": 0.9117,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "IEF",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 24,
+          "params": {
+            "ticker": "IEF",
+            "lookback": 294,
+            "allow_short": false
+          },
+          "annualized": 0.04395714439835787
+        },
+        "reality_check": 0.8305,
+        "spa": {
+          "statistic": 0.3931068354845799,
+          "lower": 0.659,
+          "consistent": 0.7957,
+          "upper": 0.7974
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 30,
+          "params": {
+            "ticker": "IEF",
+            "lookback": 357,
+            "allow_short": false
+          },
+          "annualized": -0.002619660403637725
+        },
+        "reality_check": 0.9149,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 24,
+          "params": {
+            "ticker": "IEF",
+            "lookback": 294,
+            "allow_short": false
+          },
+          "annualized": 0.04395714439835787
+        },
+        "reality_check": 0.8195,
+        "spa": {
+          "statistic": 0.387273042385157,
+          "lower": 0.6429,
+          "consistent": 0.7795,
+          "upper": 0.7805
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 30,
+          "params": {
+            "ticker": "IEF",
+            "lookback": 357,
+            "allow_short": false
+          },
+          "annualized": -0.002619660403637725
+        },
+        "reality_check": 0.9177,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "IEF",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 24,
+          "params": {
+            "ticker": "IEF",
+            "lookback": 294,
+            "allow_short": false
+          },
+          "annualized": 0.04395714439835787
+        },
+        "reality_check": 0.8195,
+        "spa": {
+          "statistic": 0.3747369436321023,
+          "lower": 0.6348,
+          "consistent": 0.7805,
+          "upper": 0.7819
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 30,
+          "params": {
+            "ticker": "IEF",
+            "lookback": 357,
+            "allow_short": false
+          },
+          "annualized": -0.002619660403637725
+        },
+        "reality_check": 0.9269,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 110,
+          "params": {
+            "ticker": "SHY",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.1715312705315169
+        },
+        "reality_check": 0.5703,
+        "spa": {
+          "statistic": 1.8426336215039407,
+          "lower": 0.1275,
+          "consistent": 0.1867,
+          "upper": 0.2081
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 111,
+          "params": {
+            "ticker": "SHY",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": true
+          },
+          "annualized": 0.0007482736309932596
+        },
+        "reality_check": 0.805,
+        "spa": {
+          "statistic": 0.2988904306553377,
+          "lower": 0.4943,
+          "consistent": 0.7189,
+          "upper": 0.7858
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "SHY",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 0.4292
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 110,
+          "params": {
+            "ticker": "SHY",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.1715312705315169
+        },
+        "reality_check": 0.5654,
+        "spa": {
+          "statistic": 1.9255758775982208,
+          "lower": 0.1183,
+          "consistent": 0.1676,
+          "upper": 0.1892
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 111,
+          "params": {
+            "ticker": "SHY",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": true
+          },
+          "annualized": 0.0007482736309932596
+        },
+        "reality_check": 0.8116,
+        "spa": {
+          "statistic": 0.2983477886410212,
+          "lower": 0.4991,
+          "consistent": 0.7311,
+          "upper": 0.7968
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 110,
+          "params": {
+            "ticker": "SHY",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.1715312705315169
+        },
+        "reality_check": 0.5599,
+        "spa": {
+          "statistic": 1.663004118092414,
+          "lower": 0.1463,
+          "consistent": 0.2112,
+          "upper": 0.2348
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 111,
+          "params": {
+            "ticker": "SHY",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": true
+          },
+          "annualized": 0.0007482736309932596
+        },
+        "reality_check": 0.7921,
+        "spa": {
+          "statistic": 0.29107499441456663,
+          "lower": 0.476,
+          "consistent": 0.6953,
+          "upper": 0.767
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2003-07-28",
+      "last": "2026-10-30",
+      "days": 5854,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 110,
+          "params": {
+            "ticker": "SHY",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.1715312705315169
+        },
+        "reality_check": 0.5377,
+        "spa": {
+          "statistic": 1.3536495077402457,
+          "lower": 0.1904,
+          "consistent": 0.2718,
+          "upper": 0.2918
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 111,
+          "params": {
+            "ticker": "SHY",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": true
+          },
+          "annualized": 0.0007482736309932596
+        },
+        "reality_check": 0.7599,
+        "spa": {
+          "statistic": 0.26632216079895604,
+          "lower": 0.4614,
+          "consistent": 0.6797,
+          "upper": 0.7377
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 32,
+          "params": {
+            "ticker": "SHY",
+            "lookback": 378,
+            "allow_short": false
+          },
+          "annualized": 0.2642318973083097
+        },
+        "reality_check": 0.3743,
+        "spa": {
+          "statistic": 2.600056240049278,
+          "lower": 0.0237,
+          "consistent": 0.029,
+          "upper": 0.0407
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 33,
+          "params": {
+            "ticker": "SHY",
+            "lookback": 378,
+            "allow_short": true
+          },
+          "annualized": 0.0020291760849516466
+        },
+        "reality_check": 0.6445,
+        "spa": {
+          "statistic": 0.6931645121775589,
+          "lower": 0.2971,
+          "consistent": 0.4462,
+          "upper": 0.6032
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "SHY",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 0.3959
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 32,
+          "params": {
+            "ticker": "SHY",
+            "lookback": 378,
+            "allow_short": false
+          },
+          "annualized": 0.2642318973083097
+        },
+        "reality_check": 0.3534,
+        "spa": {
+          "statistic": 2.673175269014911,
+          "lower": 0.0176,
+          "consistent": 0.0233,
+          "upper": 0.0318
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 33,
+          "params": {
+            "ticker": "SHY",
+            "lookback": 378,
+            "allow_short": true
+          },
+          "annualized": 0.0020291760849516466
+        },
+        "reality_check": 0.6351,
+        "spa": {
+          "statistic": 0.6880635249893488,
+          "lower": 0.2953,
+          "consistent": 0.4421,
+          "upper": 0.6065
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 32,
+          "params": {
+            "ticker": "SHY",
+            "lookback": 378,
+            "allow_short": false
+          },
+          "annualized": 0.2642318973083097
+        },
+        "reality_check": 0.3949,
+        "spa": {
+          "statistic": 2.3850988409698965,
+          "lower": 0.0382,
+          "consistent": 0.0484,
+          "upper": 0.0625
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 33,
+          "params": {
+            "ticker": "SHY",
+            "lookback": 378,
+            "allow_short": true
+          },
+          "annualized": 0.0020291760849516466
+        },
+        "reality_check": 0.6453,
+        "spa": {
+          "statistic": 0.6851141429624461,
+          "lower": 0.2891,
+          "consistent": 0.4522,
+          "upper": 0.5934
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SHY",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2004-01-30",
+      "last": "2026-10-30",
+      "days": 5725,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 32,
+          "params": {
+            "ticker": "SHY",
+            "lookback": 378,
+            "allow_short": false
+          },
+          "annualized": 0.2642318973083097
+        },
+        "reality_check": 0.4159,
+        "spa": {
+          "statistic": 1.9643344086900187,
+          "lower": 0.0722,
+          "consistent": 0.0918,
+          "upper": 0.1124
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 33,
+          "params": {
+            "ticker": "SHY",
+            "lookback": 378,
+            "allow_short": true
+          },
+          "annualized": 0.0020291760849516466
+        },
+        "reality_check": 0.6361,
+        "spa": {
+          "statistic": 0.6472073595601187,
+          "lower": 0.2853,
+          "consistent": 0.4331,
+          "upper": 0.5691
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2005-11-15",
+      "last": "2026-10-30",
+      "days": 5272,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 102,
+          "params": {
+            "ticker": "GLD",
+            "fast": 40,
+            "slow": 120,
+            "allow_short": false
+          },
+          "annualized": 0.11067546025483843
+        },
+        "reality_check": 0.7324,
+        "spa": {
+          "statistic": 0.7859692018248797,
+          "lower": 0.5501,
+          "consistent": 0.6693,
+          "upper": 0.6702
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 72,
+          "params": {
+            "ticker": "GLD",
+            "fast": 25,
+            "slow": 150,
+            "allow_short": false
+          },
+          "annualized": -0.007876144668965015
+        },
+        "reality_check": 0.9198,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "GLD",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2005-11-15",
+      "last": "2026-10-30",
+      "days": 5272,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 102,
+          "params": {
+            "ticker": "GLD",
+            "fast": 40,
+            "slow": 120,
+            "allow_short": false
+          },
+          "annualized": 0.11067546025483843
+        },
+        "reality_check": 0.7197,
+        "spa": {
+          "statistic": 0.777435411542564,
+          "lower": 0.5469,
+          "consistent": 0.6575,
+          "upper": 0.6579
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 72,
+          "params": {
+            "ticker": "GLD",
+            "fast": 25,
+            "slow": 150,
+            "allow_short": false
+          },
+          "annualized": -0.007876144668965015
+        },
+        "reality_check": 0.9084,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2005-11-15",
+      "last": "2026-10-30",
+      "days": 5272,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 102,
+          "params": {
+            "ticker": "GLD",
+            "fast": 40,
+            "slow": 120,
+            "allow_short": false
+          },
+          "annualized": 0.11067546025483843
+        },
+        "reality_check": 0.7351,
+        "spa": {
+          "statistic": 0.8083882186008164,
+          "lower": 0.5458,
+          "consistent": 0.6664,
+          "upper": 0.6675
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 72,
+          "params": {
+            "ticker": "GLD",
+            "fast": 25,
+            "slow": 150,
+            "allow_short": false
+          },
+          "annualized": -0.007876144668965015
+        },
+        "reality_check": 0.9321,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2005-11-15",
+      "last": "2026-10-30",
+      "days": 5272,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 102,
+          "params": {
+            "ticker": "GLD",
+            "fast": 40,
+            "slow": 120,
+            "allow_short": false
+          },
+          "annualized": 0.11067546025483843
+        },
+        "reality_check": 0.7284,
+        "spa": {
+          "statistic": 0.8554564231923679,
+          "lower": 0.5208,
+          "consistent": 0.6417,
+          "upper": 0.6435
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 72,
+          "params": {
+            "ticker": "GLD",
+            "fast": 25,
+            "slow": 150,
+            "allow_short": false
+          },
+          "annualized": -0.007876144668965015
+        },
+        "reality_check": 0.945,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2006-05-23",
+      "last": "2026-10-30",
+      "days": 5143,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "GLD",
+            "lookback": 315,
+            "allow_short": false
+          },
+          "annualized": 0.012900813517636008
+        },
+        "reality_check": 0.9016,
+        "spa": {
+          "statistic": 0.1331289211511844,
+          "lower": 0.7303,
+          "consistent": 0.8919,
+          "upper": 0.8919
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "GLD",
+            "lookback": 315,
+            "allow_short": false
+          },
+          "annualized": -0.007664931353303915
+        },
+        "reality_check": 0.942,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "GLD",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2006-05-23",
+      "last": "2026-10-30",
+      "days": 5143,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "GLD",
+            "lookback": 315,
+            "allow_short": false
+          },
+          "annualized": 0.012900813517636008
+        },
+        "reality_check": 0.8897,
+        "spa": {
+          "statistic": 0.12997028818484244,
+          "lower": 0.7259,
+          "consistent": 0.8804,
+          "upper": 0.8804
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "GLD",
+            "lookback": 315,
+            "allow_short": false
+          },
+          "annualized": -0.007664931353303915
+        },
+        "reality_check": 0.9347,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2006-05-23",
+      "last": "2026-10-30",
+      "days": 5143,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "GLD",
+            "lookback": 315,
+            "allow_short": false
+          },
+          "annualized": 0.012900813517636008
+        },
+        "reality_check": 0.9035,
+        "spa": {
+          "statistic": 0.13764259189586567,
+          "lower": 0.7243,
+          "consistent": 0.8941,
+          "upper": 0.8941
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "GLD",
+            "lookback": 315,
+            "allow_short": false
+          },
+          "annualized": -0.007664931353303915
+        },
+        "reality_check": 0.9484,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "GLD",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0015625,
+      "first": "2006-05-23",
+      "last": "2026-10-30",
+      "days": 5143,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "GLD",
+            "lookback": 315,
+            "allow_short": false
+          },
+          "annualized": 0.012900813517636008
+        },
+        "reality_check": 0.9119,
+        "spa": {
+          "statistic": 0.13924933959215705,
+          "lower": 0.7101,
+          "consistent": 0.9,
+          "upper": 0.9008
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 26,
+          "params": {
+            "ticker": "GLD",
+            "lookback": 315,
+            "allow_short": false
+          },
+          "annualized": -0.007664931353303915
+        },
+        "reality_check": 0.9599,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    }
+  ]
+}

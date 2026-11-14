@@ -1,0 +1,473 @@
+{
+  "registered": "D043",
+  "commit": "8bf4b450ffd7d9eeea3efbd1c6642f4cf35a9ac6",
+  "uncommitted_changes": false,
+  "reps": 10000,
+  "seed": 0,
+  "alpha": 0.05,
+  "post_hoc": true,
+  "sample": "(i) SPY over the registered sample, known before D043",
+  "families": [
+    {
+      "instrument": "SPY",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1994-01-25",
+      "last": "2026-10-30",
+      "days": 8247,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 28,
+          "params": {
+            "ticker": "SPY",
+            "fast": 10,
+            "slow": 200,
+            "allow_short": false
+          },
+          "annualized": 0.1598873967532803
+        },
+        "reality_check": 0.5705,
+        "spa": {
+          "statistic": 1.2403534427528369,
+          "lower": 0.3684,
+          "consistent": 0.4495,
+          "upper": 0.4552
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 126,
+          "params": {
+            "ticker": "SPY",
+            "fast": 50,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.011736289611245607
+        },
+        "reality_check": 0.9343,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "SPY",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 0.1065
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "SPY",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0125,
+      "first": "1994-01-25",
+      "last": "2026-10-30",
+      "days": 8247,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 28,
+          "params": {
+            "ticker": "SPY",
+            "fast": 10,
+            "slow": 200,
+            "allow_short": false
+          },
+          "annualized": 0.1598873967532803
+        },
+        "reality_check": 0.5715,
+        "spa": {
+          "statistic": 1.2310132230487674,
+          "lower": 0.3817,
+          "consistent": 0.4533,
+          "upper": 0.4577
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 126,
+          "params": {
+            "ticker": "SPY",
+            "fast": 50,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.011736289611245607
+        },
+        "reality_check": 0.9244,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SPY",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0125,
+      "first": "1994-01-25",
+      "last": "2026-10-30",
+      "days": 8247,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 28,
+          "params": {
+            "ticker": "SPY",
+            "fast": 10,
+            "slow": 200,
+            "allow_short": false
+          },
+          "annualized": 0.1598873967532803
+        },
+        "reality_check": 0.5595,
+        "spa": {
+          "statistic": 1.2388114822078113,
+          "lower": 0.3452,
+          "consistent": 0.4288,
+          "upper": 0.4374
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 126,
+          "params": {
+            "ticker": "SPY",
+            "fast": 50,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.011736289611245607
+        },
+        "reality_check": 0.9418,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SPY",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0125,
+      "first": "1994-01-25",
+      "last": "2026-10-30",
+      "days": 8247,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 28,
+          "params": {
+            "ticker": "SPY",
+            "fast": 10,
+            "slow": 200,
+            "allow_short": false
+          },
+          "annualized": 0.1598873967532803
+        },
+        "reality_check": 0.5436,
+        "spa": {
+          "statistic": 1.2012907760420914,
+          "lower": 0.3358,
+          "consistent": 0.42,
+          "upper": 0.4311
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 126,
+          "params": {
+            "ticker": "SPY",
+            "fast": 50,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.011736289611245607
+        },
+        "reality_check": 0.9611,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SPY",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1994-08-01",
+      "last": "2026-10-30",
+      "days": 8118,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "SPY",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": 0.14149094661101644
+        },
+        "reality_check": 0.5784,
+        "spa": {
+          "statistic": 1.2309790972283017,
+          "lower": 0.3034,
+          "consistent": 0.3934,
+          "upper": 0.4023
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "SPY",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.01127302016886771
+        },
+        "reality_check": 0.9291,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "SPY",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 0.1158
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "SPY",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0125,
+      "first": "1994-08-01",
+      "last": "2026-10-30",
+      "days": 8118,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "SPY",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": 0.14149094661101644
+        },
+        "reality_check": 0.5854,
+        "spa": {
+          "statistic": 1.2286941313448396,
+          "lower": 0.3207,
+          "consistent": 0.4,
+          "upper": 0.4078
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "SPY",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.01127302016886771
+        },
+        "reality_check": 0.9186,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SPY",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0125,
+      "first": "1994-08-01",
+      "last": "2026-10-30",
+      "days": 8118,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "SPY",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": 0.14149094661101644
+        },
+        "reality_check": 0.5648,
+        "spa": {
+          "statistic": 1.204209784441629,
+          "lower": 0.2902,
+          "consistent": 0.386,
+          "upper": 0.3961
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "SPY",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.01127302016886771
+        },
+        "reality_check": 0.9411,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "SPY",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0125,
+      "first": "1994-08-01",
+      "last": "2026-10-30",
+      "days": 8118,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "SPY",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": 0.14149094661101644
+        },
+        "reality_check": 0.5563,
+        "spa": {
+          "statistic": 1.1440804459209133,
+          "lower": 0.2901,
+          "consistent": 0.3943,
+          "upper": 0.4055
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "SPY",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.01127302016886771
+        },
+        "reality_check": 0.9534,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    }
+  ]
+}

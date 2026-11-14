@@ -1,0 +1,1277 @@
+{
+  "registered": "D043",
+  "commit": "8bf4b450ffd7d9eeea3efbd1c6642f4cf35a9ac6",
+  "uncommitted_changes": false,
+  "reps": 10000,
+  "seed": 0,
+  "alpha": 0.05,
+  "sample": "(ii) US market, Fama/French daily factors",
+  "data": {
+    "zip_sha256": "96c23b88e651cbfff3740a53f8225e59ee39893371e96385a1d8125ec2cd9c89",
+    "rows_sha256": "a7e075c925bf89d9e13273307390848530e237a63bacf67086d4a54770adcb85",
+    "first": "1926-07-01",
+    "last": "1993-01-28",
+    "rows": 17863,
+    "saturday_rows": 1158,
+    "check_against_spy": {
+      "first": "1993-02-01",
+      "last": "2026-09-30",
+      "days": 8474,
+      "correlation": 0.9785994740644473,
+      "annual_mean_difference": -0.001031304867634429
+    }
+  },
+  "decision": [
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "criterion": "sharpe_difference",
+      "p": 0.6826,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "criterion": "sharpe_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "criterion": "mean_difference",
+      "p": 1.0,
+      "holm": 1.0,
+      "finding": false
+    }
+  ],
+  "families": [
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1993-01-28",
+      "days": 17613,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.06869811875712094
+        },
+        "reality_check": 0.7779,
+        "spa": {
+          "statistic": 0.6357280103149044,
+          "lower": 0.4491,
+          "consistent": 0.6826,
+          "upper": 0.742
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.022366238610117436
+        },
+        "reality_check": 0.9941,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 28,
+        "params": {
+          "ticker": "MKT",
+          "fast": 10,
+          "slow": 200,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 0.4858
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1993-01-28",
+      "days": 17613,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.06869811875712094
+        },
+        "reality_check": 0.7709,
+        "spa": {
+          "statistic": 0.6571350561278053,
+          "lower": 0.4409,
+          "consistent": 0.6692,
+          "upper": 0.7348
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.022366238610117436
+        },
+        "reality_check": 0.9933,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1993-01-28",
+      "days": 17613,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.06869811875712094
+        },
+        "reality_check": 0.7833,
+        "spa": {
+          "statistic": 0.6096379097792903,
+          "lower": 0.448,
+          "consistent": 0.6914,
+          "upper": 0.7541
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.022366238610117436
+        },
+        "reality_check": 0.9959,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "decision",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1993-01-28",
+      "days": 17613,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.06869811875712094
+        },
+        "reality_check": 0.7779,
+        "spa": {
+          "statistic": 0.5663186322751191,
+          "lower": 0.4466,
+          "consistent": 0.6925,
+          "upper": 0.7546
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.022366238610117436
+        },
+        "reality_check": 0.9957,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "costs_0bps",
+      "costs_bps": 0.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1993-01-28",
+      "days": 17613,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 2,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 80,
+            "allow_short": false
+          },
+          "annualized": 0.2838830432954025
+        },
+        "reality_check": 0.2309,
+        "spa": {
+          "statistic": 2.588136088600515,
+          "lower": 0.0471,
+          "consistent": 0.0591,
+          "upper": 0.0599
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 6,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 120,
+            "allow_short": false
+          },
+          "annualized": -0.005079202861522723
+        },
+        "reality_check": 0.8934,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "costs_6bps",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1993-01-28",
+      "days": 17613,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 6,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 120,
+            "allow_short": false
+          },
+          "annualized": 0.2601407420110608
+        },
+        "reality_check": 0.2779,
+        "spa": {
+          "statistic": 2.3724475873255657,
+          "lower": 0.0724,
+          "consistent": 0.0895,
+          "upper": 0.0919
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.006406990618293387
+        },
+        "reality_check": 0.9095,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "costs_25bps",
+      "costs_bps": 25.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1993-01-28",
+      "days": 17613,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 6,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 120,
+            "allow_short": false
+          },
+          "annualized": 0.1854271171068582
+        },
+        "reality_check": 0.4487,
+        "spa": {
+          "statistic": 1.684177845442617,
+          "lower": 0.2074,
+          "consistent": 0.2807,
+          "upper": 0.288
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.010294499744506778
+        },
+        "reality_check": 0.9474,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "costs_50bps",
+      "costs_bps": 50.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1993-01-28",
+      "days": 17613,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.13150728676169401
+        },
+        "reality_check": 0.6048,
+        "spa": {
+          "statistic": 1.2281554348235777,
+          "lower": 0.3221,
+          "consistent": 0.455,
+          "upper": 0.4839
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.015409643331630047
+        },
+        "reality_check": 0.9775,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "cash_earns_rf",
+      "costs_bps": 84.0,
+      "cash": "rf",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1993-01-28",
+      "days": 17613,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.0656546400309277
+        },
+        "reality_check": 0.7854,
+        "spa": {
+          "statistic": 0.6181672708162749,
+          "lower": 0.4618,
+          "consistent": 0.6934,
+          "upper": 0.7528
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.012922768318855941
+        },
+        "reality_check": 0.9674,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "before_1960",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-05-03",
+      "last": "1959-12-31",
+      "days": 9291,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": 0.1490308650557901
+        },
+        "reality_check": 0.6675,
+        "spa": {
+          "statistic": 1.0041793419245222,
+          "lower": 0.4687,
+          "consistent": 0.5834,
+          "upper": 0.5869
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 14,
+          "params": {
+            "ticker": "MKT",
+            "fast": 5,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.011671717817242465
+        },
+        "reality_check": 0.9244,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "ma_crossover",
+      "variant": "from_1960",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1960-01-04",
+      "last": "1993-01-28",
+      "days": 8322,
+      "settings": 128,
+      "sharpe_difference": {
+        "best": {
+          "trial": 110,
+          "params": {
+            "ticker": "MKT",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.039875437978774415
+        },
+        "reality_check": 0.955,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 110,
+          "params": {
+            "ticker": "MKT",
+            "fast": 40,
+            "slow": 250,
+            "allow_short": false
+          },
+          "annualized": -0.027266982609949416
+        },
+        "reality_check": 0.9971,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1993-01-28",
+      "days": 17484,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.042971683067106595
+        },
+        "reality_check": 0.9714,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.034978828579272266
+        },
+        "reality_check": 1.0,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "selected": {
+        "trial": 22,
+        "params": {
+          "ticker": "MKT",
+          "lookback": 273,
+          "allow_short": false
+        },
+        "sharpe_difference": {
+          "spa_consistent": 1.0
+        },
+        "mean_difference": {
+          "spa_consistent": 1.0
+        }
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 5.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1993-01-28",
+      "days": 17484,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.042971683067106595
+        },
+        "reality_check": 0.9689,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.034978828579272266
+        },
+        "reality_check": 0.9996,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 20.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1993-01-28",
+      "days": 17484,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.042971683067106595
+        },
+        "reality_check": 0.971,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.034978828579272266
+        },
+        "reality_check": 0.9997,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "decision",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 50.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1993-01-28",
+      "days": 17484,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.042971683067106595
+        },
+        "reality_check": 0.9657,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.034978828579272266
+        },
+        "reality_check": 0.9999,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "costs_0bps",
+      "costs_bps": 0.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1993-01-28",
+      "days": 17484,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": 0.2951618686786346
+        },
+        "reality_check": 0.1839,
+        "spa": {
+          "statistic": 2.599908572997175,
+          "lower": 0.0359,
+          "consistent": 0.0442,
+          "upper": 0.0442
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 4,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 84,
+            "allow_short": false
+          },
+          "annualized": -0.0060002059025394405
+        },
+        "reality_check": 0.8977,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "costs_6bps",
+      "costs_bps": 6.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1993-01-28",
+      "days": 17484,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 0,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 42,
+            "allow_short": false
+          },
+          "annualized": 0.22229283178222123
+        },
+        "reality_check": 0.3339,
+        "spa": {
+          "statistic": 2.0443362521099857,
+          "lower": 0.1164,
+          "consistent": 0.1361,
+          "upper": 0.1361
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 6,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 105,
+            "allow_short": false
+          },
+          "annualized": -0.010041539876458708
+        },
+        "reality_check": 0.9395,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "costs_25bps",
+      "costs_bps": 25.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1993-01-28",
+      "days": 17484,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": 0.10063092269682888
+        },
+        "reality_check": 0.673,
+        "spa": {
+          "statistic": 0.8912285154340518,
+          "lower": 0.5493,
+          "consistent": 0.6048,
+          "upper": 0.612
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.01900626475634847
+        },
+        "reality_check": 0.9874,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "costs_50bps",
+      "costs_bps": 50.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1993-01-28",
+      "days": 17484,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": 0.040055347647666335
+        },
+        "reality_check": 0.8426,
+        "spa": {
+          "statistic": 0.35233792261340474,
+          "lower": 0.5787,
+          "consistent": 0.789,
+          "upper": 0.8305
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.02577430027453667
+        },
+        "reality_check": 0.9978,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "cash_earns_rf",
+      "costs_bps": 84.0,
+      "cash": "rf",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1993-01-28",
+      "days": 17484,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.05544946094694034
+        },
+        "reality_check": 0.9798,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 22,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 273,
+            "allow_short": false
+          },
+          "annualized": -0.026523864214138906
+        },
+        "reality_check": 0.9984,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "before_1960",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1927-10-05",
+      "last": "1959-12-31",
+      "days": 9162,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 24,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 294,
+            "allow_short": false
+          },
+          "annualized": 0.12356179451305067
+        },
+        "reality_check": 0.7301,
+        "spa": {
+          "statistic": 0.7759319212706991,
+          "lower": 0.4037,
+          "consistent": 0.6172,
+          "upper": 0.6784
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 24,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 294,
+            "allow_short": false
+          },
+          "annualized": -0.015483043929272999
+        },
+        "reality_check": 0.9448,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    },
+    {
+      "instrument": "MKT",
+      "strategy": "momentum",
+      "variant": "from_1960",
+      "costs_bps": 84.0,
+      "cash": "zero",
+      "mean_block": 10.0,
+      "stepm_alpha": 0.0125,
+      "first": "1960-01-04",
+      "last": "1993-01-28",
+      "days": 8322,
+      "settings": 34,
+      "sharpe_difference": {
+        "best": {
+          "trial": 18,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 231,
+            "allow_short": false
+          },
+          "annualized": -0.20088921079403566
+        },
+        "reality_check": 0.9995,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      },
+      "mean_difference": {
+        "best": {
+          "trial": 18,
+          "params": {
+            "ticker": "MKT",
+            "lookback": 231,
+            "allow_short": false
+          },
+          "annualized": -0.04457425055515486
+        },
+        "reality_check": 1.0,
+        "spa": {
+          "statistic": 0.0,
+          "lower": 1.0,
+          "consistent": 1.0,
+          "upper": 1.0
+        },
+        "stepm": [],
+        "not_studentized": []
+      }
+    }
+  ]
+}
