@@ -1,7 +1,9 @@
 """The registered study runner on a synthetic returns-only market (D043)."""
 
 import hashlib
+from dataclasses import replace
 from pathlib import Path
+from typing import NoReturn
 
 import numpy as np
 import pandas as pd
@@ -23,6 +25,8 @@ from backtest_lab.validation.relative import (
     yahoo_sample,
 )
 from tests.factories import price_frame
+
+CODE = "commit a"
 
 
 def test_cash_earns_the_rate_beside_the_position_earning_the_day() -> None:
@@ -55,7 +59,7 @@ def few_reps(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_runs_every_family_and_resumes_from_the_cache(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    records = run_sample(_sample(rf=0.0), tmp_path, processes=1)
+    records = run_sample(_sample(rf=0.0), tmp_path, CODE, processes=1)
     # Per strategy: the decision at four block lengths and seven other variants at one.
     assert len(records) == 2 * (4 + 7)
     assert {r["variant"] for r in records} == {v.name for v in FRENCH_VARIANTS}
@@ -73,12 +77,46 @@ def test_runs_every_family_and_resumes_from_the_cache(
 
     monkeypatch.setattr(relative, "compare", fail)
     monkeypatch.setattr(relative, "run_grid", fail)
-    assert run_sample(_sample(rf=0.0), tmp_path, processes=1) == records
+    assert run_sample(_sample(rf=0.0), tmp_path, CODE, processes=1) == records
+
+
+class Computed(Exception):
+    pass
+
+
+@pytest.mark.usefixtures("few_reps")
+def test_the_cache_serves_only_the_same_code_settings_and_data(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_sample(_sample(rf=0.0), tmp_path, CODE, processes=1)
+
+    def compute(*args: object) -> NoReturn:
+        raise Computed
+
+    monkeypatch.setattr(relative, "matrices", compute)
+
+    def computes(sample: Sample, code: str = CODE, reps: int = 200, seed: int = 0) -> bool:
+        with monkeypatch.context() as m:
+            m.setattr(relative, "REPS", reps)
+            m.setattr(relative, "SEED", seed)
+            try:
+                run_sample(sample, tmp_path, code, processes=1)
+            except Computed:
+                return True
+            return False
+
+    assert not computes(_sample(rf=0.0))
+    assert computes(_sample(rf=0.0), code="commit b")
+    assert computes(_sample(rf=0.0), reps=300)
+    assert computes(_sample(rf=0.0), seed=1)
+    assert computes(replace(_sample(rf=0.0), stepm_alpha=0.05))
+    assert computes(_sample(rf=0.0, seed=1))  # other returns
+    assert computes(_sample(rf=0.0002))
 
 
 @pytest.mark.usefixtures("few_reps")
 def test_cash_at_a_zero_rate_changes_nothing(tmp_path: Path) -> None:
-    records = run_sample(_sample(rf=0.0), tmp_path, processes=1)
+    records = run_sample(_sample(rf=0.0), tmp_path, CODE, processes=1)
     by = {(r["strategy"], r["variant"], r["mean_block"]): r for r in records}
     for strategy in SELECTED:
         cash, zero = by[(strategy, "cash_earns_rf", 10)], by[(strategy, "decision", 10)]
@@ -88,7 +126,7 @@ def test_cash_at_a_zero_rate_changes_nothing(tmp_path: Path) -> None:
 
 @pytest.mark.usefixtures("few_reps")
 def test_cash_at_a_positive_rate_helps_the_settings_out_of_the_market(tmp_path: Path) -> None:
-    records = run_sample(_sample(rf=0.0002), tmp_path, processes=1)
+    records = run_sample(_sample(rf=0.0002), tmp_path, CODE, processes=1)
     by = {(r["strategy"], r["variant"], r["mean_block"]): r for r in records}
     cash, zero = by[("ma_crossover", "cash_earns_rf", 10)], by[("ma_crossover", "decision", 10)]
     best_cash = cash["mean_difference"]["best"]["annualized"]
@@ -97,7 +135,7 @@ def test_cash_at_a_positive_rate_helps_the_settings_out_of_the_market(tmp_path: 
 
 @pytest.mark.usefixtures("few_reps")
 def test_decision_adjusts_the_deciding_families_with_holm(tmp_path: Path) -> None:
-    records = run_sample(_sample(rf=0.0), tmp_path, processes=1)
+    records = run_sample(_sample(rf=0.0), tmp_path, CODE, processes=1)
     out = decision(records)
     assert [(d["strategy"], d["criterion"]) for d in out] == [
         ("ma_crossover", "sharpe_difference"),

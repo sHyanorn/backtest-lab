@@ -2,7 +2,8 @@
 
 (ii) the US market from 1926 to 1993 from the Fama/French daily factors, (iii) the other
 eight ETFs, and (i) SPY over the registered sample, post hoc. Each family is cached in
-`--cache` as soon as it is done, so a rerun after an interruption skips it.
+`--cache` as soon as it is done, under a digest of the code, the settings and the data, so
+a rerun of the same code on the same data skips it.
 
 Usage: python -m backtest_lab.validation.relative --out DIR --posthoc-out DIR
        [--data-dir data] [--cache data/cache/relative] [--processes N]
@@ -207,14 +208,25 @@ def family(
     return record
 
 
-def run_sample(sample: Sample, cache: Path, processes: int | None = None) -> list[dict[str, Any]]:
-    """Every family of a sample, read from `cache` when it is already there."""
+def _cache_key(sample: Sample, code: str) -> str:
+    """A digest of what a sample's families are computed from."""
+    data = (sample.data.prices.open, sample.data.prices.close, sample.rf)
+    inputs = [code, REPS, SEED, sample.stepm_alpha, *(d.to_csv() for d in data if d is not None)]
+    return hashlib.sha256(json.dumps(inputs).encode()).hexdigest()[:16]
+
+
+def run_sample(
+    sample: Sample, cache: Path, code: str, processes: int | None = None
+) -> list[dict[str, Any]]:
+    """Every family of a sample, read from `cache` when the same `code`, settings and data
+    computed it there."""
+    folder = cache / _cache_key(sample, code)
     records = []
     for strategy, search in GRIDS.items():
         grid = Grid(axes=search.grid.axes, fixed=(("ticker", sample.instrument),))
         for variant in sample.variants:
             paths = {
-                m: cache
+                m: folder
                 / f"{sample.name}-{sample.instrument}-{strategy}-{variant.name}-L{m:g}.json"
                 for m in variant.mean_blocks
             }
@@ -309,15 +321,15 @@ def bridge(data_dir: Path) -> dict[str, Any]:
     }
 
 
+def _git(*args: str) -> str:
+    return subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout
+
+
 def _code() -> dict[str, Any]:
     """The commit the results come from, and whether tracked files differ from it."""
-
-    def git(*args: str) -> str:
-        return subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout
-
     return {
-        "commit": git("rev-parse", "HEAD").strip(),
-        "uncommitted_changes": bool(git("status", "--porcelain", "--untracked-files=no").strip()),
+        "commit": _git("rev-parse", "HEAD").strip(),
+        "uncommitted_changes": bool(_git("status", "--porcelain", "--untracked-files=no").strip()),
     }
 
 
@@ -335,10 +347,13 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--processes", type=int, default=None)
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
-    head = {"registered": REGISTRATION, **_code(), "reps": REPS, "seed": SEED, "alpha": ALPHA}
+    code = _code()
+    head = {"registered": REGISTRATION, **code, "reps": REPS, "seed": SEED, "alpha": ALPHA}
+    # Cached families serve only the same commit with the same changes to tracked files.
+    version = code["commit"] + _git("diff", "HEAD")
 
     sample, meta = french_sample(args.data_dir)
-    records = run_sample(sample, args.cache, args.processes)
+    records = run_sample(sample, args.cache, version, args.processes)
     _write(
         args.out / "french.json",
         {
@@ -355,6 +370,7 @@ def main(argv: list[str] | None = None) -> None:
         for r in run_sample(
             yahoo_sample(args.data_dir, t, "etf", ALPHA / (4 * len(ETFS))),
             args.cache,
+            version,
             args.processes,
         )
     ]
@@ -363,7 +379,7 @@ def main(argv: list[str] | None = None) -> None:
         {**head, "sample": "(iii) eight ETFs", "decision": decision(records), "families": records},
     )
     spy = yahoo_sample(args.data_dir, "SPY", "spy", ALPHA / 4)
-    records = run_sample(spy, args.cache, args.processes)
+    records = run_sample(spy, args.cache, version, args.processes)
     args.posthoc_out.mkdir(parents=True, exist_ok=True)
     _write(
         args.posthoc_out / "relative_spy.json",
