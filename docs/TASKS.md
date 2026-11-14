@@ -51,7 +51,7 @@
 - [x] Register the tests (D043) and their formulas (METHODS.md Section 8)
 - [x] Returns-only market with next-close fills
 - [x] Fama/French daily factors
-- [ ] Reality Check, SPA and StepM
+- [x] Reality Check, SPA and StepM
 - [ ] Registered study runner
 - [ ] Run the registered tests and commit the results
 - [ ] Report them in README and DEMO.md
