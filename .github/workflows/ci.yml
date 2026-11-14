@@ -19,6 +19,9 @@ jobs:
       # The post hoc results the docs quote are fixed as well.
       - run: sha256sum --check --strict SHA256SUMS
         working-directory: results/posthoc
+      # So are the registered results of the relative study (D043).
+      - run: sha256sum --check --strict SHA256SUMS
+        working-directory: results/relative
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: "0.13.7"
