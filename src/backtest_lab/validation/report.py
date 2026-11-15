@@ -572,6 +572,12 @@ def _sensitivity_check(
         )
     elif result.best_sharpe <= 0:
         summary = "The best setting's Sharpe ratio is not positive."
+    elif retention is not None and retention < 0:
+        # A negative share of a positive Sharpe ratio reads as nonsense; state both ratios.
+        summary = (
+            f"Settings next to the best one have a mean Sharpe ratio of "
+            f"{_sharpe(result.mean)}, against {_sharpe(result.best_sharpe)} for the best one."
+        )
     else:
         summary = (
             f"Settings next to the best one keep {stated(retention, SENSITIVITY_LINES)} of its "
@@ -630,7 +636,8 @@ def overall_summary(checks: rs.Checks) -> tuple[rs.Verdict, str]:
         )
     elif verdict == "yellow":
         (b, borderline), (u, unassessed) = titled("yellow"), titled("not_assessable")
-        parts = [f"{b} of {len(items)} are borderline ({borderline})"] if b else []
+        verb = "is" if b == 1 else "are"
+        parts = [f"{b} of {len(items)} {verb} borderline ({borderline})"] if b else []
         if u:
             of_all = "" if b else f"of {len(items)} "
             parts.append(f"{u} {of_all}cannot be assessed ({unassessed})")
@@ -641,7 +648,7 @@ def overall_summary(checks: rs.Checks) -> tuple[rs.Verdict, str]:
     else:
         n, failed = titled("red")
         summary = (
-            f"{n} of {len(items)} checks fail ({failed}): the selected "
+            f"{n} of {len(items)} checks {'fails' if n == 1 else 'fail'} ({failed}): the selected "
             "setting's performance may well be an artefact of the parameter search."
         )
     return verdict, summary

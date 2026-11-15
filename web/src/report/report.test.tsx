@@ -146,6 +146,16 @@ describe('check cards', () => {
     expect(rule({ ...report, schema_version: '1.1' })).toContain(floor)
   })
 
+  it('notes the whole-number rounding of the registered summaries', () => {
+    const report = load('ma_crossover')
+    const { unmount } = render(<CheckCards report={report} />)
+    expect(screen.getByText(/round percentages to whole numbers/)).toBeTruthy()
+    unmount()
+    // Reports built under D042 do not round across a line.
+    render(<CheckCards report={{ ...report, schema_version: '1.1' }} />)
+    expect(screen.queryByText(/round percentages to whole numbers/)).toBeNull()
+  })
+
   it('notes that the seed sensitivity verdict is uninformative', () => {
     const report = load('random_signal')
     const { unmount } = render(<CheckCards report={report} />)

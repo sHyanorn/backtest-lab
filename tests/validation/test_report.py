@@ -315,7 +315,7 @@ def test_a_fail_still_counts_with_too_few_independent_trials() -> None:
     assert "red" not in [c.verdict for key, c in checks if key != "pbo"]
     assert report.overall.verdict == "red"
     assert report.overall.summary.startswith(
-        "1 of 8 checks fail (Probability of backtest overfitting):"
+        "1 of 8 checks fails (Probability of backtest overfitting):"
     )
 
 
@@ -347,7 +347,7 @@ def test_ten_independent_trials_by_the_smaller_estimate_are_enough() -> None:
         ),
         (
             {"holdout": "yellow", "pbo": "not_assessable"},
-            "No check fails, but 1 of 8 are borderline (Holdout split) and 1 cannot be "
+            "No check fails, but 1 of 8 is borderline (Holdout split) and 1 cannot be "
             "assessed (Probability of backtest overfitting): treat the selected setting's "
             "performance with caution.",
         ),
@@ -589,6 +589,20 @@ def test_summaries_do_not_round_onto_a_threshold(
     result = getattr(build_report(trials, data, "SPY", SETTINGS).checks, check)
     assert words in result.summary
     assert result.verdict == verdict
+
+
+def test_negative_retention_states_both_sharpe_ratios(monkeypatch: pytest.MonkeyPatch) -> None:
+    patch = _replacing(sensitivity, lambda s: {"mean": -1.5 * s.best_sharpe})
+    monkeypatch.setattr(report_module, "sensitivity", patch)
+    trials, data = _judged_case()
+    check = build_report(trials, data, "SPY", SETTINGS).checks.sensitivity
+    best = check.metrics.best_sharpe
+    assert check.metrics.retention is not None and check.metrics.retention < 0
+    assert check.summary == (
+        f"Settings next to the best one have a mean Sharpe ratio of {-1.5 * best:.2f}, "
+        f"against {best:.2f} for the best one."
+    )
+    assert check.verdict == "red"
 
 
 def _figure(text: str) -> float:

@@ -16,6 +16,13 @@ export function CheckCards({ report }: { report: Report }) {
       <h2 className="section-title" id="cards-title">
         Checks
       </h2>
+      {report.schema_version === '1.0' && (
+        <p className="note">
+          These registered summaries round percentages to whole numbers, so a
+          stated figure can land on a verdict line the measured value does not
+          reach. The card figures for PBO, DSR and PSR are not rounded this way.
+        </p>
+      )}
       <ol className="cards">
         {checkViews(report).map((c) => (
           <li key={c.key} className="card" id={`check-${c.key}`} tabIndex={-1}>
