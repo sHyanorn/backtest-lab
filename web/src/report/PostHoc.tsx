@@ -27,10 +27,9 @@ export function PostHoc({
         </h2>
         <span className="tag">Not pre-registered</span>
         <InfoTip label="Why this analysis is post hoc">
-          These questions were chosen after seeing the pre-registered results,
-          to explain them. Restricting a grid to the half that won is a choice
-          made knowing the outcome, so these numbers are exploratory and carry
-          no confirmatory weight.
+          These analyses were chosen after seeing the pre-registered results, to
+          explain them, so the numbers are exploratory and carry no confirmatory
+          weight.
         </InfoTip>
       </div>
       <div className="posthoc-grid">

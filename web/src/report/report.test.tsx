@@ -51,6 +51,9 @@ describe('overview', () => {
     })
     expect(checks.textContent).not.toMatch(/buy and hold|CAGR/i)
     expect(within(benchmark).getByText('Not part of the verdict')).toBeTruthy()
+    expect(
+      within(benchmark).getByText(/do not compare a setting with buy and hold/),
+    ).toBeTruthy()
     expect(within(benchmark).getByText('0.64')).toBeTruthy()
     expect(within(benchmark).getByText('−55.2%')).toBeTruthy()
   })

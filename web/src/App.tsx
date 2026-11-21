@@ -6,6 +6,8 @@ import { useHashRoute } from './route.ts'
 import { useApi, type ApiState } from './sweep/api.ts'
 import { useTheme } from './theme.ts'
 
+const REPO = 'https://github.com/sHyanorn/backtest-lab'
+
 // Only the dev server can reach the API, so a static build leaves this out.
 const SweepView = import.meta.env.DEV
   ? lazy(() => import('./sweep/SweepView.tsx'))
@@ -24,7 +26,9 @@ export default function App() {
   return (
     <div className="shell">
       <header className="top">
-        <span className="brand">backtest-lab</span>
+        <a className="brand" href={REPO}>
+          backtest-lab
+        </a>
         <ModeChip api={api} />
         <button
           type="button"
@@ -57,6 +61,12 @@ export default function App() {
         )}
       </nav>
       <main>
+        {!sweep && (
+          <p className="intro">
+            Three parameter searches on SPY, registered before any strategy was
+            run on real data, each judged by eight checks for overfitting.
+          </p>
+        )}
         {sweep && api.status === 'online' && SweepView ? (
           <Suspense fallback={<div className="view" aria-busy="true" />}>
             <SweepView strategies={api.strategies} sweepId={sweepId} />

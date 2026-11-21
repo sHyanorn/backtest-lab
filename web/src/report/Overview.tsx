@@ -1,4 +1,3 @@
-import { InfoTip } from '../InfoTip.tsx'
 import {
   costText,
   count,
@@ -118,9 +117,6 @@ function Benchmark({ report }: { report: Report }) {
           Against {report.benchmark.name}
         </h2>
         <span className="tag">Not part of the verdict</span>
-        <InfoTip label="Why the benchmark is separate" align="end">
-          {report.overall.benchmark_summary}
-        </InfoTip>
       </div>
       <table className="compare diff">
         <thead>
@@ -144,6 +140,10 @@ function Benchmark({ report }: { report: Report }) {
           ))}
         </tbody>
       </table>
+      <p className="note">
+        The checks do not compare a setting with buy and hold, and in a rising
+        market a long-only setting with no timing ability can pass them.
+      </p>
     </section>
   )
 }
